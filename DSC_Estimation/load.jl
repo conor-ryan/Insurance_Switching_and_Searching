@@ -8,3 +8,4 @@ df = CSV.read("$(homedir())/Documents/Research/CovCAInertia/Output/analysis_i2.c
 
 # No constant
 df[:constant] = ones(size(df, 1))
+df[:dprem][ismissing.(df[:dprem])] .= 0.0

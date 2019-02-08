@@ -164,7 +164,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,step_tol=1e-8,max_itr=2000)
     p_vec = p0
     N = length(p0)
 
-    count = 0
+    cnt = 0
     grad_size = 10000
     f_eval_old = 1.0
     # # Initialize δ
@@ -176,15 +176,15 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,step_tol=1e-8,max_itr=2000)
     f_final_val = 0.0
     max_trial_cnt = 0
     # Maximize by Newtons Method
-    while (grad_size>grad_tol) & (count<max_itr) & (max_trial_cnt<20)
-        count+=1
+    while (grad_size>grad_tol) & (cnt<max_itr) & (max_trial_cnt<20)
+        cnt+=1
 
         # Compute Gradient, holding δ fixed
 
         fval = log_likelihood!(hess_new,grad_new,d,p_vec)
 
         grad_size = sqrt(dot(grad_new,grad_new))
-        if (grad_size<1e-8) & (count>10)
+        if (grad_size<1e-8) & (cnt>10)
             println("Got to Break Point...?")
             break
         end
@@ -196,10 +196,25 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,step_tol=1e-8,max_itr=2000)
         # hess_new = Matrix{Float64}(N,N)
         # ForwardDiff.hessian!(hess_new, ll, p_vec)
         # println("Hessian is $hess_new")
+        # if any(abs.(diag(hess_new)).<1e-10)
+        #     return p_vec, hess_new
+        # end
 
         step = - inv(hess_new)*grad_new
 
+
+
+        if any(step.<(-200))
+            println("Hit Lower Boundary")
+            step[step.<(-200)] .= -200
+        end
+        if any(step.>(200))
+            println("Hit Upper Boundary")
+            step[step.>(200)] .= 200
+        end
+
         p_test = p_vec .+ step
+
         f_test = log_likelihood(d,p_test)
         trial_cnt = 0
         while ((f_test<fval) | isnan(f_test)) & (trial_cnt<10)
@@ -227,7 +242,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,step_tol=1e-8,max_itr=2000)
 
 
         println("Gradient Size: $grad_size")
-        println("Function Value is $f_test at iteration $count")
+        println("Function Value is $f_test at iteration $cnt")
     end
     # if (grad_size>grad_tol)
     #     println("Estimate Instead")

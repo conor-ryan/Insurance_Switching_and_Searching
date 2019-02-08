@@ -26,18 +26,28 @@ include("load.jl")
 println("Data Loaded")
 
 
-df_small = df[df[:gra].==16,:]
-df = 0.0
+# df_small = df[df[:gra].==16,:]
+# df = 0.0
 
 # Structre the data
-c = ChoiceData(df_small;
-    person = [:hh_year_id],
-    product = [:product],
-    choice = [:choice],
-    prodchars=Vector{Symbol}(undef,0),
-    prodchars_0=Vector{Symbol}(undef,0),
-    demoRaw=Vector{Symbol}(undef,0),
-    fixedEffects=[:product],
+c = ChoiceData(df;
+    per = [:hh_year_id],
+    prd = [:product],
+    ch = [:choice],
+    ch_last = [:iplan],
+    prodchr = [:padj,:iplan],
+                    # :netfe_1,:netfe_2,:netfe_3,:netfe_4,:netfe_5,
+                    # :netfe_6,:netfe_7,:netfe_8,:netfe_9,:netfe_10,
+                    # :netfe_11,:netfe_12,:netfe_13,:netfe_15],
+    prodchr_0= Vector{Symbol}(undef,0),
+    # prodchr_0= [:iplan,:netfe_6,:netfe_8,:netfe_11],
+    inertchr=[:agefe_1,:agefe_2,:iexp,:fam,:hassub,:dprem,:iopt,:active],
+    # inertchr=Vector{Symbol}(undef,0),
+    demR=Vector{Symbol}(undef,0),
+    # fixInt=[:def_metal,:def_netfe],
+    # fixEff=[:metal,:netfe],
+    fixInt=Vector{Symbol}(undef,0),
+    fixEff=[:metal,:netname],
     wgt=[:constant])
 
 # Fit into model
@@ -45,54 +55,60 @@ m = InsuranceLogit(c,1)
 println("Data Loaded")
 
 #γ0start = rand(1)-.5
-# γstart = rand(m.parLength[:γ])/10 .-.05
 
-β0start = rand(m.parLength[:β])/10 .-.05
-βstart = rand(m.parLength[:γ])/10 .- .05
+
+Istart = rand(m.parLength[:I])/10 .-.05
+βstart = rand(m.parLength[:β])/10 .-.05
+γstart = rand(m.parLength[:γ]*(m.parLength[:β]))/10 .-.05
 σstart = rand(m.parLength[:σ])/10 .- .05
 FEstart = rand(m.parLength[:FE])/100 .-.005
 
-p0 = vcat(β0start,βstart,σstart,FEstart)
+p0 = vcat(Istart,βstart,γstart,σstart,FEstart)
 par0 = parDict(m,p0)
 #
-individual_values!(m,par0)
-individual_shares(m,par0)
-
-ll = log_likelihood(m,par0)
-
+# individual_values!(m,par0)
+# individual_shares(m,par0)
+# app = iterate(eachperson(m.data),5)[1]
+#
+#
+# ll = log_likelihood(m,par0)
+#
 # println("Gradient Test")
-# grad_2 = Vector{Float64}(undef,length(p0))
-# hess_2 = Matrix{Float64}(undef,length(p0),length(p0))
-# ll = log_likelihood!(hess_2,grad_2,m,par0)
-#
-#
+# # p0 = est[1]
+# par0 = parDict(m,p0)
+grad_2 = Vector{Float64}(undef,length(p0))
+hess_2 = Matrix{Float64}(undef,length(p0),length(p0))
+ll = log_likelihood!(hess_2,grad_2,m,par0)
+# #
+# #
 # f_obj(x) = log_likelihood(m,x)
 # grad_1 = Vector{Float64}(undef,length(p0))
 # hess_1 = Matrix{Float64}(undef,length(p0),length(p0))
-# fval_old = f_obj(p0)
-# # # #
+# # fval_old = f_obj(p0)
+# # # # # # #
 # println("Grad")
 # ForwardDiff.gradient!(grad_1,f_obj, p0)#, cfg)
 # println("Hessian")
-# cfg = ForwardDiff.HessianConfig(f_obj, p0, ForwardDiff.Chunk{3}())
-# ForwardDiff.hessian!(hess_1,f_obj, p0, cfg)
-#
+# # cfg = ForwardDiff.HessianConfig(f_obj, p0, ForwardDiff.Chunk{3}())
+# ForwardDiff.hessian!(hess_1,f_obj, p0)
+# #
 # println(fval_old-ll)
 # println(maximum(abs.(grad_1-grad_2)))
 # println(maximum(abs.(hess_1-hess_2)))
 
 
 
-est = newton_raphson_ll(m,p0)
+est2 = newton_raphson_ll(m,p0)
+
+p_est = est[1]
+par0 = parDict(m,p_est)
 
 
-
-
-# using Profile
-# Profile.init(n=10^8,delay=.001)
-# Profile.clear()
-# #Juno.@profile add_obs_mat!(hess,grad,hess_obs,grad_obs,Pop)
-# # Juno.@profile log_likelihood!(thD_2,hess_2,grad_2,m,par0)
-# Juno.@profile res = GMM_objective(m,p0,W)
-# Juno.profiletree()
-# Juno.profiler()
+using Profile
+Profile.init(n=10^8,delay=.001)
+Profile.clear()
+#Juno.@profile add_obs_mat!(hess,grad,hess_obs,grad_obs,Pop)
+# Juno.@profile log_likelihood!(thD_2,hess_2,grad_2,m,par0)
+Juno.@profile res =  log_likelihood!(hess_2,grad_2,m,par0)
+Juno.profiletree()
+Juno.profiler()

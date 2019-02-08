@@ -144,6 +144,14 @@ function log_likelihood!(thD::Array{Float64,3},
     return ll/Pop
 end
 
+function log_likelihood(d::InsuranceLogit,p::Array{T,1},x::Vector{Float64}) where T
+    p_vec = Vector{T}(undef,length(x))
+    p_vec[:] = x[:]
+    p_vec[1:length(p)] = p[:]
+    params = parDict(d,p_vec)
+    ll = log_likelihood(d,params)
+    return ll
+end
 
 function log_likelihood(d::InsuranceLogit,p::Array{T}) where T
     params = parDict(d,p)

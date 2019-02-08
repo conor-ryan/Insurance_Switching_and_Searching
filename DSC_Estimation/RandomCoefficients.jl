@@ -12,6 +12,7 @@ mutable struct parDict{T}
     # Parameters
     γ_0::T
     γ::Vector{T}
+    I::Vector{T}
     β_0::Vector{T}
     β::Matrix{T}
     σ::Vector{T}
@@ -24,6 +25,10 @@ mutable struct parDict{T}
     μ_ij::Matrix{T}
     # Shares for (ij) pairs
     s_hat::Vector{T}
+    s_hat_uncond::Vector{T}
+    # Search Probability
+    ω_i::Vector{T}
+
     # r_hat::Vector{T}
     # Share Parameter Derivatives for Products x Parameters
     # dSdθ_j::Matrix{T}
@@ -37,8 +42,9 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
     # Parameter Lengths from model
     #γlen = 1 + m.parLength[:γ]
     γlen = 0
-    β0len = γlen + m.parLength[:β]
-    βlen = β0len + m.parLength[:γ]
+    Ilen = γlen + m.parLength[:I]
+    β0len = Ilen + m.parLength[:β]
+    βlen = β0len + m.parLength[:γ]*m.parLength[:β]
     σlen = βlen  + m.parLength[:σ]
     FElen = σlen + m.parLength[:FE]
 
@@ -47,7 +53,8 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
     # γ = x[2:γlen]
     γ_0 = 0.0
     γ = [0.0]
-    β_0 = x[(γlen+1):β0len]
+    I_vec = x[(γlen+1):Ilen]
+    β_0 = x[(Ilen+1):β0len]
     β_vec = x[(β0len+1):βlen]
     σ_vec = x[(βlen+1):σlen]
     FE_vec = x[(σlen+1):FElen]
@@ -69,18 +76,14 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
 
     ind = 0
     for i in 1:N, j in 1:K
-        if j==1
-            ind+=1
-            β[j,i] = β_vec[ind]
-        else
-            β[j,i] = 0
-        end
+        ind+=1
+        β[j,i] = β_vec[ind]
     end
 
     #Calculate Random Coefficients matrix
     (S,R) = size(m.draws)
     randCoeffs = Array{T,2}(undef,S,m.parLength[:β])
-    calcRC!(randCoeffs,σ,m.draws)
+    calcRC!(randCoeffs,σ,m.draws,m.data._randCoeffs)
 
     #Initialize (ij) pairs of deltas
     L, M = size(m.data.data)
@@ -90,6 +93,9 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
         μ_ij = Matrix{T}(undef,1,M)
     end
     s_hat = Vector{T}(undef,M)
+    s_hat_uncond = Vector{T}(undef,M)
+
+    ω_i = Vector{T}(undef,Int.(maximum(person(m.data))))
 
     # Deltas are turned off
     # δ = Vector{T}(undef,M)
@@ -103,13 +109,21 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
     # d2Sdθ_j = Array{T,3}(undef,Q,Q,J)
     # d2Rdθ_j = Array{T,3}(undef,Q,Q,J)
 
-    return parDict{T}(γ_0,γ,β_0,β,σ,FE,randCoeffs,μ_ij,s_hat)
+    return parDict{T}(γ_0,γ,I_vec,β_0,β,σ,FE,randCoeffs,μ_ij,s_hat,s_hat_uncond,ω_i)
 end
 
-function calcRC!(randCoeffs::Array{S,2},σ::Array{T,1},draws::Array{Float64,2}) where {T,S}
+function calcRC!(randCoeffs::Array{S,2},σ::Array{T,1},draws::Array{Float64,2},randIndex::Vector{Int}) where {T,S}
     (N,K) = size(randCoeffs)
-    for k in 1:K,n in 1:N
-        randCoeffs[n,k] = draws[n,k]*σ[k]
+    k_ind = 0
+    for k in 1:K
+        if k in randIndex
+            k_ind += 1
+            for n in 1:N
+                randCoeffs[n,k] = draws[n,k_ind]*σ[k]
+            end
+        else
+            randCoeffs[:,k] .= 0.0
+        end
     end
     return Nothing
 end
@@ -134,7 +148,7 @@ end
 #     return β_i, γ_i
 # end
 
-function calc_indCoeffs(p::parDict{T},β::Array{T,1},d::T) where T
+function calc_indCoeffs(p::parDict{T},β::Array{T,1},d::S) where {T,S}
     Q = length(β)
     (N,K) = size(p.randCoeffs)
     β_i = Array{T,2}(undef,N,Q)
@@ -162,6 +176,7 @@ end
 function util_value!(app::ChoiceData,p::parDict{T}) where T
     γ_0 = p.γ_0
     γ = p.γ
+    ι = p.I
     β_0= p.β_0
     M1 = length(β_0)
     β = p.β
@@ -173,7 +188,8 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     idxitr = app._personDict[ind]
     X = permutedims(prodchars(app),(2,1))
     Z = demoRaw(app)[:,1]
-    #F = fixedEffects(app)
+    X_last =inertchars(app)[:,1]
+    y_last = choice_last(app)
     F = fixedEffects(app,idxitr)
 
     # FE is a row Vector
@@ -195,6 +211,8 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
         β_z = β*Z
         β_i, γ_i = calc_indCoeffs(p,β_z,demos)
         chars = X*β_i
+        # chars = diag(X*β_z)
+        # γ_i = 0.0
     else
         chars = zeros(length(idxitr),1)
         γ_i = 0.0
@@ -204,6 +222,13 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
         chars_0 = X*β_0
     else
         chars_0 = zeros(length(idxitr))
+    end
+
+    search = exp(dot(X_last,ι))
+    if (length(ι)>0) & (sum(y_last)>0)
+        p.ω_i[Int.(ind)] = search/(1+search)
+    else
+        p.ω_i[Int.(ind)] = 1.0
     end
 
 
@@ -218,7 +243,7 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
 end
 
 
-function calc_shares(μ_ij::Array{T}) where T
+function calc_shares(μ_ij::Array{T},ω_i::T,iplan::Array{Float64}) where T
     (N,K) = size(μ_ij)
     s_hat = Matrix{T}(undef,K,N)
     for n in 1:N
@@ -230,17 +255,26 @@ function calc_shares(μ_ij::Array{T}) where T
             s_hat[i,n] = μ_ij[n,i]/expsum
         end
     end
-    s_mean = mean(s_hat,dims=2)
-    return s_mean
+    s_mean_uncond = mean(s_hat,dims=2)
+    s_hat = similar(s_mean_uncond)
+    for i in 1:K
+        s_hat[i] = iplan[i]*(1-ω_i) + ω_i*(s_mean_uncond[i])
+    end
+    return s_hat,s_mean_uncond
 end
 
 function individual_shares(d::InsuranceLogit,p::parDict{T}) where T
     # Store Parameters
     μ_ij_large = p.μ_ij
-    for idxitr in values(d.data._personDict)
+    ω_large = p.ω_i
+    iplan_large = choice_last(d.data)[:]
+    for (ind,idxitr) in d.data._personDict
         u = μ_ij_large[:,idxitr]
-        s = calc_shares(u)
-        p.s_hat[idxitr] = s
+        ω = ω_large[ind]
+        iplan = iplan_large[idxitr]
+        s_hat,s_uncond = calc_shares(u,ω,iplan)
+        p.s_hat[idxitr] = s_hat
+        p.s_hat_uncond[idxitr] = s_uncond
     end
     return Nothing
 end
