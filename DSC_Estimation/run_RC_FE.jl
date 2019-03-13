@@ -26,7 +26,7 @@ include("load.jl")
 println("Data Loaded")
 
 
-# df_small = df[df[:gra].==16,:]
+df_est = df[(df[:hasi].==1).&(df[:dcat].==1),:]
 # df = 0.0
 
 # Structre the data
@@ -39,11 +39,12 @@ c = ChoiceData(df;
                     # :netfe_1,:netfe_2,:netfe_3,:netfe_4,:netfe_5,
                     # :netfe_6,:netfe_7,:netfe_8,:netfe_9,:netfe_10,
                     # :netfe_11,:netfe_12,:netfe_13,:netfe_15],
-    prodchr_0= Vector{Symbol}(undef,0),
-    # prodchr_0= [:iplan,:netfe_6,:netfe_8,:netfe_11],
-    inertchr=[:agefe_1,:agefe_2,:iexp,:fam,:hassub,:dprem,:iopt,:active],
+    # prodchr_0= Vector{Symbol}(undef,0),
+    prodchr_0= [:padj,:iplan],
+    inertchr=[:constant,:dprem,:active],
     # inertchr=Vector{Symbol}(undef,0),
-    demR=Vector{Symbol}(undef,0),
+    demR =Vector{Symbol}(undef,0),
+    # demR=[:hassub],#,:fam,:hassub],
     # fixInt=[:def_metal,:def_netfe],
     # fixEff=[:metal,:netfe],
     fixInt=Vector{Symbol}(undef,0),
@@ -51,7 +52,7 @@ c = ChoiceData(df;
     wgt=[:constant])
 
 # Fit into model
-m = InsuranceLogit(c,1)
+m = InsuranceLogit(c,100)
 println("Data Loaded")
 
 #γ0start = rand(1)-.5
@@ -76,32 +77,41 @@ par0 = parDict(m,p0)
 # println("Gradient Test")
 # # p0 = est[1]
 # par0 = parDict(m,p0)
-grad_2 = Vector{Float64}(undef,length(p0))
-hess_2 = Matrix{Float64}(undef,length(p0),length(p0))
-ll = log_likelihood!(hess_2,grad_2,m,par0)
-# #
-# #
+# grad_2 = Vector{Float64}(undef,length(p0))
+# hess_2 = Matrix{Float64}(undef,length(p0),length(p0))
+# ll = log_likelihood!(hess_2,grad_2,m,par0)
+# # #
+# # #
 # f_obj(x) = log_likelihood(m,x)
 # grad_1 = Vector{Float64}(undef,length(p0))
 # hess_1 = Matrix{Float64}(undef,length(p0),length(p0))
-# # fval_old = f_obj(p0)
+# fval_old = f_obj(p0)
 # # # # # # #
 # println("Grad")
 # ForwardDiff.gradient!(grad_1,f_obj, p0)#, cfg)
 # println("Hessian")
 # # cfg = ForwardDiff.HessianConfig(f_obj, p0, ForwardDiff.Chunk{3}())
-# ForwardDiff.hessian!(hess_1,f_obj, p0)
+# # ForwardDiff.hessian!(hess_1,f_obj, p0)
 # #
 # println(fval_old-ll)
 # println(maximum(abs.(grad_1-grad_2)))
 # println(maximum(abs.(hess_1-hess_2)))
 
+p_ga, fval = gradient_ascent(m,p0,grad_tol = 1e-5,x_tol=1e-4,max_itr=100)
+p_est,fval,flag = newton_raphson_ll(m,p_ga)
 
 
-est2 = newton_raphson_ll(m,p0)
+est = newton_raphson_ll(m,x_start)
+p_est, fval = est
 
-p_est = est[1]
+Pop = sum(weight(m.data).*choice(m.data))
+println(fval*Pop)
+
+
+
 par0 = parDict(m,p_est)
+individual_values!(m,par0)
+individual_shares(m,par0)
 
 
 using Profile

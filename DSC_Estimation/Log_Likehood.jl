@@ -25,23 +25,17 @@ function log_likelihood(d::InsuranceLogit,p::parDict{T}) where T
         for k in eachindex(s_hat)
             if abs(s_hat[k])<=1e-300
                 s_hat[k]=1e-15
-                #println("Hit Share Constraint for person $ind, product $k")
             end
         end
         s_insured = sum(s_hat)
         if s_insured>=(1-1e-300)
             s_insured= 1 - 1e-15
-            #println("Hit insured constraint for person $ind")
         end
 
         for i in eachindex(idxitr)
             ll+=wgt[i]*S_ij[i]*log(s_hat[i])
             Pop+=wgt[i]*S_ij[i]
         end
-        # if isnan(ll)
-        #     println(ind)
-        #     break
-        # end
     end
     return ll/Pop
 end
@@ -195,13 +189,13 @@ function calc_Avar(d::InsuranceLogit,p::parDict{T}) where T
 
     for app in eachperson(d.data)
         grad_obs[:].=0
-        ll_obs,pars_relevant = ll_obs_gradient!(grad_obs,app,d,p)
+        ll_obs,pars_relevant = ll_obs!(grad_obs,app,d,p)
         S_n = grad_obs*grad_obs'
         Σ+= S_n
     end
 
     Σ = Σ./Pop
     # This last line is correct
-    AsVar = inv(Σ)./Pop
+    AsVar = inv(Σ)
     return AsVar
 end

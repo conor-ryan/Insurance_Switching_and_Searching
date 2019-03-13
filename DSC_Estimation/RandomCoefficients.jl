@@ -210,7 +210,7 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     if M2>0
         β_z = β*Z
         β_i, γ_i = calc_indCoeffs(p,β_z,demos)
-        chars = X*β_i
+        chars_int = X*β_i
         # chars = diag(X*β_z)
         # γ_i = 0.0
     else
@@ -235,7 +235,7 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     K = length(idxitr)
     N = size(p.randCoeffs,1)
     for k = 1:K,n = 1:N
-        @fastmath u = exp(chars[k,n] + chars_0[k] + controls[k] + γ_i)
+        @fastmath u = exp(chars_int[k,n] + chars_0[k] + controls[k] + γ_i)
         p.μ_ij[n,idxitr[k]] = u
     end
 

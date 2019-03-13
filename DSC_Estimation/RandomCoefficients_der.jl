@@ -137,11 +137,11 @@ function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
 
         #γlen = 1 + d.parLength[:γ]
         γlen = 0
-        Ilen = γlen + m.parLength[:I]
-        β0len = Ilen + m.parLength[:β]
-        βlen = β0len + m.parLength[:γ]*m.parLength[:β]
-        σlen = βlen  + m.parLength[:σ]
-        FElen = σlen + m.parLength[:FE]
+        Ilen = γlen + d.parLength[:I]
+        β0len = Ilen + d.parLength[:β]
+        βlen = β0len + d.parLength[:γ]*d.parLength[:β]
+        σlen = βlen  + d.parLength[:σ]
+        FElen = σlen + d.parLength[:FE]
 
         s_adjust = s_uncond .- y_last
 
@@ -220,6 +220,107 @@ function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
                     hess[r,q]+= hess_obs
                 end
             end
+        end
+
+    return ll_obs,pars_relevant
+end
+
+function ll_obs!(grad::Vector{Float64},
+                    app::ChoiceData,d::InsuranceLogit,p::parDict{T}) where T
+
+        ind, S_ij, wgt, idxitr, X_t, X_0_t, Z, F_t, X_last, y_last = unPackChars(app,d)
+        wgt = convert(Array{Float64,2},wgt)
+        S_ij = convert(Array{Float64,2},S_ij)
+        ω_i = p.ω_i[Int.(ind)]
+
+        prodidx = Int.(product(app))
+
+        draws = d.draws
+
+        # Get Utility and derivative of Utility
+        μ_ij,s_hat,s_uncond = unPackParChars(p,idxitr)
+
+        sumShares!(s_hat)
+
+        (N,K) = size(μ_ij)
+
+        # Initialize Gradient
+        #(Q,N,K) = size(dμ_ij)
+        pars_relevant = relPar(app,d,F_t,ind)
+
+        # Pre-Calculate Squares
+        μ_ij_sums = preCalcμ(μ_ij)
+
+        # Pre-Calculate Log-Likelihood Terms for Gradient
+        # Also Calculate Log-Likelihood itself
+        gll_t1, gll_t2, gll_t3, ll_obs = ll_Terms(wgt,S_ij,s_hat)
+
+        #hess = zeros(Q,Q)
+        #hess[:] = 0.0
+        #grad[:] = 0.0
+        X_mat = Array{Float64}(undef,N,K)
+        Y_list = Array{Array{Float64,2},1}(undef,length(pars_relevant))
+        #Y_mat = Array{Float64}(N,K)
+
+        # Allocate Memory
+        # dS_xyz = Vector{Float64}(undef,K)
+        dS_xy = Vector{Float64}(undef,K)
+        dS_u_x = Vector{Float64}(undef,K)
+        dS_x = Vector{Float64}(undef,K)
+        dω_x = Vector{Float64}(undef,K)
+
+
+        dS_x_list = Vector{Vector{Float64}}(undef,length(pars_relevant))
+        dS_uncond_list = Vector{Vector{Float64}}(undef,length(pars_relevant))
+        dω_list = Vector{Vector{Float64}}(undef,length(pars_relevant))
+        # dS_xy_list = Array{Vector{Float64},2}(undef,length(pars_relevant),length(pars_relevant))
+
+        s_n = Vector{Float64}(undef,K)
+
+
+        #γlen = 1 + d.parLength[:γ]
+        γlen = 0
+        Ilen = γlen + d.parLength[:I]
+        β0len = Ilen + d.parLength[:β]
+        βlen = β0len + d.parLength[:γ]*d.parLength[:β]
+        σlen = βlen  + d.parLength[:σ]
+        FElen = σlen + d.parLength[:FE]
+
+        s_adjust = s_uncond .- y_last
+
+
+        for (q_i,q) in enumerate(pars_relevant)
+            returnParameter!(q,X_mat,
+                            Z,X_0_t,X_t,X_last,draws,F_t,
+                            γlen,Ilen,β0len,βlen,σlen)
+            @inbounds Y_list[q_i] = X_mat[:,:]
+
+            if (γlen < q <= Ilen)
+                grad_calc_ω!(dω_x,ω_i,X_mat)
+
+
+                # dω_list[q_i] = dω_x[:]
+                # dS_u_x[:] .= 0.0
+                # dS_uncond_list[q_i] = dS_u_x[:]
+
+                # @inbounds @fastmath @simd for k in 1:K
+                #     dS_x[k] = dω_x[k]*(s_uncond[k] - y_last[k])
+                # end
+                dS_x[:] = dω_x.*s_adjust
+            else
+                grad_calc_s!(dS_u_x,s_n,
+                            μ_ij,X_mat,
+                            μ_ij_sums)
+
+                # dS_uncond_list[q_i] = dS_u_x[:]
+                # dω_x[:] .= 0.0
+                # dω_list[q_i] = dω_x[:]
+
+                dS_x[:] = dS_u_x[:].*ω_i
+            end
+
+            ## Calculate Gradient
+            grad[q]+= combine_grad(N,gll_t1,dS_x)
         end
 
     return ll_obs,pars_relevant
@@ -417,6 +518,7 @@ function returnParameter!(q::Int64,X_mat::Matrix{Float64},
                         F_t::SubArray{Float64,2},
                         γlen::Int64,Ilen::Int64,β0len::Int64,βlen::Int64,σlen::Int64)
     (N,K) = size(X_mat)
+    (Q,R) = size(X_t)
     if q<0
         X_mat[:] .= 1.0
     elseif q<=γlen
@@ -431,8 +533,12 @@ function returnParameter!(q::Int64,X_mat::Matrix{Float64},
         end
     elseif q<=βlen
         # Characteristic Interactions
+        Z_ind = Int(ceil((q-β0len)/Q))
+        # println(Z_ind)
+        X_ind = ((q-β0len-1)%Q)+1
+        # println(X_ind)
         for n in 1:N
-            @inbounds X_mat[n,:] = X_t[1,:].*Z[q-β0len]
+            @inbounds X_mat[n,:] = X_t[X_ind,:].*Z[Z_ind]
         end
     elseif q<=σlen
         #Quality Random Effect
@@ -441,6 +547,7 @@ function returnParameter!(q::Int64,X_mat::Matrix{Float64},
         end
     else
         #Fixed Effect
+        # println(q)
         for n in 1:N
             @inbounds X_mat[n,:] = F_t[q-σlen,:]
         end

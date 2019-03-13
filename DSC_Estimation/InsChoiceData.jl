@@ -118,7 +118,7 @@ function ChoiceData(data_choice::DataFrame;
     interactions = Matrix{Float64}(undef,0,n)
 
     for l in 1:L, m in 1:M
-        println((l-1)*M+m)
+        # println((l-1)*M+m)
         int_vec = Matrix{Float64}(undef,1,n)
         for i in 1:n
             @inbounds @fastmath int_vec[1,i] = F_int[m,i]*X_int[i,l]
@@ -143,6 +143,8 @@ function ChoiceData(data_choice::DataFrame;
     F_all = vcat(F,interactions)
     # F_all = interactions
 
+
+
     #Transpose data to store as rows
     dmat = permutedims(dmat,(2,1))
     i = permutedims(i,(2,1))
@@ -158,6 +160,23 @@ function ChoiceData(data_choice::DataFrame;
     _choice_last =  getDictArray(index, ch_last)
     _demoRaw = getDictArray(index, demR)
     _wgt = getDictArray(index, wgt)
+
+    println("Check Collinearity")
+    if length(_inertchars)>0
+        all_ind = vcat(_inertchars)
+        all_data = dmat[all_ind,:]
+        X = all_data*all_data'
+        smallest_ev = minimum(abs.(eigvals(X)))
+        println("Smallest Data Eigenvalue (search): $smallest_ev")
+    else
+        println("Smallest Data Eigenvalue (search):No Search Variable")
+    end
+    all_ind = vcat(_choice,_prodchars,_demoRaw)
+    all_data = vcat(dmat[all_ind,:],F)
+    X = all_data*all_data'
+    # ev = minimum(abs.(eigvals(X)))
+    smallest_ev = minimum(abs.(eigvals(X)))
+    println("Smallest Data Eigenvalue (choice): $smallest_ev")
 
 
     ## Rand Coefficient Index
@@ -220,7 +239,73 @@ function build_ProdDict(j::Array{T,N}) where {T,N}
     return _productDict
 end
 
-function build_FE(data_choice::DataFrame,fe_list::Vector{T}) where T
+# function build_FE(data_choice::DataFrame,fe_list::Vector{T}) where T
+#     # Create Fixed Effects
+#     n, k = size(data_choice)
+#     L = 0
+#
+#     # No Fixed effects for empty lists
+#     if typeof(fe_list)!=Vector{Symbol}
+#         println("No Fixed Effects")
+#         F = Matrix{Float64}(undef,n,L)
+#         feNames = Vector{Symbol}(undef,0)
+#         return F,feNames
+#     end
+#
+#     for fe in fe_list
+#         fac_variables = data_choice[fe]
+#         factor_list = sort(unique(fac_variables))
+#         # if fe==:constant
+#         #     num_effects=1
+#         # elseif (!(:constant in fe_list)) & (fe==fe_list[1])
+#         #     num_effects = length(factor_list)
+#         #     # if fe==:Market
+#         #     #     num_effects = length(factor_list) - 3
+#         #     # end
+#         # else
+#         num_effects = length(factor_list)-1
+#         # end
+#         L+=num_effects
+#     end
+#
+#     F = zeros(n,L)
+#     feNames = Vector{Symbol}(undef,0)
+#     ind = 1
+#     for fe in fe_list
+#         if fe==:constant
+#             F[:,ind] = 1
+#             ind+=1
+#             continue
+#         end
+#         fac_variables = data_choice[fe]
+#         factor_list = sort(unique(fac_variables))
+#         filter!(!ismissing,factor_list)
+#         # if (!(:constant in fe_list)) & (fe==fe_list[1])
+#         #     st_ind = 1
+#         # else
+#         st_ind = 2
+#         # end
+#
+#         for fac in factor_list[st_ind:length(factor_list)]
+#             # fac_data = zeros(n)
+#             # fac_data[fac_variables.==fac] = 1.0
+#             # if fac in ["ND_4","MD_4","IA_7"]
+#             #     continue
+#             # end
+#             fac_index = fac_variables.==fac
+#             fac_index[ismissing.(fac_index)] .= false
+#             fac_index = Bool.(fac_index)
+#             F[fac_index,ind] .= 1
+#             ind+= 1
+#
+#             feNames = vcat(feNames,Symbol(fac))
+#         end
+#     end
+#     return F, feNames
+# end
+
+
+function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false) where T
     # Create Fixed Effects
     n, k = size(data_choice)
     L = 0
@@ -236,16 +321,13 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T}) where T
     for fe in fe_list
         fac_variables = data_choice[fe]
         factor_list = sort(unique(fac_variables))
-        # if fe==:constant
-        #     num_effects=1
-        # elseif (!(:constant in fe_list)) & (fe==fe_list[1])
-        #     num_effects = length(factor_list)
-        #     # if fe==:Market
-        #     #     num_effects = length(factor_list) - 3
-        #     # end
-        # else
-        num_effects = length(factor_list)-1
-        # end
+        if fe==:constant
+            num_effects=1
+        elseif (!(:constant in fe_list)) & (fe==fe_list[1])
+            num_effects = length(factor_list)
+        else
+            num_effects = length(factor_list)-1
+        end
         L+=num_effects
     end
 
@@ -260,23 +342,14 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T}) where T
         end
         fac_variables = data_choice[fe]
         factor_list = sort(unique(fac_variables))
-        filter!(!ismissing,factor_list)
-        # if (!(:constant in fe_list)) & (fe==fe_list[1])
-        #     st_ind = 1
-        # else
-        st_ind = 2
-        # end
+        if (!(:constant in fe_list)) & (fe==fe_list[1])
+            st_ind = 1
+        else
+            st_ind = 2
+        end
 
         for fac in factor_list[st_ind:length(factor_list)]
-            # fac_data = zeros(n)
-            # fac_data[fac_variables.==fac] = 1.0
-            # if fac in ["ND_4","MD_4","IA_7"]
-            #     continue
-            # end
-            fac_index = fac_variables.==fac
-            fac_index[ismissing.(fac_index)] .= false
-            fac_index = Bool.(fac_index)
-            F[fac_index,ind] .= 1
+            F[fac_variables.==fac,ind] .= 1
             ind+= 1
 
             feNames = vcat(feNames,Symbol(fac))
@@ -284,7 +357,6 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T}) where T
     end
     return F, feNames
 end
-
 
 # Defining Indexing Methods on ChoiceData
 Symbols = Union{Symbol, Vector{Symbol}}
@@ -425,13 +497,22 @@ function InsuranceLogit(c_data::ChoiceData,haltonDim::Int;
     nested=false)
 
     # Get Parameter Lengths
+    println(size(demoRaw(c_data)))
+    println(c_data.demoRaw)
+    println(c_data._demoRaw)
+
+    println(size(prodchars(c_data)))
+    println(c_data.prodchars)
+    println(c_data._prodchars)
+
     γlen = size(demoRaw(c_data),1)
     β0len = size(prodchars0(c_data),1)
     βlen = size(prodchars(c_data),1)
-    println(βlen)
     Ilen = size(inertchars(c_data),1)
-    println(Ilen)
     flen = size(fixedEffects(c_data),1)
+
+    println(γlen)
+    println(βlen)
 
     if haltonDim<=1 & !nested
         σlen = 0
@@ -447,9 +528,12 @@ function InsuranceLogit(c_data::ChoiceData,haltonDim::Int;
 
     #total = 1 + γlen + β0len + γlen + flen + σlen
     # total = γlen + βlen + γlen + flen + σlen
-    total = βlen + γlen + Ilen + flen + σlen
+    # total = βlen + γlen + Ilen + flen + σlen
+    total = Ilen + βlen + βlen*γlen + σlen + flen
     parLength = Dict(:γ=>γlen,:β=>βlen,:I=>Ilen,:FE=>flen,
     :σ => σlen, :All=>total)
+
+    println(parLength)
 
     # Initialize Halton Draws
     # These are the same across all individuals
