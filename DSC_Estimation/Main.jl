@@ -36,6 +36,30 @@ mixed_draws = 100
 
 rundate = Dates.today()
 
+#### Mixed Logit DSC Specifications ####
+println("###############################")
+println("Mixed Specification 1")
+filename = "ML_spec1_$rundate"
+out = MainSpec(df,filename,
+    haltonDim = 500,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan],
+    spec_prodchr_0= [:padj,:iplan],
+    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:active,:dprem,
+                    :def_padf,:def_mtl_brz,:def_mtl_cat,
+                    :def_mtl_gld,:def_mtl_plt,
+                    :def_mtl_s73,:def_mtl_s87,:def_mtl_s94],
+    spec_demR=Vector{Symbol}(undef,0),
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal,:netname],
+    spec_wgt= spec_wgt,
+    method="ga",
+    ga_itr = 200)
+
+
 #### Basic Switching Cost Specifications ####
 println("###############################")
 println("Basic Specification 1")
@@ -229,7 +253,7 @@ out = MainSpec(df,filename,
 
 
 println("###############################")
-println("Run Specification 3")
+println("Mixed Specification 3")
 filename = "ML_spec3_$rundate"
 out = MainSpec(df,filename,
     haltonDim = mixed_draws,
@@ -246,7 +270,7 @@ out = MainSpec(df,filename,
     spec_wgt= spec_wgt)
 
 println("###############################")
-println("Run Specification 4")
+println("Mixed Specification 4")
 filename = "ML_spec4_$rundate"
 out = MainSpec(df,filename,
     haltonDim = mixed_draws,

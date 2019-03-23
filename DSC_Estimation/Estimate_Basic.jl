@@ -40,7 +40,7 @@ function estimate_ng!(d::InsuranceLogit, p0;method=:LN_SBPLX)
 end
 
 
-function newton_raphson_ll(d,p0;grad_tol=1e-8,step_tol=1e-8,max_itr=2000)
+function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-8,max_itr=2000)
     ## Initialize Parameter Vector
     p_vec = p0
     N = length(p0)
@@ -63,6 +63,8 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,step_tol=1e-8,max_itr=2000)
     f_min = -1e3
     p_min  = similar(p_vec)
     no_progress = 0
+    f_tol_cnt = 0
+    x_tol_cnt = 0
     # Maximize by Newtons Method
     while (grad_size>grad_tol) & (cnt<max_itr) & (max_trial_cnt<20)
         cnt+=1
@@ -74,20 +76,32 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,step_tol=1e-8,max_itr=2000)
             fval_pop = fval*Pop
             println("Function Value is $fval_pop at iteration 0")
         end
-        if (cnt==1) | (fval>f_min)
+        if (cnt==1) | (fval<f_min)
+            if abs(fval-f_min)<f_tol
+                f_tol_cnt += 1
+            end
+            if maximum(abs.((p_vec - p_min)./p_min))<x_tol
+                x_tol_cnt += 1
+            end
+
             f_min = copy(fval)
             p_min[:] = p_vec[:]
+
             no_progress=0
         else
             no_progress+=1
         end
 
         grad_size = sqrt(dot(grad_new,grad_new))
-        if (grad_size<1e-8) & (cnt>10)
+        if (grad_size<grad_tol) |(f_tol_cnt>1) | (x_tol_cnt>1)
+            println("Got to Break Point")
+            println(grad_size)
+            println(f_tol_cnt)
+            println(x_tol_cnt)
             flag = "converged"
-            println("Got to Break Point...?")
             break
         end
+
         if no_progress>5
             flag = "no better point"
             println("No Progress in Algorithm")
