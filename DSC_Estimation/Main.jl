@@ -22,6 +22,7 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
+df = df[df[:gra].==16,:]
 println("Data Loaded")
 
 #### General Specification ####
@@ -48,10 +49,7 @@ out = MainSpec(df,filename,
     spec_ch_last = spec_ch_last,
     spec_prodchr = [:padj,:iplan],
     spec_prodchr_0= [:padj,:iplan],
-    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:active,:dprem,
-                    :def_padf,:def_mtl_brz,:def_mtl_cat,
-                    :def_mtl_gld,:def_mtl_plt,
-                    :def_mtl_s73,:def_mtl_s87,:def_mtl_s94],
+    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:active,:dprem,:def_padj, :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,:def_mtl_plt,:def_mtl_s73,:def_mtl_s87,:def_mtl_s94],
     spec_demR=Vector{Symbol}(undef,0),
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal,:netname],
