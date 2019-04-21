@@ -67,15 +67,15 @@ function ChoiceData(data_choice::DataFrame;
     n, k = size(data_choice)
 
     # Convert everything to an array once for performance
-    i = convert(Array{Float64},data_choice[per])
-    j = convert(Array{Float64},data_choice[prd])
-    X = convert(Array{Float64},data_choice[prodchr])
+    i = convert(Matrix{Float64},data_choice[per])
+    j = convert(Matrix{Float64},data_choice[prd])
+    X = convert(Matrix{Float64},data_choice[prodchr])
     # X_0 = convert(Array{Float64},data_choice[prodchars_0])
-    I = convert(Array{Float64},data_choice[inertchr])
-    y = convert(Array{Float64},data_choice[ch])
-    y_last = convert(Array{Float64},data_choice[ch_last])
-    Z = convert(Array{Float64},data_choice[demR])
-    w = convert(Array{Float64},data_choice[wgt])
+    I = convert(Matrix{Float64},data_choice[inertchr])
+    y = convert(Matrix{Float64},data_choice[ch])
+    y_last = convert(Matrix{Float64},data_choice[ch_last])
+    Z = convert(Matrix{Float64},data_choice[demR])
+    w = convert(Matrix{Float64},data_choice[wgt])
 
 
     println("Create Fixed Effects")
