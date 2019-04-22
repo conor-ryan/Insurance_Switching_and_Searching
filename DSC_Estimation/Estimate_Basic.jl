@@ -176,7 +176,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
             else
                 trial_max = 1
                 println("RUN ROUND OF GRADIENT ASCENT")
-                p_test, f_test = gradient_ascent(d,p_vec,max_itr=5)
+                p_test, f_test = gradient_ascent(d,p_vec,max_itr=5,strict=true)
             end
         end
         p_vec+= update
@@ -200,7 +200,7 @@ end
 
 
 
-function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000)
+function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,strict=false)
     ## Initialize Parameter Vector
     p_vec = p0
     N = length(p0)
@@ -262,6 +262,9 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000)
             mistake_thresh = 1.05
         else
             mistake_thresh = 1.25
+        end
+        if strict
+            mistake_thresh = 1.00
         end
 
         if (grad_size<grad_tol) | (x_tol_cnt>1) |( f_tol_cnt>1)
