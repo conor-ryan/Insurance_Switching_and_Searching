@@ -31,7 +31,7 @@ spec_prd = [:product]
 spec_ch = [:choice]
 spec_ch_last = [:iplan]
 spec_wgt=[:constant]
-mixed_draws = 1000
+mixed_draws = 500
 
 ### interact default plans and "active" choice with preference parameters
 
@@ -256,7 +256,8 @@ rundate = Dates.today()
 println("###############################")
 println("Mixed Specification 1")
 filename = "ML_spec1_$rundate"
-mx_out_1 = MainSpec(df,filename,
+df_LA = df[df[:gra].==16,:]
+mx_out_1 = MainSpec(df_LA,filename,
     haltonDim = mixed_draws,
     spec_per = spec_per,
     spec_prd = spec_prd,
@@ -268,12 +269,12 @@ mx_out_1 = MainSpec(df,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal,:netname],
     spec_wgt= spec_wgt,
-    method="ga")
+    method="ga",ga_itr = 100)
 
 println("###############################")
 println("Mixed Specification 2")
 filename = "ML_spec2_$rundate"
-mx_out_1 = MainSpec(df,filename,
+mx_out_1 = MainSpec(df_LA,filename,
     haltonDim = mixed_draws,
     spec_per = spec_per,
     spec_prd = spec_prd,
@@ -289,4 +290,4 @@ mx_out_1 = MainSpec(df,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal,:netname],
     spec_wgt= spec_wgt,
-    method="ga")
+    method="ga",ga_itr = 100)
