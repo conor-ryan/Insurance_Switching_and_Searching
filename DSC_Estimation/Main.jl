@@ -256,7 +256,7 @@ rundate = Dates.today()
 # println("###############################")
 # println("Mixed Specification 1")
 # filename = "ML_spec1_$rundate"
-# df_LA = df[df[:gra].==16,:]
+df_LA = df[df[:gra].==16,:]
 # mx_out_1 = MainSpec(df_LA,filename,
 #     haltonDim = mixed_draws,
 #     spec_per = spec_per,
