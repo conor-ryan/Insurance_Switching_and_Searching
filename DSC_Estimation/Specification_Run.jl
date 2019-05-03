@@ -30,7 +30,7 @@ function estimate_specification(df::DataFrame;
         fixEff=spec_fixEff,
         wgt=spec_wgt)
 
-    spec_labels = Dict("per" => spec_per,
+    spec_Dict = Dict("per" => spec_per,
     "prd" => spec_prd,
     "ch" => spec_ch,
     "ch_last" => spec_ch_last,
@@ -45,6 +45,8 @@ function estimate_specification(df::DataFrame;
 
     m = InsuranceLogit(c_data,haltonDim,nested=nested)
     println("Data Loaded")
+
+    spec_labels = unpack_labels(m,spec_Dict)
 
     if ismissing(x_start)
         Istart = rand(m.parLength[:I])/10 .-.05
@@ -72,7 +74,7 @@ function estimate_specification(df::DataFrame;
         p_est, fval, flag = newton_raphson_ll(m,p0)
     end
 
-    return m, p_est, spec_labels, fval, flag
+    return m, p_est, spec_Dict, spec_labels, fval, flag
 
 end
 
@@ -161,16 +163,53 @@ function MainSpec(df::DataFrame,filename::String;
 
     println("Save Results")
     # Unpack
-    m, p_est, spec_labels, fval, flag = spec
+    m, p_est, spec_Dict, spec_labels, fval, flag = spec
 
     file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$filename.jld2"
-    @save file p_est spec_labels fval
+    @save file p_est spec_Dict fval
 
     println("Calculate Standard Errors")
     Var, se1, se2,t_stat, stars = res_process(m,p_est)
-    out1 = DataFrame(pars=p_est,se=se1,ts=t_stat,sig=stars)
+    out1 = DataFrame(labels=spec_labels,pars=p_est,se=se1,ts=t_stat,sig=stars)
     file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$filename.csv"
     CSV.write(file1,out1)
 
     return p_est, fval
+end
+
+function unpack_labels(m::InsuranceLogit,spec_Dict::Dict{String,Any})
+    labels = Vector{String}(undef,m.parLength[:All])
+
+    ind = 1
+    for i in 1:length(spec_Dict["inertchr"])
+        search_spec = String(spec_Dict["inertchr"][i])
+        labels[ind] = "Search::$search_spec"
+        ind+=1
+    end
+
+    for i in 1:length(spec_Dict["prodchr"])
+        labels[ind] = String(spec_Dict["prodchr"][i])
+        ind+=1
+    end
+
+    for i in 1:length(spec_Dict["demR"])
+        dem_spec = String(spec_Dict["demR"][i])
+        for j in 1:length(spec_Dict["prodchr"])
+            prod_spec = String(spec_Dict["prodchr"][j])
+            labels[ind] = "$prod_spec::$dem_spec"
+            ind+=1
+        end
+    end
+
+    for i in 1:length(spec_Dict["prodchr_0"])
+        prod_spec = String(spec_Dict["prodchr_0"][i])
+        labels[ind] = "Var::$prod_spec"
+        ind+=1
+    end
+
+    for i in 1:m.parLength[:FE]
+        labels[ind] = "FE_$i"
+        ind+=1
+    end
+    return labels
 end
