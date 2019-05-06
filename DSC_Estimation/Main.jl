@@ -234,24 +234,24 @@ rundate = Dates.today()
 #     method = "ga")
 
 # ### Mixed Logit Switching Cost Specifications ####
-println("###############################")
-println("Mixed Specification 3")
-filename = "ML_spec3_$rundate"
-df_LA = df[df[:gra].==16,:]
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = mixed_draws,
-    spec_per = spec_per,
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,:inet,:iiss],
-    spec_prodchr_0= [:padj,:iiss],
-    spec_inertchr= Vector{Symbol}(undef,0),
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal,:netname],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 100)
+# println("###############################")
+# println("Mixed Specification 3")
+# filename = "ML_spec3_$rundate"
+# df_LA = df[df[:gra].==16,:]
+# mx_out_1 = MainSpec(df_LA,filename,
+#     haltonDim = mixed_draws,
+#     spec_per = spec_per,
+#     spec_prd = spec_prd,
+#     spec_ch = spec_ch,
+#     spec_ch_last = spec_ch_last,
+#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
+#     spec_prodchr_0= [:padj,:iiss],
+#     spec_inertchr= Vector{Symbol}(undef,0),
+#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+#     spec_fixInt=Vector{Symbol}(undef,0),
+#     spec_fixEff=[:metal,:netname],
+#     spec_wgt= spec_wgt,
+#     method="ga",ga_itr = 100)
 
 println("###############################")
 println("Mixed Specification 4")
