@@ -250,7 +250,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal,:netname],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 100)
+    method="ga",ga_itr = 10)
 
 println("###############################")
 println("Mixed Specification 4")
@@ -289,7 +289,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal,:netname],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 100)
+    method="ga",ga_itr = 10)
 
 println("###############################")
 println("Mixed Specification 2")
