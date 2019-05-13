@@ -91,11 +91,13 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
 
             no_progress=0
         else
+            f_tol_cnt = 0
+            x_tol_cnt = 0
             no_progress+=1
         end
 
         grad_size = sqrt(dot(grad_new,grad_new))
-        if (grad_size<grad_tol) |(f_tol_cnt>1) | (x_tol_cnt>1)
+        if (grad_size<grad_tol) |(f_tol_cnt>3) | (x_tol_cnt>3)
             println("Got to Break Point")
             println(grad_size)
             println(f_tol_cnt)
@@ -153,6 +155,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
         f_test = log_likelihood(d,p_test)
 
         step_size = maximum(abs.(update))
+        step_size_thresh = minimum(vcat(step_size,maximum(abs.(update./p_vec))))
         trial_max = 0
         while ((f_test<fval*mistake_thresh) | isnan(f_test)) & (trial_max==0)
             if trial_cnt==0
@@ -160,13 +163,14 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
                 println("Trial (Init): Got $f_test at parameters $p_test_disp")
                 println("Previous Iteration at $fval")
             end
-            if (step_size>x_tol)
+            if (step_size_thresh>x_tol)
                 if trial_cnt<=2
                     update/= 20
                 else
                     update/= 200
                 end
                 step_size = maximum(abs.(update))
+                step_size_thresh = minimum(vcat(step_size,maximum(abs.(update./p_vec))))
                 p_test = p_vec .+ update
                 f_test = log_likelihood(d,p_test)
                 p_test_disp = p_test[1:20]
