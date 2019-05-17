@@ -44,7 +44,7 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
     γlen = 0
     Ilen = γlen + m.parLength[:I]
     β0len = Ilen + m.parLength[:β]
-    βlen = β0len + m.parLength[:γ]*m.parLength[:β]
+    βlen = β0len + m.parLength[:γ]*length(m.data._prodInteract)
     σlen = βlen  + m.parLength[:σ]
     FElen = σlen + m.parLength[:FE]
 
@@ -72,10 +72,11 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
     K = m.parLength[:β]
     N = m.parLength[:γ]
     β = Matrix{T}(undef,K,N)
+    β[:].=0.0
 
 
     ind = 0
-    for i in 1:N, j in 1:K
+    for i in 1:N, j in m.data._prodInteract
         ind+=1
         β[j,i] = β_vec[ind]
     end

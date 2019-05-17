@@ -37,6 +37,7 @@ struct ChoiceData <: ModelData
 
     # Random Coefficient Specification
     _randCoeffs::Array{Int,1}
+    _prodInteract::Array{Int,1}
 
     # ID Lookup Mappings
     _personIDs::Array{Float64,1}
@@ -55,6 +56,7 @@ function ChoiceData(data_choice::DataFrame;
         ch=[:choice],
         ch_last = [:iplan],
         demR=Vector{Symbol}(undef,0),
+        prodInt=Vector{Symbol}(undef,0),
         # demoRaw=[:F0_Y0_LI1,
         #          :F0_Y1_LI0,:F0_Y1_LI1,
         #          :F1_Y0_LI0,:F1_Y0_LI1,
@@ -185,6 +187,16 @@ function ChoiceData(data_choice::DataFrame;
         _randCoeffs[i] = findall(var.==prodchr)[1]
     end
 
+    ## Product Interaction Index
+    if length(prodInt)==0
+        _prodInteract = 1:length(prodchr)
+    else
+        _prodInteract = Array{Int,1}(undef,length(prodInt))
+        for (i,var) in enumerate(prodInt)
+            _prodInteract[i] = findall(var.==prodchr)[1]
+        end
+    end
+
     # Get Person ID Dictionary Mapping for Easy Subsets
     println("Person ID Mapping")
     _personDict = Dict{Real, UnitRange{Int}}()
@@ -222,7 +234,7 @@ function ChoiceData(data_choice::DataFrame;
             prodchr,prodchr_0,ch, demR,wgt,
              _person,_product, _prodchars,_prodchars_0,_inertchars,
             _choice,_choice_last, _demoRaw, _wgt,
-             _randCoeffs,
+             _randCoeffs,_prodInteract,
              uniqids,_personDict,_productDict,
             rel_fe_Dict)
     return m
@@ -420,6 +432,7 @@ function subset(d::T, idx) where T<:ModelData
     d._demoRaw,
     d._wgt,
     d._randCoeffs,
+    d._prodInteract,
     d._personIDs,
     d._personDict,
     d._productDict,
@@ -508,6 +521,7 @@ function InsuranceLogit(c_data::ChoiceData,haltonDim::Int;
     γlen = size(demoRaw(c_data),1)
     β0len = size(prodchars0(c_data),1)
     βlen = size(prodchars(c_data),1)
+    intLen = length(c_data._prodInteract)
     Ilen = size(inertchars(c_data),1)
     flen = size(fixedEffects(c_data),1)
 
@@ -529,7 +543,7 @@ function InsuranceLogit(c_data::ChoiceData,haltonDim::Int;
     #total = 1 + γlen + β0len + γlen + flen + σlen
     # total = γlen + βlen + γlen + flen + σlen
     # total = βlen + γlen + Ilen + flen + σlen
-    total = Ilen + βlen + βlen*γlen + σlen + flen
+    total = Ilen + βlen + intLen*γlen + σlen + flen
     parLength = Dict(:γ=>γlen,:β=>βlen,:I=>Ilen,:FE=>flen,
     :σ => σlen, :All=>total)
 

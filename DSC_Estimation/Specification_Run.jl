@@ -8,6 +8,7 @@ function estimate_specification(df::DataFrame;
                             spec_prodchr_0= Vector{Symbol}(undef,0),
                             spec_inertchr=Vector{Symbol}(undef,0),
                             spec_demR=Vector{Symbol}(undef,0),
+                            spec_prodInt=Vector{Symbol}(undef,0),
                             spec_fixInt=Vector{Symbol}(undef,0),
                             spec_fixEff=Vector{Symbol}(undef,0),
                             spec_wgt=[:constant],
@@ -26,6 +27,7 @@ function estimate_specification(df::DataFrame;
         prodchr_0= spec_prodchr_0,
         inertchr=spec_inertchr,
         demR=spec_demR,
+        prodInt=spec_prodInt,
         fixInt=spec_fixInt,
         fixEff=spec_fixEff,
         wgt=spec_wgt)
@@ -38,6 +40,7 @@ function estimate_specification(df::DataFrame;
     "prodchr_0"=> spec_prodchr_0,
     "inertchr"=>spec_inertchr,
     "demR"=>spec_demR,
+    "prodInt"=>spec_prodInt,
     "fixInt"=>spec_fixInt,
     "fixEff"=>spec_fixEff,
     "wgt"=>spec_wgt,
@@ -51,7 +54,7 @@ function estimate_specification(df::DataFrame;
     if ismissing(x_start)
         Istart = rand(m.parLength[:I])/10 .-.05
         βstart = rand(m.parLength[:β])/10 .-.05
-        γstart = rand(m.parLength[:γ]*(m.parLength[:β]))/10 .-.05
+        γstart = rand(m.parLength[:γ]*length(m.data._prodInteract))/10 .-.05
         σstart = rand(m.parLength[:σ])/10 .- .05
         FEstart = rand(m.parLength[:FE])/10 .-.05
 
@@ -135,6 +138,7 @@ function MainSpec(df::DataFrame,filename::String;
                             spec_prodchr_0= Vector{Symbol}(undef,0),
                             spec_inertchr=Vector{Symbol}(undef,0),
                             spec_demR=Vector{Symbol}(undef,0),
+                            spec_prodInt=Vector{Symbol}(undef,0),
                             spec_fixInt=Vector{Symbol}(undef,0),
                             spec_fixEff=Vector{Symbol}(undef,0),
                             spec_wgt=[:constant],
@@ -154,6 +158,7 @@ function MainSpec(df::DataFrame,filename::String;
                             spec_prodchr_0= spec_prodchr_0,
                             spec_inertchr=spec_inertchr,
                             spec_demR=spec_demR,
+                            spec_prodInt=spec_prodInt,
                             spec_fixInt=spec_fixInt,
                             spec_fixEff=spec_fixEff,
                             spec_wgt=spec_wgt,
@@ -194,8 +199,8 @@ function unpack_labels(m::InsuranceLogit,spec_Dict::Dict{String,Any})
 
     for i in 1:length(spec_Dict["demR"])
         dem_spec = String(spec_Dict["demR"][i])
-        for j in 1:length(spec_Dict["prodchr"])
-            prod_spec = String(spec_Dict["prodchr"][j])
+        for j in 1:length(spec_Dict["prodInt"])
+            prod_spec = String(spec_Dict["prodInt"][j])
             labels[ind] = "$prod_spec::$dem_spec"
             ind+=1
         end

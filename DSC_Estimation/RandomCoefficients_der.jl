@@ -6,12 +6,13 @@ function unPackChars(app::ChoiceData,d::InsuranceLogit)
 
     X_t = prodchars(app)
     X_0_t = prodchars0(app)
+    X_int = X_t[d.data._prodInteract,:]
     X_last = inertchars(app)
     y_last = choice_last(app)[:]
     Z = demoRaw(app)[:,1]
     F_t = fixedEffects(app,idxitr)
 
-    return ind, S_ij, wgt,idxitr, X_t, X_0_t, Z, F_t, X_last, y_last
+    return ind, S_ij, wgt,idxitr, X_t, X_0_t,X_int, Z, F_t, X_last, y_last
 end
 
 function unPackParChars(p::parDict{T},idxitr::UnitRange{Int}) where T
@@ -47,6 +48,7 @@ function relPar(app::ChoiceData,d::InsuranceLogit,F_t::SubArray,ind::Float64)
 
     return pars_relevant
 end
+
 
 function preCalcμ(μ_ij::Matrix{T}) where T
     μ_ij_sums = sum(μ_ij,dims=2)
@@ -85,7 +87,7 @@ end
 function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
                     app::ChoiceData,d::InsuranceLogit,p::parDict{T}) where T
 
-        ind, S_ij, wgt, idxitr, X_t, X_0_t, Z, F_t, X_last, y_last = unPackChars(app,d)
+        ind, S_ij, wgt, idxitr, X_t, X_0_t,X_int, Z, F_t, X_last, y_last = unPackChars(app,d)
         wgt = convert(Array{Float64,2},wgt)
         S_ij = convert(Array{Float64,2},S_ij)
         ω_i = p.ω_i[Int.(ind)]
@@ -139,7 +141,7 @@ function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
         γlen = 0
         Ilen = γlen + d.parLength[:I]
         β0len = Ilen + d.parLength[:β]
-        βlen = β0len + d.parLength[:γ]*d.parLength[:β]
+        βlen = β0len + d.parLength[:γ]*length(d.data._prodInteract)
         σlen = βlen  + d.parLength[:σ]
         FElen = σlen + d.parLength[:FE]
 
@@ -148,7 +150,7 @@ function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
 
         for (q_i,q) in enumerate(pars_relevant)
             returnParameter!(q,X_mat,
-                            Z,X_0_t,X_t,X_last,draws,F_t,
+                            Z,X_0_t,X_t,X_last,X_int,draws,F_t,
                             γlen,Ilen,β0len,βlen,σlen)
             @inbounds Y_list[q_i] = X_mat[:,:]
 
@@ -228,7 +230,7 @@ end
 function ll_obs!(grad::Vector{Float64},
                     app::ChoiceData,d::InsuranceLogit,p::parDict{T}) where T
 
-        ind, S_ij, wgt, idxitr, X_t, X_0_t, Z, F_t, X_last, y_last = unPackChars(app,d)
+        ind, S_ij, wgt, idxitr, X_t, X_0_t,X_int, Z, F_t, X_last, y_last = unPackChars(app,d)
         wgt = convert(Array{Float64,2},wgt)
         S_ij = convert(Array{Float64,2},S_ij)
         ω_i = p.ω_i[Int.(ind)]
@@ -282,7 +284,7 @@ function ll_obs!(grad::Vector{Float64},
         γlen = 0
         Ilen = γlen + d.parLength[:I]
         β0len = Ilen + d.parLength[:β]
-        βlen = β0len + d.parLength[:γ]*d.parLength[:β]
+        βlen = β0len + d.parLength[:γ]*length(d.data._prodInteract)
         σlen = βlen  + d.parLength[:σ]
         FElen = σlen + d.parLength[:FE]
 
@@ -291,7 +293,7 @@ function ll_obs!(grad::Vector{Float64},
 
         for (q_i,q) in enumerate(pars_relevant)
             returnParameter!(q,X_mat,
-                            Z,X_0_t,X_t,X_last,draws,F_t,
+                            Z,X_0_t,X_t,X_last,X_int,draws,F_t,
                             γlen,Ilen,β0len,βlen,σlen)
             @inbounds Y_list[q_i] = X_mat[:,:]
 
@@ -514,11 +516,12 @@ end
 function returnParameter!(q::Int64,X_mat::Matrix{Float64},
                         Z::Vector{Float64},X_0_t::Matrix{Float64},
                         X_t::Matrix{Float64},X_last::Matrix{Float64},
+                        X_int::Matrix{Float64},
                         draws::Matrix{Float64},
                         F_t::SubArray{Float64,2},
                         γlen::Int64,Ilen::Int64,β0len::Int64,βlen::Int64,σlen::Int64)
     (N,K) = size(X_mat)
-    (Q,R) = size(X_t)
+    (Q,R) = size(X_int)
     if q<0
         X_mat[:] .= 1.0
     elseif q<=γlen
@@ -538,7 +541,7 @@ function returnParameter!(q::Int64,X_mat::Matrix{Float64},
         X_ind = ((q-β0len-1)%Q)+1
         # println(X_ind)
         for n in 1:N
-            @inbounds X_mat[n,:] = X_t[X_ind,:].*Z[Z_ind]
+            @inbounds X_mat[n,:] = X_int[X_ind,:].*Z[Z_ind]
         end
     elseif q<=σlen
         #Quality Random Effect
