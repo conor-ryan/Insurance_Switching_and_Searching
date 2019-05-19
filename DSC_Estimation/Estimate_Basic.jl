@@ -106,11 +106,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
             break
         end
 
-        if no_progress>5
-            flag = "no better point"
-            println("No Progress in Algorithm")
-            break
-        end
+
 
         # ForwardDiff.gradient!(grad_new, ll, p_vec)
         # println("Gradient is $grad_new")
@@ -137,22 +133,18 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
             NaN_steps = 0
         end
 
-
         if no_progress>5
-            no_progress = 0
-            println("Return: Limit on No Progress")
-            p_vec = copy(p_min)
-            fval = log_likelihood!(grad_new,d,p_vec)
-            grad_size = maximum(abs.(grad_new))
-            step = 1/grad_size
-            update = - step.*grad_new
-            mistake_thresh = 1.00
+            flag = "no better point"
+            println("No Progress in Algorithm")
+            p_test, f_test = gradient_ascent(d,p_vec,max_itr=50,strict=false)
+        else
+            p_test = p_vec .+ update
+            f_test = log_likelihood(d,p_test)
         end
 
 
-        p_test = p_vec .+ update
 
-        f_test = log_likelihood(d,p_test)
+
 
         step_size = maximum(abs.(update))
         step_size_thresh = minimum(vcat(step_size,maximum(abs.(update./p_vec))))
