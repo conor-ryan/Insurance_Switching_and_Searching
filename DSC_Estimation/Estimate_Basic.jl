@@ -175,7 +175,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
                 p_test, f_test = gradient_ascent(d,p_vec,max_itr=5,strict=true)
             end
         end
-        p_vec+= update
+        p_vec = copy(p_test)
         p_vec_disp = p_vec[1:disp_length]
         f_final_val = f_test
         println("Update Parameters to $p_vec_disp")
