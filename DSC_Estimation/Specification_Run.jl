@@ -32,6 +32,10 @@ function estimate_specification(df::DataFrame;
         fixEff=spec_fixEff,
         wgt=spec_wgt)
 
+    if length(spec_prodInt)==0
+        spec_prodInt = copy(spec_prodchr)
+    end
+    
     spec_Dict = Dict("per" => spec_per,
     "prd" => spec_prd,
     "ch" => spec_ch,

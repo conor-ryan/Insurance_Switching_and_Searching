@@ -196,6 +196,7 @@ function ChoiceData(data_choice::DataFrame;
             _prodInteract[i] = findall(var.==prodchr)[1]
         end
     end
+    println("Product Interaction Terms: $_prodInteract")
 
     # Get Person ID Dictionary Mapping for Easy Subsets
     println("Person ID Mapping")
@@ -545,7 +546,7 @@ function InsuranceLogit(c_data::ChoiceData,haltonDim::Int;
     # total = βlen + γlen + Ilen + flen + σlen
     total = Ilen + βlen + intLen*γlen + σlen + flen
     parLength = Dict(:γ=>γlen,:β=>βlen,:I=>Ilen,:FE=>flen,
-    :σ => σlen, :All=>total)
+    :σ => σlen,:βγ=>intLen,:All=>total)
 
     println(parLength)
 
