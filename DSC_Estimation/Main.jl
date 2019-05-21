@@ -83,24 +83,24 @@ rundate = Dates.today()
 #     ga_itr=20)
 #
 #
-# println("###############################")
-# println("Basic Specification 3")
-# filename = "basic_spec3_$rundate"
-# basic_out_3 = MainSpec(df,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr=Vector{Symbol}(undef,0),
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga",
-#     ga_itr=20)
+println("###############################")
+println("Basic Specification 3")
+filename = "basic_spec3_$rundate"
+basic_out_3 = MainSpec(df,filename,
+    haltonDim = 1,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet,:iiss],
+    spec_prodchr_0= Vector{Symbol}(undef,0),
+    spec_inertchr=Vector{Symbol}(undef,0),
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal,:netname],
+    spec_wgt= spec_wgt,
+    method="ga",
+    ga_itr=20)
 #
 # println("###############################")
 # println("Basic Specification 4")
@@ -341,7 +341,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 100)
+    method="ga",ga_itr = 500)
 
 println("###############################")
 println("Mixed Specification 4")
@@ -362,4 +362,4 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal,:netname],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 100)
+    method="ga",ga_itr = 500)
