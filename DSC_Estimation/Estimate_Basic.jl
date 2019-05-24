@@ -133,6 +133,15 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
             NaN_steps = 0
         end
 
+        step_size = maximum(abs.(update))
+        if step_size>20
+            update = (update./step_size).*20
+            step_size = 20
+            ind = findall(abs.(update).==step_size)
+            val_disp = p_vec[ind]
+            println("Max Parameter Adjustment: $ind, $val_disp")
+        end
+
         if no_progress>5
             flag = "no better point"
             println("No Progress in Algorithm")
@@ -142,11 +151,6 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
             f_test = log_likelihood(d,p_test)
         end
 
-
-
-
-
-        step_size = maximum(abs.(update))
         step_size_thresh = minimum(vcat(step_size,maximum(abs.(update./p_vec))))
         trial_max = 0
         while ((f_test<fval*mistake_thresh) | isnan(f_test)) & (trial_max==0)

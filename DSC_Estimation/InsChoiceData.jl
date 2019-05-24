@@ -73,7 +73,7 @@ function ChoiceData(data_choice::DataFrame;
     j = convert(Matrix{Float64},data_choice[prd])
     X = convert(Matrix{Float64},data_choice[prodchr])
     # X_0 = convert(Array{Float64},data_choice[prodchars_0])
-    I = convert(Matrix{Float64},data_choice[inertchr])
+    In = convert(Matrix{Float64},data_choice[inertchr])
     y = convert(Matrix{Float64},data_choice[ch])
     y_last = convert(Matrix{Float64},data_choice[ch_last])
     Z = convert(Matrix{Float64},data_choice[demR])
@@ -81,10 +81,10 @@ function ChoiceData(data_choice::DataFrame;
 
 
     println("Create Fixed Effects")
-    F, feNames = build_FE(data_choice,fixEff)
+    F, feNames = build_FE(data_choice,fixEff,hasConstant=true)
     F = permutedims(F,(2,1))
 
-    F_int, feNames_int = build_FE(data_choice,fixInt)
+    F_int, feNames_int = build_FE(data_choice,fixInt,hasConstant=true)
     F_int = permutedims(F_int,(2,1))
 
 
@@ -96,7 +96,7 @@ function ChoiceData(data_choice::DataFrame;
     # Create a data matrix, only including person id
     println("Put Together Data non FE data together")
     k = 0
-    for (d, var) in zip([i,j,X, Z, y,I,y_last,w], [per,prd,prodchr,
+    for (d, var) in zip([i,j,X, Z, y,In,y_last,w], [per,prd,prodchr,
         demR, ch,inertchr,ch_last, wgt])
         for l=1:size(d,2)
             k+=1
@@ -117,18 +117,18 @@ function ChoiceData(data_choice::DataFrame;
     L = size(X_int,2)
     M = size(F_int,1)
     println("$n by $L*$M")
-    interactions = Matrix{Float64}(undef,0,n)
+    interactions = Matrix{Float64}(undef,L*M,n)
 
     for l in 1:L, m in 1:M
-        # println((l-1)*M+m)
-        int_vec = Matrix{Float64}(undef,1,n)
+        ind = (l-1)*M+m
+        # int_vec = Matrix{Float64}(undef,1,n)
         for i in 1:n
-            @inbounds @fastmath int_vec[1,i] = F_int[m,i]*X_int[i,l]
+            @inbounds @fastmath interactions[ind,i] = F_int[m,i]*X_int[i,l]
         end
-        keep_int = sum(y[findall(abs.(int_vec[:]).>0)])>1.0
-        if keep_int
-            interactions = vcat(interactions,int_vec)
-        end
+        # keep_int = sum(y[findall(abs.(int_vec[:]).>0)])>1.0
+        # if keep_int
+        #     interactions = vcat(interactions,int_vec)
+        # end
     end
 
     ### Drop 0 valued Interaction Terms
@@ -141,13 +141,22 @@ function ChoiceData(data_choice::DataFrame;
 
     # positive_values = sum(abs.(interactions),dims=2)[:]
     # interactions = interactions[positive_values.>0,:]
+    println("Concatenate Interactions")
+    F = vcat(F,interactions)
 
-    F_all = vcat(F,interactions)
+    ### Drop 0 valued Fixed Effects
+    zero_ind = findall(sum(F,dims=2)[:].==0)
+    F_ind = 1:size(F,1)
+    for k in zero_ind
+        F_ind = F_ind[F_ind.!=k]
+    end
+    F = F[F_ind,:]
     # F_all = interactions
 
 
 
     #Transpose data to store as rows
+    println("Transpose")
     dmat = permutedims(dmat,(2,1))
     i = permutedims(i,(2,1))
     j = permutedims(j,(2,1))
@@ -173,12 +182,51 @@ function ChoiceData(data_choice::DataFrame;
     else
         println("Smallest Data Eigenvalue (search):No Search Variable")
     end
+
+    smallest_ev = 0
+    while abs(smallest_ev).<1e-10
+        all_ind = vcat(_choice,_prodchars,_demoRaw)
+        all_data = vcat(dmat[all_ind,:],F)
+        X = all_data*all_data'
+        all_vals = abs.(eigvals(X))
+        num_zero_vals = length(findall(all_vals.<1e-10))
+        smallest_ev = minimum(all_vals)
+        println("Smallest Data Eigenvalue (choice): $smallest_ev")
+        println("Number of Zero Eigenvalues (choice): $num_zero_vals")
+        pdim = size(dmat[all_ind,:],1)
+        if abs(smallest_ev)<1e-10
+            v = eigvecs(X)
+            zero_vals = findall(all_vals.<1e-10)
+            drop_list = Vector{Int}(undef,0)
+            for ind_v in zero_vals
+                ind_colin = maximum(findall(abs.(v[:,ind_v]).>1e-10))
+                ind_colin_fe = ind_colin - pdim
+                if ind_colin<pdim
+                    println("Collinearity in Product Characteristics")
+                    break
+                elseif ind_colin_fe in drop_list
+                    continue
+                else
+                    drop_list = vcat(drop_list,[ind_colin_fe])
+                end
+            end
+            F_ind = 1:size(F,1)
+            for k in drop_list
+                F_ind = F_ind[F_ind.!=k]
+            end
+            F = F[F_ind,:]
+            println("Dropping: $drop_list")
+        end
+    end
+
+    #### Check Constant
     all_ind = vcat(_choice,_prodchars,_demoRaw)
-    all_data = vcat(dmat[all_ind,:],F)
+    all_data = vcat(dmat[all_ind,:],F,ones(1,n))
     X = all_data*all_data'
-    # ev = minimum(abs.(eigvals(X)))
-    smallest_ev = minimum(abs.(eigvals(X)))
-    println("Smallest Data Eigenvalue (choice): $smallest_ev")
+    all_vals = abs.(eigvals(X))
+    num_zero_vals = length(findall(all_vals.<1e-10))
+    smallest_ev = minimum(all_vals)
+    println("Constant Check (choice): $smallest_ev")
 
 
     ## Rand Coefficient Index
@@ -222,16 +270,17 @@ function ChoiceData(data_choice::DataFrame;
     # end
 
     # Relevant Parameters Per Person
+    println("Find Relevant Parameters")
     rel_fe_Dict = Dict{Real,Array{Int64,1}}()
     for (id,idxitr) in _personDict
-        F_t = view(F_all,:,idxitr)
+        F_t = view(F,:,idxitr)
         any_positive = maximum(abs.(F_t),dims=2)[:,1]
         pars_relevant = findall(any_positive .>0)
         rel_fe_Dict[id] = pars_relevant
     end
 
     # Make the data object
-    m = ChoiceData(dmat, F_all, index,
+    m = ChoiceData(dmat, F, index,
             prodchr,prodchr_0,ch, demR,wgt,
              _person,_product, _prodchars,_prodchars_0,_inertchars,
             _choice,_choice_last, _demoRaw, _wgt,
@@ -318,7 +367,7 @@ end
 # end
 
 
-function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false) where T
+function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasConstant=false) where T
     # Create Fixed Effects
     n, k = size(data_choice)
     L = 0
@@ -333,10 +382,10 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false) where
 
     for fe in fe_list
         fac_variables = data_choice[fe]
-        factor_list = sort(unique(fac_variables))
+        factor_list = sort(unique(fac_variables[map(!,ismissing.(fac_variables))]))
         if fe==:constant
             num_effects=1
-        elseif (!(:constant in fe_list)) & (fe==fe_list[1])
+        elseif (!((:constant in fe_list) | hasConstant)) & (fe==fe_list[1])
             num_effects = length(factor_list)
         else
             num_effects = length(factor_list)-1
@@ -354,15 +403,16 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false) where
             continue
         end
         fac_variables = data_choice[fe]
-        factor_list = sort(unique(fac_variables))
-        if (!(:constant in fe_list)) & (fe==fe_list[1])
+        factor_list = sort(unique(fac_variables[map(!,ismissing.(fac_variables))]))
+        if (!((:constant in fe_list) | hasConstant)) & (fe==fe_list[1])
             st_ind = 1
         else
+            println("Skip")
             st_ind = 2
         end
 
         for fac in factor_list[st_ind:length(factor_list)]
-            F[fac_variables.==fac,ind] .= 1
+            F[map(!,ismissing.(fac_variables)) .& (fac_variables.==fac),ind] .= 1
             ind+= 1
 
             feNames = vcat(feNames,Symbol(fac))

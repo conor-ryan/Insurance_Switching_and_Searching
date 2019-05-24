@@ -26,6 +26,8 @@ df_LA = df[df[:gra].==16,:]
 
 ### Add Anthem Fixed Effect
 df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
+### Add Price/Default Interaction
+df_LA[:padj_defpadj] = df_LA[:padj].*df_LA[:def_padj]
 
 println("Data Loaded")
 # df = 0.0
@@ -36,22 +38,14 @@ c = ChoiceData(df_LA;
     prd = [:product],
     ch = [:choice],
     ch_last = [:iplan],
-    prodchr = [:padj,:iplan,:inet,:iiss,
-    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
-    :issfe_8, :issfe_9, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
-    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
+    prodchr = [:padj,:padj_defpadj],
     prodchr_0= Vector{Symbol}(undef,0),
-    # prodchr_0= [:padj,:iplan],
-    # inertchr=[:constant,:dprem,:active],
     inertchr=Vector{Symbol}(undef,0),
-    demR =[:agefe_1,:agefe_2,:fam,:hassub],
-    prodInt=[:padj,:iplan,:inet,:iiss],
-    # demR=[:hassub],#,:fam,:hassub],
-    # fixInt=[:def_metal,:def_netfe],
-    # fixEff=[:metal,:netfe],
-    fixInt=Vector{Symbol}(undef,0),
-    fixEff=[:metal],
+    demR =Vector{Symbol}(undef,0),
+    prodInt=Vector{Symbol}(undef,0),
+    fixEff=[:def_metal,:def_netfe],
+    # fixEff=Vector{Symbol}(undef,0),
+    fixInt=[:metal,:netname],
     wgt=[:constant])
 
 # Fit into model
@@ -68,7 +62,31 @@ Istart = rand(m.parLength[:I])/10 .-.05
 FEstart = rand(m.parLength[:FE])/100 .-.005
 
 p0 = vcat(Istart,βstart,γstart,σstart,FEstart)
-par0 = parDict(m,p0)
+# par0 = parDict(m,p0)
+p_est,fval,flag = gradient_ascent(m,p0,grad_tol = 1e-8,max_itr=50)
+println("Run NR Estimation")
+p_disp = p_est[1:20]
+println("Starting at $p_disp")
+p_est,fval,flag = newton_raphson_ll(m,p_est)
+
+
+filename = "flexible_test"
+basic_out_3 = MainSpec(df_LA,filename,
+    haltonDim = 1,
+    spec_per = [:hh_year_id],
+    spec_prd = [:product],
+    spec_ch = [:choice],
+    spec_ch_last = [:iplan],
+    spec_prodchr = [:padj,:padj_defpadj],
+    spec_prodchr_0= Vector{Symbol}(undef,0),
+    spec_inertchr=Vector{Symbol}(undef,0),
+    spec_demR=Vector{Symbol}(undef,0),
+    spec_fixInt=[:metal,:netname],
+    spec_fixEff=[:def_metal,:def_netfe],
+    spec_wgt= [:constant],
+    method="ga",
+    ga_itr=100)
+
 #
 # individual_values!(m,par0)
 # individual_shares(m,par0)
