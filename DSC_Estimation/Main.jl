@@ -35,7 +35,7 @@ spec_prd = [:product]
 spec_ch = [:choice]
 spec_ch_last = [:iplan]
 spec_wgt=[:constant]
-mixed_draws = 100
+mixed_draws = 500
 
 ### interact default plans and "active" choice with preference parameters
 
@@ -339,9 +339,9 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
     spec_prodInt=[:padj,:iplan,:inet,:iiss],
     spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal],
+    spec_fixEff=[:metal,:netname],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 500)
+    method="ga",ga_itr = 200)
 
 println("###############################")
 println("Mixed Specification 4")
@@ -362,4 +362,58 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal,:netname],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 500)
+    method="ga",ga_itr = 200)
+
+
+println("###############################")
+println("Mixed Specification 7")
+filename = "ML_spec7_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet,:iiss,
+    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
+    :issfe_8, :issfe_9, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
+    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
+    spec_prodchr_0= [:issfe_1],
+    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
+                    :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
+                    :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+                    :def_mtl_s87,:def_mtl_s94],
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan,:inet,:iiss],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal,:netname],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 200)
+
+
+println("###############################")
+println("Mixed Specification 8")
+filename = "ML_spec8_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet,:iiss,
+    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
+    :issfe_8, :issfe_9, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
+    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
+    spec_prodchr_0= [:padj],
+    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
+                    :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
+                    :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+                    :def_mtl_s87,:def_mtl_s94],
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan,:inet,:iiss],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal,:netname],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 200)
