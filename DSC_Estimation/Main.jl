@@ -190,11 +190,11 @@ basic_out_3 = MainSpec(df_LA,filename,
 #     method="ga")
 #
 #
-# println("###############################")
-# println("Basic Searching Specification 3")
-# filename = "basic_search_spec3_$rundate"
-# # x_start, out = basic_out_3
-# # x_start = vcat([20],rand(6)/10 .-0.05],x_start)
+println("###############################")
+println("Basic Searching Specification 3")
+filename = "basic_search_spec3_$rundate"
+# x_start, out = basic_out_3
+# x_start = vcat([20],rand(6)/10 .-0.05],x_start)
 # bs_out_3 = MainSpec(df_LA,filename,
 #     haltonDim = 1,
 #     spec_per = spec_per,
@@ -331,7 +331,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     :issfe_8, :issfe_9, # Leave Out LA Care
     :netfe_2, :netfe_3, :netfe_4, :netfe_7,
     :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-    spec_prodchr_0= [:issfe_1],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
@@ -353,7 +353,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_ch = spec_ch,
     spec_ch_last = spec_ch_last,
     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-    spec_prodchr_0= [:padj],
+    spec_prodchr_0= [:padj,:iplan],
     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,

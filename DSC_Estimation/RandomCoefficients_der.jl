@@ -175,13 +175,13 @@ function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
                 dω_x[:] .= 0.0
                 dω_list[q_i] = dω_x[:]
 
-                dS_x[:] = dS_u_x[:].*ω_i
+                dS_x[:] = (dS_u_x[:].*ω_i)./N
             end
             # Save Answers
             dS_x_list[q_i] = dS_x[:]
 
             ## Calculate Gradient
-            grad[q]+= combine_grad(N,gll_t1,dS_x)
+            grad[q]+= combine_grad(gll_t1,dS_x)
 
 
             for (r_i,r) in enumerate(pars_relevant)
@@ -200,7 +200,7 @@ function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
                                 X_mat,Y_mat,y_last)
                 elseif (r <= Ilen)
                     for k in 1:K
-                        dS_xy[k] = (dS_u_x[k])*(dω_y[k])
+                        dS_xy[k] = ((dS_u_x[k])*(dω_y[k]))./N
                     end
                     # dS_xy[:] = (dω_list[q_i]+dS_uncond_list[q_i]).*(dω_list[r_i]+dS_uncond_list[r_i])
                 else
@@ -208,13 +208,13 @@ function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
                                 μ_ij,X_mat,Y_mat,
                                 μ_ij_sums)
                     for k in 1:K
-                        dS_xy[k] = dS_xy[k]*ω_i
+                        dS_xy[k] = (dS_xy[k]*ω_i)./N
                     end
                     # dS_xy[:].*=ω_i
                 end
                 # dS_xy_list[q_i,r_i] = dS_xy[:]
 
-                hess_obs = combine_hess(N,gll_t1,gll_t2,
+                hess_obs = combine_hess(gll_t1,gll_t2,
                             dS_xy,dS_x,dS_y)
 
                 hess[q,r]+= hess_obs
@@ -318,33 +318,31 @@ function ll_obs!(grad::Vector{Float64},
                 # dω_x[:] .= 0.0
                 # dω_list[q_i] = dω_x[:]
 
-                dS_x[:] = dS_u_x[:].*ω_i
+                dS_x[:] = (dS_u_x[:].*ω_i)./N
             end
 
             ## Calculate Gradient
-            grad[q]+= combine_grad(N,gll_t1,dS_x)
+            grad[q]+= combine_grad(gll_t1,dS_x)
         end
 
     return ll_obs,pars_relevant
 end
 
 
-function combine_hess(N::Int64,
-                    gll_t1::Vector{T},gll_t2::Vector{T},
+function combine_hess(gll_t1::Vector{T},gll_t2::Vector{T},
                     dS_xy::Vector{T},dS_x::Vector{T},
                     dS_y::Vector{T}) where T
     hess_obs = 0.0
     K = length(dS_xy)
 
     @inbounds @fastmath @simd for k in 1:K
-        hess_obs += gll_t1[k]*(dS_xy[k]/N) - gll_t2[k]*(dS_x[k]/N)*(dS_y[k]/N)
+        hess_obs += gll_t1[k]*(dS_xy[k]) - gll_t2[k]*(dS_x[k])*(dS_y[k])
     end
     return hess_obs
 end
 
 
-function combine_grad(N::Int64,
-                    gll_t1::Vector{T},
+function combine_grad(gll_t1::Vector{T},
                     dS_x::Vector{T}) where T
     grad_obs = 0.0
     K = length(dS_x)
@@ -352,7 +350,7 @@ function combine_grad(N::Int64,
     @inbounds @fastmath @simd for k in 1:K
         grad_obs += gll_t1[k]*dS_x[k]
     end
-    return grad_obs/N
+    return grad_obs
 end
 
 function calc_derSums_xy!(n::Int64,s_n::Vector{T},

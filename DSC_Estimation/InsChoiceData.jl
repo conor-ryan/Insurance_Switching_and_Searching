@@ -62,7 +62,7 @@ function ChoiceData(data_choice::DataFrame;
         #          :F1_Y0_LI0,:F1_Y0_LI1,
         #          :F1_Y1_LI0,:F1_Y1_LI1],
         fixEff=Vector{Symbol}(undef,0),
-        fixInt=[:product],
+        fixInt=Vector{Symbol}(undef,0),
         wgt=[:constant])
 
     # Get the size of the data
