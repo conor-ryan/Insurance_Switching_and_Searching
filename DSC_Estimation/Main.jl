@@ -339,7 +339,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
     spec_prodInt=[:padj,:iplan,:inet,:iiss],
     spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal,:netname],
+    spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
     method="ga",ga_itr = 200)
 
