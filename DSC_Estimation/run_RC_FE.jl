@@ -38,16 +38,23 @@ c = ChoiceData(df_LA;
     prd = [:product],
     ch = [:choice],
     ch_last = [:iplan],
-    prodchr = [:padj,:iplan],
-    prodchr_0=[:padj],
-    inertchr=[:constant,:def_padj],
-    demR =Vector{Symbol}(undef,0),
-    prodInt=Vector{Symbol}(undef,0),
+    prodchr = [:padj,:iplan,:inet,:iiss,
+    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
+    :issfe_8, :issfe_9, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
+    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
+    prodchr_0=[:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+    inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
+                    :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
+                    :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+                    :def_mtl_s87,:def_mtl_s94],
+    demR =[:agefe_1,:agefe_2,:fam,:hassub],
+    prodInt=[:padj,:iplan,:inet,:iiss],
     fixEff=[:metal],
     wgt=[:constant])
 
 # Fit into model
-m = InsuranceLogit(c,10)
+m = InsuranceLogit(c,50)
 println("Data Loaded")
 
 #γ0start = rand(1)-.5
@@ -73,9 +80,18 @@ app = iterate(eachperson(m.data),5)[1]
 println("Gradient Test")
 # p0 = est[1]
 par0 = parDict(m,p0)
+grad_1 = Vector{Float64}(undef,length(p0))
 grad_2 = Vector{Float64}(undef,length(p0))
 hess_2 = Matrix{Float64}(undef,length(p0),length(p0))
+ll = log_likelihood!(grad_1,m,p0)
 ll = log_likelihood!(hess_2,grad_2,m,p0)
+
+m = InsuranceLogit(c,100)
+ll = log_likelihood!(grad_1,m,p0)
+@time log_likelihood!(grad_1,m,p0)
+@time log_likelihood!(grad_1,m,p0)
+
+
 # # #
 # # #
 f_obj(x) = log_likelihood(m,x)
@@ -116,6 +132,6 @@ Profile.init(n=10^8,delay=.001)
 Profile.clear()
 #Juno.@profile add_obs_mat!(hess,grad,hess_obs,grad_obs,Pop)
 # Juno.@profile log_likelihood!(thD_2,hess_2,grad_2,m,par0)
-Juno.@profile res =  log_likelihood!(hess_2,grad_2,m,par0)
+Juno.@profile res =  log_likelihood!(hess_2,grad_2,m,p0)
 Juno.profiletree()
 Juno.profiler()
