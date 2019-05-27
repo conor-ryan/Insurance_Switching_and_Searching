@@ -239,8 +239,6 @@ rundate = Dates.today()
 println("###############################")
 println("Basic Searching Specification 5")
 filename = "basic_search_spec5_$rundate"
-x_start, out = basic_out_3
-x_start = vcat([20],rand(6)/10 .-0.05],x_start)
 bs_out_3 = MainSpec(df_LA,filename,
     haltonDim = 1,
     spec_per = spec_per,
@@ -262,8 +260,6 @@ bs_out_3 = MainSpec(df_LA,filename,
 println("###############################")
 println("Basic Searching Specification 6")
 filename = "basic_search_spec6_$rundate"
-x_start, out = basic_out_3
-x_start = vcat([20],rand(6)/10 .-0.05],x_start)
 bs_out_3 = MainSpec(df_LA,filename,
     haltonDim = 1,
     spec_per = spec_per,
