@@ -86,10 +86,10 @@ hess_2 = Matrix{Float64}(undef,length(p0),length(p0))
 ll = log_likelihood!(grad_1,m,p0)
 ll = log_likelihood!(hess_2,grad_2,m,p0)
 
-m = InsuranceLogit(c,100)
-ll = log_likelihood!(grad_1,m,p0)
-@time log_likelihood!(grad_1,m,p0)
-@time log_likelihood!(grad_1,m,p0)
+m = InsuranceLogit(c,50)
+ll = log_likelihood!(hess_2,grad_1,m,p0)
+@time log_likelihood!(hess_2,grad_1,m,p0)
+@time log_likelihood!(hess_2,grad_1,m,p0)
 
 
 # # #
