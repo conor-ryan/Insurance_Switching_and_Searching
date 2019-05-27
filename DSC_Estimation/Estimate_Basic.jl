@@ -123,9 +123,9 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
         if any(isnan.(update))
             println("Step contains NaN")
             #Check Hessian
-            eig = sort(abs.(eigvals(hess_new)))
-            sm_e = eig[1]
-            println("Smallest Eigenvalue: $sm_e ")
+            # eig = sort(abs.(eigvals(hess_new)))
+            # sm_e = eig[1]
+            # println("Smallest Eigenvalue: $sm_e ")
             NaN_steps +=1
             grad_size = sqrt(dot(grad_new,grad_new))
             update = -(1/grad_size).*grad_new
@@ -135,8 +135,14 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,step_tol=1e-
 
         step_size = maximum(abs.(update))
         if step_size>20
-            update = (update./step_size).*20
-            step_size = 20
+            ind = findall(abs.(update).>20)
+            if any(abs.(p_vec[ind]).>200)
+                update = (update./step_size).*5
+                step_size = 5
+            else
+                update = (update./step_size).*20
+                step_size = 20
+            end
             ind = findall(abs.(update).==step_size)
             val_disp = p_vec[ind]
             println("Max Parameter Adjustment: $ind, $val_disp")

@@ -362,7 +362,7 @@ bs_out_3 = MainSpec(df_LA,filename,
 #     spec_fixEff=[:metal],
 #     spec_wgt= spec_wgt,
 #     method="ga",ga_itr = 100)
-# 
+#
 # println("###############################")
 # println("Mixed Specification 6")
 # filename = "ML_spec6_$rundate"
@@ -389,26 +389,26 @@ bs_out_3 = MainSpec(df_LA,filename,
 #     spec_wgt= spec_wgt,
 #     method="ga",ga_itr = 200)
 #
-# println("###############################")
-# println("Mixed Specification 4")
-# filename = "ML_spec4_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= [:padj,:iplan],
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 200)
+println("###############################")
+println("Mixed Specification 4")
+filename = "ML_spec4_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet,:iiss],
+    spec_prodchr_0= [:padj,:iplan],
+    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
+                    :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
+                    :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+                    :def_mtl_s87,:def_mtl_s94],
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal,:netname],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 200)
 
 
 println("###############################")
