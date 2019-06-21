@@ -135,3 +135,167 @@ Profile.clear()
 Juno.@profile res =  log_likelihood!(hess_2,grad_2,m,p0)
 Juno.profiletree()
 Juno.profiler()
+
+
+
+#### Results Implications ####
+file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/ML_spec6_2019-05-25.jld2"
+@load file p_est spec_Dict fval
+
+# ## Full Model
+# Structure the data
+c = ChoiceData(df_LA;
+    per = [:hh_year_id],
+    prd = [:product],
+    ch = [:choice],
+    ch_last = [:iplan],
+    prodchr = [:padj,:iplan,:inet,:iiss,
+    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
+    :issfe_8, :issfe_9, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
+    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
+    prodchr_0=[:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+    inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
+                    :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
+                    :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+                    :def_mtl_s87,:def_mtl_s94],
+    demR =[:agefe_1,:agefe_2,:fam,:hassub],
+    prodInt=[:padj,:iplan,:inet,:iiss],
+    fixEff=[:metal],
+    wgt=[:constant])
+
+# Fit into model
+m = InsuranceLogit(c,500)
+
+ReturnPercBase, ReturnPercObs = predict_switching(m,p_est)
+
+
+
+
+
+
+
+
+Ilength = m.parLength[:I]
+
+cont_pars = vcat(m.parLength[:I] .+ (2:4),(Ilength.+ m.parLength[:β]).+ vcat((2:4), 4 .+ (2:4),8 .+ (2:4),12 .+ (2:4)))
+
+println(p_est[1:Ilength])
+println(p_est[cont_pars])
+
+#### Baseline ####
+parBase = parDict(m,p_est)
+individual_values!(m,parBase)
+individual_shares(m,parBase)
+
+inertPlan = choice_last(m.data)
+obsPlan = choice(m.data)
+
+#### Calculate Totals of Returning Individuals ####
+All_Return = [0.0]
+All_Stay = [0.0]
+All_Stay_Obs = [0.0]
+for i in m.data._personIDs
+    idx = m.data._personDict[i]
+    returning = sum(inertPlan[idx])
+    if returning==0.0
+        continue
+    end
+    All_Return[:] = All_Return[:] .+ 1
+    retplan = findall(inertPlan[idx].>0)
+    All_Stay[:] =All_Stay[:] .+ parBase.s_hat[idx[retplan]]
+    obs = findall(obsPlan[idx].>0)
+    if retplan==obs
+        All_Stay_Obs[:] = All_Stay_Obs[:] .+ 1
+    end
+end
+
+ReturnPercBase = All_Stay[1]/All_Return[1]
+ReturnPercObs = All_Stay_Obs[1]/All_Return[1]
+
+
+## Full Consideration
+parBase.ω_i.=1.0
+individual_shares(m,parBase)
+
+All_Return = [0.0]
+All_Stay = [0.0]
+All_Stay_Obs = [0.0]
+for i in m.data._personIDs
+    idx = m.data._personDict[i]
+    returning = sum(inertPlan[idx])
+    if returning==0.0
+        continue
+    end
+    All_Return[:] = All_Return[:] .+ 1
+    retplan = findall(inertPlan[idx].>0)
+    All_Stay[:] =All_Stay[:] .+ parBase.s_hat[idx[retplan]]
+    obs = findall(obsPlan[idx].>0)
+    if retplan==obs
+        All_Stay_Obs[:] = All_Stay_Obs[:] .+ 1
+    end
+end
+
+ReturnFuAtt = All_Stay[1]/All_Return[1]
+
+
+
+#### No Switching Cost ####
+p_noCont = copy(p_est)
+p_noCont[cont_pars] .= 0.0
+parNoCt = parDict(m,p_noCont)
+individual_values!(m,parNoCt)
+individual_shares(m,parNoCt)
+
+All_Return = [0.0]
+All_Stay = [0.0]
+All_Stay_Obs = [0.0]
+for i in m.data._personIDs
+    idx = m.data._personDict[i]
+    returning = sum(inertPlan[idx])
+    if returning==0.0
+        continue
+    end
+    All_Return[:] = All_Return[:] .+ 1
+    retplan = findall(inertPlan[idx].>0)
+    All_Stay[:] =All_Stay[:] .+ parNoCt.s_hat[idx[retplan]]
+    obs = findall(obsPlan[idx].>0)
+    if retplan==obs
+        All_Stay_Obs[:] = All_Stay_Obs[:] .+ 1
+    end
+end
+
+ReturnNoCont = All_Stay[1]/All_Return[1]
+
+
+
+## No Inertia
+parNoCt.ω_i.=1.0
+individual_shares(m,parNoCt)
+
+All_Return = [0.0]
+All_Stay = [0.0]
+All_Stay_Obs = [0.0]
+for i in m.data._personIDs
+    idx = m.data._personDict[i]
+    returning = sum(inertPlan[idx])
+    if returning==0.0
+        continue
+    end
+    All_Return[:] = All_Return[:] .+ 1
+    retplan = findall(inertPlan[idx].>0)
+    All_Stay[:] =All_Stay[:] .+ parNoCt.s_hat[idx[retplan]]
+    obs = findall(obsPlan[idx].>0)
+    if retplan==obs
+        All_Stay_Obs[:] = All_Stay_Obs[:] .+ 1
+    end
+end
+
+ReturnNone = All_Stay[1]/All_Return[1]
+
+
+println(ReturnPercObs)
+println(ReturnPercBase)
+println(ReturnNoIn)
+println(ReturnNoCont)
+println(ReturnNone)
