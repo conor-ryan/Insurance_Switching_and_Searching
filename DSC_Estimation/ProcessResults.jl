@@ -76,6 +76,29 @@ println(ReturnNone)
 ReturnNone, ReturnPercObs = predict_switching(m,p_est,fullAtt=true,noHass=true,noCont=true)
 println(ReturnNone)
 
+#### Average Willingness to Pay ####
+parBase = parDict(m,p_est)
+individual_values!(m,parBase)
+individual_shares(m,parBase)
+
+βMat = coeff_values(m,parBase)
+wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
+wtp_inet = -100*(βMat[:,3]./βMat[:,1])
+wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
+wtp_cont = -100*((βMat[:,3] .+ βMat[:,4])./βMat[:,1])
+
+println("Plan Level")
+println(mean(wtp_iplan))
+println(std(wtp_iplan))
+println("Network Level")
+println(mean(wtp_inet))
+println(std(wtp_inet))
+println("Issuer Level")
+println(mean(wtp_iiss))
+println(std(wtp_iiss))
+println("Total Continuity")
+println(mean(wtp_cont))
+println(std(wtp_cont))
 
 
 ##### Check Active Relationship ####

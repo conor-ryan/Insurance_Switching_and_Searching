@@ -279,3 +279,48 @@ function individual_shares(d::InsuranceLogit,p::parDict{T}) where T
     end
     return Nothing
 end
+
+
+function ind_wtp(app::ChoiceData,p::parDict{T}) where T
+    γ_0 = p.γ_0
+    γ = p.γ
+    ι = p.I
+    β_0= p.β_0
+    M1 = length(β_0)
+    β = p.β
+    (M2,N2) = size(β)
+    fe = p.FE
+    randIndex = app._randCoeffs
+
+    ind = person(app)[1]
+    wgt = weight(app)[1]
+    idxitr = app._personDict[ind]
+    X = permutedims(prodchars(app),(2,1))
+    Z = demoRaw(app)[:,1]
+    X_last =inertchars(app)[:,1]
+    y_last = choice_last(app)
+
+
+
+    # demos = γ_0 + dot(γ,Z)
+    demos = 0.0
+
+    β_z = β*Z
+    β_i, γ_i = calc_indCoeffs(p,β_z,demos)
+
+    β_mean = mean(β_i,dims=2) + β_0
+    return β_mean, wgt
+end
+
+
+function coeff_values(d::InsuranceLogit,p::parDict{T}) where T
+    # Calculate μ_ij, which depends only on parameters
+    coeff_mat = Matrix{Float64}(undef,length(d.data._personIDs),d.parLength[:β])
+    i = 0
+    for app in eachperson(d.data)
+        i+=1
+        β_mean,wgt = ind_wtp(app,p)
+        coeff_mat[i,:] = β_mean[:]
+    end
+    return coeff_mat
+end
