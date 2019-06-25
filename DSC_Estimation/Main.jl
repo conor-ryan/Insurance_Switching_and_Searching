@@ -336,28 +336,28 @@ rundate = Dates.today()
 #
 
 
-# println("###############################")
-# println("Mixed Specification 5")
-# filename = "ML_spec5_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss,
-#     :issfe_1, :issfe_2, :issfe_5, :issfe_6,
-#     :issfe_8, :issfe_9, # Leave Out LA Care
-#     :netfe_2, :netfe_3, :netfe_4, :netfe_7,
-#     :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-#     spec_inertchr= Vector{Symbol}(undef,0),
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_prodInt=[:padj,:iplan,:inet,:iiss],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 100)
+println("###############################")
+println("Mixed Specification 5")
+filename = "ML_spec5_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet,:iiss,
+    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
+    :issfe_8, :issfe_9, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
+    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+    spec_inertchr= Vector{Symbol}(undef,0),
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan,:inet,:iiss],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 10)
 #
 # println("###############################")
 # println("Mixed Specification 6")
@@ -406,28 +406,28 @@ rundate = Dates.today()
 #     spec_wgt= spec_wgt,
 #     method="ga",ga_itr = 200)
 
-println("###############################")
-println("Mixed Specification 8")
-filename = "ML_spec8_$rundate"
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = mixed_draws,
-    spec_per = spec_per,
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,
-    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
-    :issfe_8, :issfe_9, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
-    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-    spec_inertchr= Vector{Symbol}(undef,0),
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 100)
+# println("###############################")
+# println("Mixed Specification 8")
+# filename = "ML_spec8_$rundate"
+# mx_out_1 = MainSpec(df_LA,filename,
+#     haltonDim = mixed_draws,
+#     spec_per = spec_per,
+#     spec_prd = spec_prd,
+#     spec_ch = spec_ch,
+#     spec_ch_last = spec_ch_last,
+#     spec_prodchr = [:padj,:iplan,
+#     :issfe_1, :issfe_2, :issfe_5, :issfe_6,
+#     :issfe_8, :issfe_9, # Leave Out LA Care
+#     :netfe_2, :netfe_3, :netfe_4, :netfe_7,
+#     :netfe_11, :netfe_12, :netfe_13, :netfe_15],
+#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+#     spec_inertchr= Vector{Symbol}(undef,0),
+#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+#     spec_prodInt=[:padj,:iplan],
+#     spec_fixInt=Vector{Symbol}(undef,0),
+#     spec_fixEff=[:metal],
+#     spec_wgt= spec_wgt,
+#     method="ga",ga_itr = 100)
 
 
 println("###############################")

@@ -32,8 +32,8 @@ df_LA[:padj_defpadj] = df_LA[:padj].*df_LA[:def_padj]
 println("Data Loaded")
 
 
-rundate = "2019-05-25"
-file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/ML_spec6_$rundate.jld2"
+rundate = "2019-06-24"
+file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/ML_spec8_$rundate.jld2"
 @load file p_est spec_Dict fval
 
 # ## Full Model
@@ -43,24 +43,27 @@ c = ChoiceData(df_LA;
     prd = [:product],
     ch = [:choice],
     ch_last = [:iplan],
-    prodchr = [:padj,:iplan,:inet,:iiss,
+    prodchr = [:padj,:iplan,#,:inet,:iiss,
     :issfe_1, :issfe_2, :issfe_5, :issfe_6,
     :issfe_8, :issfe_9, # Leave Out LA Care
     :netfe_2, :netfe_3, :netfe_4, :netfe_7,
     :netfe_11, :netfe_12, :netfe_13, :netfe_15],
     prodchr_0=[:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-    inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-                    :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-                    :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-                    :def_mtl_s87,:def_mtl_s94],
-    # inertchr=Vector{Symbol}(undef,0),
+    # inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
+    #                 :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
+    #                 :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+    #                 :def_mtl_s87,:def_mtl_s94],
+    inertchr=Vector{Symbol}(undef,0),
     demR =[:agefe_1,:agefe_2,:fam,:hassub],
-    prodInt=[:padj,:iplan,:inet,:iiss],
+    prodInt=[:padj,:iplan],#,:inet,:iiss],
     fixEff=[:metal],
     wgt=[:constant])
 
 # Fit into model
 m = InsuranceLogit(c,500)
+if m.parLength[:All]!=length(p_est)
+    println("WARNING: Specification Error!")
+end
 
 ReturnPercBase, ReturnPercObs = predict_switching(m,p_est)
 println(ReturnPercObs)
