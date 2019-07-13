@@ -288,15 +288,26 @@ function activePredict(m::InsuranceLogit,p_est::Vector{Float64},df::DataFrame)
     par = parDict(m,p_est)
     individual_values!(m,par)
     individual_shares(m,par)
+    inertPlan = choice_last(m.data)
+    obsPlan = choice(m.data)
     active_long = df[:active]
     active_obs = Vector{Float64}(undef,length(m.data._personIDs))
     active_pred = Vector{Float64}(undef,length(m.data._personIDs))
+    returning = Vector{Float64}(undef,length(m.data._personIDs))
+    switch = zeros(length(m.data._personIDs))
 
     for (ind,i) in enumerate(m.data._personIDs)
         idx = m.data._personDict[i]
+        returning[ind] = sum(inertPlan[idx])
         active_obs[ind] = active_long[idx[1]]
         active_pred[ind] = par.ω_i[Int(i)]
+
+        retplan = findall(inertPlan[idx].>0)
+        obs = findall(obsPlan[idx].>0)
+        if retplan==obs
+            switch[ind] = 1.0
+        end
     end
 
-    return active_obs, active_pred
+    return switch,returning,active_obs, active_pred
 end

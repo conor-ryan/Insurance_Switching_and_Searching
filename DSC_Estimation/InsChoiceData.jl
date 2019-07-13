@@ -433,12 +433,12 @@ getindex(m::ChoiceData, idx::Symbols, cols) = m.data[getindex.(m.index, idx),col
 # Define other retrieval methods on ChoiceData
 person(m::ChoiceData)      = m[m._person]
 product(m::ChoiceData)      = m[m._product]
-prodchars(m::ChoiceData)   = m[m._prodchars]
-prodchars0(m::ChoiceData)   = m[m._prodchars_0]
+@inbounds prodchars(m::ChoiceData)   = m[m._prodchars]
+@inbounds prodchars0(m::ChoiceData)   = m[m._prodchars_0]
 inertchars(m::ChoiceData)   = m[m._inertchars]
 choice(m::ChoiceData)      = m[m._choice]
 choice_last(m::ChoiceData)      = m[m._choice_last]
-demoRaw(m::ChoiceData)     = m[m._demoRaw]
+@inbounds demoRaw(m::ChoiceData)     = m[m._demoRaw]
 weight(m::ChoiceData)      = m[m._wgt]
 
 

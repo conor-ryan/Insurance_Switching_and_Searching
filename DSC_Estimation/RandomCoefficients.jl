@@ -187,8 +187,8 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
 
     ind = person(app)[1]
     idxitr = app._personDict[ind]
-    X = permutedims(prodchars(app),(2,1))
-    Z = demoRaw(app)[:,1]
+    @inbounds X = permutedims(prodchars(app),(2,1))
+    @inbounds Z = demoRaw(app)[:,1]
     X_last =inertchars(app)[:,1]
     y_last = choice_last(app)
     F = fixedEffects(app,idxitr)
