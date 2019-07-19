@@ -28,6 +28,8 @@ mutable struct parDict{T}
     s_hat_uncond::Vector{T}
     # Search Probability
     ω_i::Vector{T}
+    # Total Likelihood
+    L_i::Vector{T}
 
     # r_hat::Vector{T}
     # Share Parameter Derivatives for Products x Parameters
@@ -96,21 +98,13 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
     s_hat = Vector{T}(undef,M)
     s_hat_uncond = Vector{T}(undef,M)
 
-    ω_i = Vector{T}(undef,Int.(maximum(person(m.data))))
+    max_per = Int.(maximum(person(m.data)))
+    L_i = Vector{T}(undef,max_per)
+    max_srch = maximum(m.data._searchDict[max_per])
+    ω_i = Vector{T}(undef,max_srch)
 
-    # Deltas are turned off
-    # δ = Vector{T}(undef,M)
-    # unpack_δ!(δ,m)
-    # δ = ones(M)
 
-    # Q = m.parLength[:All]
-    # J = length(m.prods)
-    # dSdθ_j = Matrix{T}(undef,Q,J)
-    # dRdθ_j = Matrix{T}(undef,Q,J)
-    # d2Sdθ_j = Array{T,3}(undef,Q,Q,J)
-    # d2Rdθ_j = Array{T,3}(undef,Q,Q,J)
-
-    return parDict{T}(γ_0,γ,I_vec,β_0,β,σ,FE,randCoeffs,μ_ij,s_hat,s_hat_uncond,ω_i)
+    return parDict{T}(γ_0,γ,I_vec,β_0,β,σ,FE,randCoeffs,μ_ij,s_hat,s_hat_uncond,ω_i,L_i)
 end
 
 function calcRC!(randCoeffs::Array{S,2},σ::Array{T,1},draws::Array{Float64,2},randIndex::Vector{Int}) where {T,S}
@@ -134,20 +128,6 @@ end
 # Calculating Preferences
 ###########
 
-# function calc_indCoeffs{T}(p::parDict{T},β::Array{T,1},d::T)
-#     Q = length(β)
-#     (N,K) = size(p.randCoeffs)
-#     β_i = Array{T,2}(N,Q)
-#     γ_i = d
-#     β_i[:,1] = β[1]
-#
-#     for k in 2:Q, n in 1:N
-#         β_i[n,k] = β[k] + p.randCoeffs[n,k-1]
-#     end
-#
-#     β_i = permutedims(β_i,(2,1))
-#     return β_i, γ_i
-# end
 
 function calc_indCoeffs(p::parDict{T},β::Array{T,1},d::S) where {T,S}
     Q = length(β)
@@ -188,10 +168,20 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     ind = person(app)[1]
     idxitr = app._personDict[ind]
     @inbounds X = permutedims(prodchars(app),(2,1))
-    @inbounds Z = demoRaw(app)[:,1]
-    X_last =inertchars(app)[:,1]
+    @inbounds Z = demoRaw(app)[:,1] # Currently Requiring Demographics are Constant
+    X_last_all =inertchars(app)#[:,1]
     y_last = choice_last(app)
     F = fixedEffects(app,idxitr)
+
+    _yearDict = app._personYearDict[ind]
+    years = sort(Int.(keys(_yearDict)))
+    ret = zeros(length(years))
+    X_last = Matrix{Float64}(undef,length(years),size(X_last_all,1))
+    for (i,yr) in enumerate(years)
+        @inbounds ret[i] = sum(y_last[_yearDict[yr]])
+        @inbounds X_last[i,:] = X_last_all[:,_yearDict[yr][1]]
+    end
+
 
     # FE is a row Vector
     if T== Float64
@@ -225,13 +215,9 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
         chars_0 = zeros(length(idxitr))
     end
 
-    search = exp(dot(X_last,ι))
-    if (length(ι)>0) & (sum(y_last)>0)
-        p.ω_i[Int.(ind)] = search/(1+search)
-    else
-        p.ω_i[Int.(ind)] = 1.0
-    end
-
+    search = exp.(X_last*ι)
+    s_prob = (1 .- ret) .+ ret.*(search./(1 .+ search))
+    p.ω_i[app._searchDict[ind]] = s_prob
 
     K = length(idxitr)
     N = size(p.randCoeffs,1)
@@ -244,24 +230,68 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
 end
 
 
-function calc_shares(μ_ij::Array{T},ω_i::T,iplan::Array{Float64}) where T
+function calc_shares(μ_ij::Array{T,2},ω_i::Vector{T},iplan::Vector{Float64},y::Vector{Int},dict::Dict{Int,UnitRange}) where T
     (N,K) = size(μ_ij)
     s_hat = Matrix{T}(undef,K,N)
+    yr_next = findYearInd(dict)
+    expsum = Vector{T}(undef,length(yr_next)+1)
     for n in 1:N
-        expsum = 0.0
-        for i in 1:K
-            expsum += μ_ij[n,i]
+        expsum[:].=0.0
+        yr_ind = 1
+        for k in 1:K
+            if k in yr_next
+                yr_ind +=1
+            end
+            expsum[yr_ind] += μ_ij[n,k]
         end
-        for i in 1:K
-            s_hat[i,n] = μ_ij[n,i]/expsum
+        yr_ind = 1
+        for k in 1:K
+            if k in yr_next
+                yr_ind +=1
+            end
+            s_hat[k,n] = iplan[k]*(1-ω_i[yr_ind]) + ω_i[yr_ind]*(μ_ij[n,k]/expsum[yr_ind])
+            # s_hat[k,n] =(μ_ij[n,k]/expsum[yr_ind])
         end
     end
-    s_mean_uncond = mean(s_hat,dims=2)
-    s_hat = similar(s_mean_uncond)
-    for i in 1:K
-        s_hat[i] = iplan[i]*(1-ω_i) + ω_i*(s_mean_uncond[i])
+    s_mean = mean(s_hat,dims=2)
+
+    chosen = s_hat[y,:]
+    ll = prod(chosen,dims=1)
+    ll_mean = log(mean(ll))
+
+    return s_mean,ll_mean
+end
+
+function calc_shares_mat(μ_ij::Array{T,2},ω_i::Vector{T},iplan::Vector{Float64},y::Vector{Int},yr_next::Vector{Int}) where T
+    (N,K) = size(μ_ij)
+    s_hat = Matrix{T}(undef,K,N)
+    s_cond = Matrix{T}(undef,K,N)
+    expsum = Matrix{T}(undef,length(yr_next)+1,N)
+    expsum[:].=0.0
+    for n in 1:N
+        yr_ind = 1
+        for k in 1:K
+            if k in yr_next
+                yr_ind +=1
+            end
+            expsum[yr_ind,n] += μ_ij[n,k]
+        end
+        yr_ind = 1
+        for k in 1:K
+            if k in yr_next
+                yr_ind +=1
+            end
+            s = μ_ij[n,k]/expsum[yr_ind,n]
+            s_hat[k,n] = iplan[k]*(1-ω_i[yr_ind]) + ω_i[yr_ind]*s
+            s_cond[k,n] = s
+        end
     end
-    return s_hat,s_mean_uncond
+
+    chosen = s_hat[y,:]
+    ll = prod(chosen,dims=1)[:]
+    # ll_mean = log(mean(ll))
+
+    return s_hat,s_cond,ll,expsum
 end
 
 function individual_shares(d::InsuranceLogit,p::parDict{T}) where T
@@ -269,13 +299,19 @@ function individual_shares(d::InsuranceLogit,p::parDict{T}) where T
     μ_ij_large = p.μ_ij
     ω_large = p.ω_i
     iplan_large = choice_last(d.data)[:]
+    y_large = choice(d.data)[:]
+
     for (ind,idxitr) in d.data._personDict
+        # println(ind)
         u = μ_ij_large[:,idxitr]
-        ω = ω_large[ind]
+        ω = ω_large[d.data._searchDict[ind]]
         iplan = iplan_large[idxitr]
-        s_hat,s_uncond = calc_shares(u,ω,iplan)
+        dict = d.data._personYearDict[ind]
+        y = y_large[idxitr]
+        y = findall(y.==1)
+        s_hat,ll = calc_shares(u,ω,iplan,y,dict)
         p.s_hat[idxitr] = s_hat
-        p.s_hat_uncond[idxitr] = s_uncond
+        p.L_i[ind] = ll
     end
     return Nothing
 end

@@ -3,41 +3,11 @@ using ForwardDiff
 
 # Calculate Log Likelihood
 function log_likelihood(d::InsuranceLogit,p::parDict{T}) where T
-    ll = 0.0
-    Pop = 0.0
-    #α = p.α[1]
-    # Calculate μ_ij, which depends only on parameters
-
     individual_values!(d,p)
     individual_shares(d,p)
 
-    for app in eachperson(d.data)
-    #app = next(eachperson(d.data),100)[1]
-        ind = person(app)[1]
-        S_ij = transpose(choice(app))
-        wgt = transpose(weight(app))
-        idxitr = d.data._personDict[ind]
-
-
-        # Get Market Shares
-        s_hat = p.s_hat[idxitr]
-        # Fix possible computational error
-        for k in eachindex(s_hat)
-            if abs(s_hat[k])<=1e-300
-                s_hat[k]=1e-15
-            end
-        end
-        s_insured = sum(s_hat)
-        if s_insured>=(1-1e-300)
-            s_insured= 1 - 1e-15
-        end
-
-        for i in eachindex(idxitr)
-            ll+=wgt[i]*S_ij[i]*log(s_hat[i])
-            Pop+=wgt[i]*S_ij[i]
-        end
-    end
-    return ll/Pop
+    ll = mean(p.L_i)
+    return ll
 end
 
 
@@ -47,16 +17,16 @@ function log_likelihood!(grad::Vector{Float64},
     N = size(d.draws,1)
     grad[:] .= 0.0
     ll = 0.0
-    Pop =sum(weight(d.data).*choice(d.data))
-    grad_obs = Vector{Float64}(undef,Q)
+    Pop = length(p.L_i)
 
 
     individual_values!(d,p)
-    individual_shares(d,p)
+    # individual_shares(d,p)
+
+    # ll = mean(p.L_i)
 
     for app in eachperson(d.data)
-        ll_obs,pars_relevant = ll_obs!(grad,app,d,p)
-        ll+=ll_obs
+        ll+= ll_obs!(grad,app,d,p)
     end
     if isnan(ll)
         ll = -1e20

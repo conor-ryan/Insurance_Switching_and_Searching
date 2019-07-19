@@ -42,303 +42,34 @@ mixed_draws = 500
 rundate = Dates.today()
 
 
-# ### Basic Switching Cost Specifications ####
-# println("###############################")
-# println("Basic Specification 1")
-# filename = "basic_spec1_$rundate"
-# # df_est = df[(df[:hasi].==1).&(df[:dcat].==1),:]
-# basic_out_1 = MainSpec(df,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr=Vector{Symbol}(undef,0),
-#     spec_demR=Vector{Symbol}(undef,0),
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga",
-#     ga_itr=20)
-#
-# println("###############################")
-# println("Basic Specification 2")
-# filename = "basic_spec2_$rundate"
-# basic_out_2 = MainSpec(df,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr=Vector{Symbol}(undef,0),
-#     spec_demR=Vector{Symbol}(undef,0),
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:product],
-#     spec_wgt= spec_wgt,
-#     method="ga",
-#     ga_itr=20)
-#
-#
-# println("###############################")
-# println("Basic Specification 3")
-# filename = "basic_spec3_$rundate"
-# basic_out_3 = MainSpec(df_LA,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr=Vector{Symbol}(undef,0),
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga",
-#     ga_itr=20)
-#
-# println("###############################")
-# println("Basic Specification 4")
-# filename = "basic_spec4_$rundate"
-# basic_out_4 = MainSpec(df,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr=Vector{Symbol}(undef,0),
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:product],
-#     spec_wgt= spec_wgt,
-#     method="ga",
-#     ga_itr=20)
-#
-# #### Basic Searching/Switching Specifications ####
-#
-# println("###############################")
-# println("Basic Searching Specification Test")
-# filename = "basic_search_test_$rundate"
-# # x_start, out = basic_out_1
-# # x_start = vcat([5],rand(6)/10 .-0.05,x_start)
-# df_est = df[(df[:hasi].==1).&(df[:dcat].==1),:]
-# bs_out_1 = MainSpec(df,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     # spec_inertchr= [:constant,:padj],
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga")
-#
-# println("###############################")
-# println("Basic Searching Specification 1")
-# filename = "basic_search_spec1_$rundate"
-# bs_out_1 = MainSpec(df,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     # spec_inertchr= [:constant,:padj],
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga")
-#
-# println("###############################")
-# println("Basic Searching Specification 2")
-# filename = "basic_search_spec2_$rundate"
-# bs_out_2 = MainSpec(df,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr =[:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_demR=Vector{Symbol}(undef,0),
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:product],
-#     spec_wgt= spec_wgt,
-#     method="ga")
-#
-#
-# println("###############################")
-# println("Basic Searching Specification 3")
-# filename = "basic_search_spec3_$rundate"
-# x_start, out = basic_out_3
-# x_start = vcat([20],rand(6)/10 .-0.05],x_start)
-# bs_out_3 = MainSpec(df_LA,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method = "ga")
-#
-# println("###############################")
-# println("Basic Searching Specification 4")
-# filename = "basic_search_spec4_$rundate"
-# # x_start, out = basic_out_4
-# # x_start = vcat([20],rand(6)/10 .-0.05],x_start)
-# bs_out_4 = MainSpec(df,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:product],
-#     spec_wgt= spec_wgt,
-#     method = "ga")
-
-# println("###############################")
-# println("Basic Searching Specification 5")
-# filename = "basic_search_spec5_$rundate"
-# bs_out_3 = MainSpec(df_LA,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method = "ga")
-#
-# println("###############################")
-# println("Basic Searching Specification 6")
-# filename = "basic_search_spec6_$rundate"
-# bs_out_3 = MainSpec(df_LA,filename,
-#     haltonDim = 1,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= Vector{Symbol}(undef,0),
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method = "ga")
-
-# ### Mixed Logit Switching Cost Specifications ####
-# println("###############################")
-# println("Mixed Specification 1")
-# filename = "ML_spec1_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= [:padj,:iplan],
-#     spec_inertchr= Vector{Symbol}(undef,0),
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 10)
-#
-# println("###############################")
-# println("Mixed Specification 2")
-# filename = "ML_spec2_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= [:padj,:iplan],
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 100)
-
-# println("###############################")
-# println("Mixed Specification 3")
-# filename = "ML_spec3_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= [:padj,:iiss],
-#     spec_inertchr= Vector{Symbol}(undef,0),
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 10)
-#
-
+println("###############################")
+println("Specification 1")
+### Only plan-level switching cost, no Inertia
+filename = "Spec1_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,
+    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+    :issfe_6, :issfe_7, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+    spec_inertchr= Vector{Symbol}(undef,0),
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 10)
 
 println("###############################")
-println("Mixed Specification 5")
-filename = "ML_spec5_$rundate"
+println("Specification 2")
+### Fully Specified Switching Costs, no Inertia
+filename = "Spec2_$rundate"
 mx_out_1 = MainSpec(df_LA,filename,
     haltonDim = mixed_draws,
     spec_per = spec_per,
@@ -346,111 +77,112 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_ch = spec_ch,
     spec_ch_last = spec_ch_last,
     spec_prodchr = [:padj,:iplan,:inet,:iiss,
-    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
-    :issfe_8, :issfe_9, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
-    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+    :issfe_6, :issfe_7, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
     spec_inertchr= Vector{Symbol}(undef,0),
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan,:inet,:iiss,],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 10)
+
+
+println("###############################")
+println("Specification 3")
+### Full Specification
+filename = "Spec3_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet,:iiss,
+    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+    :issfe_6, :issfe_7, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    spec_prodchr_0 =[:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
+                        #Metal Fixed Effects
+                        :def_mtl_brz,:def_mtl_cat,:def_mtl_gld, # Leave Out Silver
+                        :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+                        :def_mtl_s87,:def_mtl_s94,
+                        # Network Fixed Effects
+                        :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
+                        :def_issfe_6, :def_issfe_7, # Leave Out LA Care
+                        :def_netfe_2, :def_netfe_3, :def_netfe_4, :def_netfe_6,
+                        :def_netfe_8, :def_netfe_9, :def_netfe_10, :def_netfe_12,
+                        # Year Fixed Effects
+                        :year_2015,:year_2016,:year_2017,:year_2018],
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
     spec_prodInt=[:padj,:iplan,:inet,:iiss],
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 10)
-#
-# println("###############################")
-# println("Mixed Specification 6")
-# filename = "ML_spec6_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss,
-#     :issfe_1, :issfe_2, :issfe_5, :issfe_6,
-#     :issfe_8, :issfe_9, # Leave Out LA Care
-#     :netfe_2, :netfe_3, :netfe_4, :netfe_7,
-#     :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_prodInt=[:padj,:iplan,:inet,:iiss],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 200)
-# #
-# println("###############################")
-# println("Mixed Specification 4")
-# filename = "ML_spec4_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-#     spec_prodchr_0= [:padj,:iplan],
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-#                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-#                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-#                     :def_mtl_s87,:def_mtl_s94],
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal,:netname],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 200)
+    method="ga",ga_itr = 200)
 
-# println("###############################")
-# println("Mixed Specification 8")
-# filename = "ML_spec8_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,
-#     :issfe_1, :issfe_2, :issfe_5, :issfe_6,
-#     :issfe_8, :issfe_9, # Leave Out LA Care
-#     :netfe_2, :netfe_3, :netfe_4, :netfe_7,
-#     :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-#     spec_inertchr= Vector{Symbol}(undef,0),
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_prodInt=[:padj,:iplan],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 100)
 
 
 println("###############################")
-println("Mixed Specification 7")
-filename = "ML_spec7_$rundate"
+println("Specification 2, with Kaiser Robust Check")
+### Fully Specified Switching Costs, no Inertia
+filename = "Spec2_kais_$rundate"
 mx_out_1 = MainSpec(df_LA,filename,
     haltonDim = mixed_draws,
     spec_per = spec_per,
     spec_prd = spec_prd,
     spec_ch = spec_ch,
     spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,:inet,:iiss,
-    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
-    :issfe_8, :issfe_9, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
-    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
-                        :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-                        :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-                        :def_mtl_s87,:def_mtl_s94],
+    spec_prodchr = [:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais,
+    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+    :issfe_6, :issfe_7, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+    spec_inertchr= Vector{Symbol}(undef,0),
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan,:inet,:iiss],
+    spec_prodInt=[:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 10)
+
+
+println("###############################")
+println("Specification 3, with Kaiser Robust Check")
+### Full Specification
+filename = "Spec3_kais_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais,
+    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+    :issfe_6, :issfe_7, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
+                        #Metal Fixed Effects
+                        :def_mtl_brz,:def_mtl_cat,:def_mtl_gld, # Leave Out Silver
+                        :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+                        :def_mtl_s87,:def_mtl_s94,
+                        # Network Fixed Effects
+                        :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
+                        :def_issfe_6, :def_issfe_7, # Leave Out LA Care
+                        :def_netfe_2, :def_netfe_3, :def_netfe_4, :def_netfe_6,
+                        :def_netfe_8, :def_netfe_9, :def_netfe_10, :def_netfe_12,
+                        # Year Fixed Effects
+                        :year_2015,:year_2016,:year_2017,:year_2018],
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais],
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,

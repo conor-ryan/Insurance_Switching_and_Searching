@@ -27,6 +27,7 @@ struct ChoiceData <: ModelData
     # Precomputed Indices
     _person::Array{Int,1}
     _product::Array{Int,1}
+    _panel::Array{Int,1}
     _prodchars::Array{Int,1}
     _prodchars_0::Array{Int,1}
     _inertchars::Array{Int,1}
@@ -42,13 +43,16 @@ struct ChoiceData <: ModelData
     # ID Lookup Mappings
     _personIDs::Array{Float64,1}
     _personDict::Dict{Int, UnitRange{Int}}
+    _personYearDict::Dict{Int, Dict{Int,UnitRange}}
+    _searchDict::Dict{Int, UnitRange{Int}}
     _productDict::Dict{Int, Array{Int,1}}
 
     _rel_fe_Dict::Dict{Real,Array{Int64,1}}
 end
 
 function ChoiceData(data_choice::DataFrame;
-        per=[:hh_year_id],
+        per=[:hh_id],
+        panel=[:year],
         prd=[:product],
         prodchr=Vector{Symbol}(undef,0),
         prodchr_0=Vector{Symbol}(undef,0),
@@ -70,6 +74,7 @@ function ChoiceData(data_choice::DataFrame;
 
     # Convert everything to an array once for performance
     i = convert(Matrix{Float64},data_choice[per])
+    yr = convert(Matrix{Float64},data_choice[panel])
     j = convert(Matrix{Float64},data_choice[prd])
     X = convert(Matrix{Float64},data_choice[prodchr])
     # X_0 = convert(Array{Float64},data_choice[prodchars_0])
@@ -96,7 +101,7 @@ function ChoiceData(data_choice::DataFrame;
     # Create a data matrix, only including person id
     println("Put Together Data non FE data together")
     k = 0
-    for (d, var) in zip([i,j,X, Z, y,In,y_last,w], [per,prd,prodchr,
+    for (d, var) in zip([i,yr,j,X, Z, y,In,y_last,w], [per,panel,prd,prodchr,
         demR, ch,inertchr,ch_last, wgt])
         for l=1:size(d,2)
             k+=1
@@ -163,6 +168,7 @@ function ChoiceData(data_choice::DataFrame;
 
     # Precompute the row indices
     _person = getDictArray(index,per)
+    _panel = getDictArray(index,panel)
     _product = getDictArray(index,prd)
     _prodchars = getDictArray(index, prodchr)
     _prodchars_0 = getDictArray(index, prodchr_0)
@@ -249,13 +255,29 @@ function ChoiceData(data_choice::DataFrame;
     # Get Person ID Dictionary Mapping for Easy Subsets
     println("Person ID Mapping")
     _personDict = Dict{Real, UnitRange{Int}}()
+    _searchDict = Dict{Real, UnitRange{Int}}()
+    _personYearDict = Dict{Int, Dict{Int,UnitRange{Int}}}()
     allids = dmat[_person,:][1,:]
+    allyears = dmat[_panel,:][1,:]
     uniqids = sort(unique(allids))
+    last_ind = 1
 
     for id in uniqids
         idx1 = searchsortedfirst(allids,id)
         idxJ = searchsortedlast(allids,id)
         _personDict[id] = idx1:idxJ
+        per_years = allyears[idx1:idxJ]
+        uniq_years = sort(unique(per_years))
+        _panelDict = Dict{Int, UnitRange{Int}}()
+        for yr in uniq_years
+            idx1 = searchsortedfirst(per_years,yr)
+            idxJ = searchsortedlast(per_years,yr)
+            _panelDict[yr] = idx1:idxJ
+        end
+        _personYearDict[id] = _panelDict
+        new_ind = last_ind + length(uniq_years)
+        _searchDict[id] = (last_ind+1):new_ind
+        last_ind = copy(new_ind)
     end
 
 
@@ -282,10 +304,11 @@ function ChoiceData(data_choice::DataFrame;
     # Make the data object
     m = ChoiceData(dmat, F, index,
             prodchr,prodchr_0,ch, demR,wgt,
-             _person,_product, _prodchars,_prodchars_0,_inertchars,
+             _person,_panel,_product, _prodchars,_prodchars_0,_inertchars,
             _choice,_choice_last, _demoRaw, _wgt,
              _randCoeffs,_prodInteract,
-             uniqids,_personDict,_productDict,
+             uniqids,_personDict,_personYearDict,_searchDict,
+             _productDict,
             rel_fe_Dict)
     return m
 end
@@ -474,6 +497,7 @@ function subset(d::T, idx) where T<:ModelData
     d.wgt,     # Demographic Fixed Effects
     # Precomputed Indices
     d._person,
+    d._panel,
     d._product,
     d._prodchars,
     d._prodchars_0,
@@ -486,6 +510,8 @@ function subset(d::T, idx) where T<:ModelData
     d._prodInteract,
     d._personIDs,
     d._personDict,
+    d._personYearDict,
+    d._searchDict,
     d._productDict,
     d._rel_fe_Dict)
 end

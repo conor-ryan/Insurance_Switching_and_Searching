@@ -14,6 +14,7 @@ include("Halton.jl")
 # Random Coefficients MLE
 include("RandomCoefficients.jl")
 include("RandomCoefficients_der.jl")
+include("DerivFunctions.jl")
 include("Log_Likehood.jl")
 include("Estimate_Basic.jl")
 include("utility.jl")
@@ -22,40 +23,52 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
-df_LA = df[df[:gra].==16,:]
+# 1% Sample of LA
+df_LA = df
+# df = df[df[:samp1].==1,:]
+# df_LA = df[df[:gra].==16,:]
+
 
 ### Add Anthem Fixed Effect
-df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
+# df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 ### Add Price/Default Interaction
-df_LA[:padj_defpadj] = df_LA[:padj].*df_LA[:def_padj]
+# df_LA[:padj_defpadj] = df_LA[:padj].*df_LA[:def_padj]
 
 println("Data Loaded")
 # df = 0.0
 
 # Structure the data
 c = ChoiceData(df_LA;
-    per = [:hh_year_id],
+    per = [:hh_id],
     prd = [:product],
     ch = [:choice],
     ch_last = [:iplan],
-    prodchr = [:padj,:iplan,:inet,:iiss,
-    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
-    :issfe_8, :issfe_9, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
-    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-    prodchr_0=Vector{Symbol}(undef,0),
-    # prodchr_0=[:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-    # inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-    #                 :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-    #                 :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-    #                 :def_mtl_s87,:def_mtl_s94],
+    prodchr =  [:padj,:iplan,:inet,:iiss,
+    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+    :issfe_6, :issfe_7, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    # prodchr_0=Vector{Symbol}(undef,0),
+    prodchr_0=[:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+    inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
+                        #Metal Fixed Effects
+                        :def_mtl_brz,:def_mtl_cat,:def_mtl_gld, # Leave Out Silver
+                        :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+                        :def_mtl_s87,:def_mtl_s94,
+                        # Network Fixed Effects
+                        :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
+                        :def_issfe_6, :def_issfe_7, # Leave Out LA Care
+                        :def_netfe_2, :def_netfe_3, :def_netfe_4, :def_netfe_6,
+                        :def_netfe_8, :def_netfe_9, :def_netfe_10, :def_netfe_12,
+                        # Year Fixed Effects
+                        :year_2015,:year_2016,:year_2017,:year_2018],
     demR =[:agefe_1,:agefe_2,:fam,:hassub],
     prodInt=[:padj,:iplan,:inet,:iiss],
     fixEff=[:metal],
     wgt=[:constant])
 
 # Fit into model
-m = InsuranceLogit(c,1)
+m = InsuranceLogit(c,100)
 println("Data Loaded")
 
 #γ0start = rand(1)-.5
@@ -69,23 +82,54 @@ FEstart = rand(m.parLength[:FE])/100 .-.005
 
 p0 = vcat(Istart,βstart,γstart,σstart,FEstart)
 
-grad_2 = Vector{Float64}(undef,length(p0))
-hess_2 = Matrix{Float64}(undef,length(p0),length(p0))
-ll = log_likelihood!(grad_2,m,p0)
+par = parDict(m,p0)
+
+individual_values!(m,par)
+individual_shares(m,par)
+
+
+
+println("Compute Gradient")
+grad = Vector{Float64}(undef,length(p0))
+hess = Matrix{Float64}(undef,length(p0),length(p0))
+ll = log_likelihood!(grad,m,p0)
+
+
+# # #
+# # #
+f_obj(x) = log_likelihood(m,x)
+grad_1 = Vector{Float64}(undef,length(p0))
+# hess_1 = Matrix{Float64}(undef,length(p0),length(p0))
+fval_old = f_obj(p0)
+println(fval_old-ll)
+# # # # # #
+println("Grad")
+ForwardDiff.gradient!(grad_1,f_obj, p0)#, cfg)
+println(maximum(abs.(grad_1-grad)))
+grad_ind = findall(abs.(grad_1-grad).>1e-12)
+println("Hessian")
+
+
+# cfg = ForwardDiff.HessianConfig(f_obj, p0, ForwardDiff.Chunk{3}())
+ForwardDiff.hessian!(hess_1,f_obj, p0)
+println(maximum(abs.(hess_1-hess_2)))
+
+
 
 using Profile
 Profile.init(n=10^8,delay=.001)
 Profile.clear()
 #Juno.@profile add_obs_mat!(hess,grad,hess_obs,grad_obs,Pop)
 # Juno.@profile log_likelihood!(thD_2,hess_2,grad_2,m,par0)
-Juno.@profile res =  log_likelihood!(grad_2,m,p0)
+Juno.@profile log_likelihood!(grad,m,p0)
 Juno.profiletree()
 Juno.profiler()
 
 
 #
-# individual_values!(m,par0)
-# individual_shares(m,par0)
+par0 = parDict(m,p0)
+individual_values!(m,par0)
+individual_shares(m,par0)
 app = iterate(eachperson(m.data),5)[1]
 #
 #
@@ -105,21 +149,7 @@ ll = log_likelihood!(hess_2,grad_1,m,p0)
 @time log_likelihood!(hess_2,grad_1,m,p0)
 
 
-# # #
-# # #
-f_obj(x) = log_likelihood(m,x)
-grad_1 = Vector{Float64}(undef,length(p0))
-hess_1 = Matrix{Float64}(undef,length(p0),length(p0))
-fval_old = f_obj(p0)
-println(fval_old-ll)
-# # # # # #
-println("Grad")
-ForwardDiff.gradient!(grad_1,f_obj, p0)#, cfg)
-println(maximum(abs.(grad_1-grad_2)))
-println("Hessian")
-# cfg = ForwardDiff.HessianConfig(f_obj, p0, ForwardDiff.Chunk{3}())
-ForwardDiff.hessian!(hess_1,f_obj, p0)
-println(maximum(abs.(hess_1-hess_2)))
+
 
 
 
