@@ -108,7 +108,7 @@ end
 
 
 
-function ll_obs!(grad::Vector{Float64},
+function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
                     app::ChoiceData,d::InsuranceLogit,p::parDict{T}) where T
 
         ind, S_ij, wgt, idxitr, X_t, X_0_t,X_int, Z, F_t, X_last, y_last = unPackChars(app,d)
@@ -130,7 +130,8 @@ function ll_obs!(grad::Vector{Float64},
 
         # Initialize Gradient
         #(Q,N,K) = size(dμ_ij)
-        pars_relevant = relPar(app,d,F_t,ind)
+        pars_relevant = d._rel_par_Dict[ind]
+        pars_relevant = 1:d.parLength[:All]
 
         # Year Indices
         yr_next = findYearInd(app._personYearDict[ind])
@@ -154,14 +155,15 @@ function ll_obs!(grad::Vector{Float64},
 
         # Allocate Memory
         # dS_xyz = Vector{Float64}(undef,K)
-        dS_xy = Vector{Float64}(undef,K)
-        dS_u_x = Vector{Float64}(undef,K)
+
         dS_x = Matrix{Float64}(undef,length(choice_ind),N)
-        dω_x = Vector{Float64}(undef,K)
+        dS_x_full = Matrix{Float64}(undef,length(choice_ind),N)
+        dS_xy = Matrix{Float64}(undef,length(choice_ind),N)
+        dlnL_list = Vector{Vector{Float64}}(undef,length(pars_relevant))
 
 
         dS_x_list = Vector{Matrix{Float64}}(undef,length(pars_relevant))
-        dS_uncond_list = Vector{Vector{Float64}}(undef,length(pars_relevant))
+        dS_full_list = Vector{Matrix{Float64}}(undef,length(pars_relevant))
         dω_list = Vector{Vector{Float64}}(undef,length(pars_relevant))
         # dS_xy_list = Array{Vector{Float64},2}(undef,length(pars_relevant),length(pars_relevant))
 
@@ -186,25 +188,36 @@ function ll_obs!(grad::Vector{Float64},
             @inbounds Y_list[q_i] = copy(X)
 
             if (γlen < q <= Ilen)
-                dlldβ, ll = grad_calc_ω!(dS_x,
+                dlldβ, ll, dlnL_x = grad_calc_ω!(dS_x,
                             s_n,s_hat,ll_n,
                             X,
                             yr_next,
                             choice_ind,
                             y_last,
                             ω_yr)
+                (K,N) = size(dS_x)
+                for (c,k) in enumerate(choice_ind)
+                    for n in 1:N
+                    dS_x_full[c,n] = dS_x[c,n]*(s_n[k,n] - y_last[k])
+                    end
+                end
             else
-                dlldβ, ll = grad_calc_s!(dS_x,
+                dlldβ, ll, dlnL_x = grad_calc_s!(dS_x,
                             s_n,s_hat,ll_n,
                             μ_ij,X,
                             μ_ij_sums,
                             yr_next,
                             choice_ind,
                             ω_yr)
-
+                (K,N) = size(dS_x)
+                for k in 1:K, n in 1:N
+                    dS_x_full[k,n] = dS_x[k,n]*ω_i[k]
+                end
             end
             # Save Answers
-            dS_x_list[q_i] = dS_x[:]
+            dS_x_list[q_i] = dS_x[:,:]
+            dS_full_list[q_i] = dS_x_full[:,:]
+            dlnL_list[q_i] = dlnL_x[:]
 
             ## Calculate Gradient
             grad[q]+= dlldβ
@@ -218,27 +231,34 @@ function ll_obs!(grad::Vector{Float64},
 
 
                 dS_y = dS_x_list[r_i]
-                dω_y = dω_list[r_i]
-                dS_u_y = dS_uncond_list[r_i]
+                dS_y_full = dS_full_list[r_i]
+                dlnL_y = dlnL_list[r_i]
+                # dω_y = dω_list[r_i]
+                # dS_u_y = dS_uncond_list[r_i]
 
                 if (q <= Ilen)
-                    hess_calc_ω!(dS_xy,s_uncond,ω_i,
-                                X,Y_mat,y_last)
+                    hess_calc_ω!(dS_xy,
+                                s_n,
+                                X,Y_mat,
+                                yr_next,
+                                choice_ind,
+                                y_last,
+                                ω_yr)
                 elseif (r <= Ilen)
-                    dS_xy[k] = dS_y.*dS_x
+                    dS_xy = dS_y.*dS_x
                 else
-                    hess_calc!(dS_xy,s_n,
+                    hess_calc_s!(dS_xy,
+                                s_n,
                                 μ_ij,X,Y_mat,
-                                μ_ij_sums)
-                    for k in 1:K
-                        dS_xy[k] = (dS_xy[k]*ω_i)./N
-                    end
-                    # dS_xy[:].*=ω_i
+                                μ_ij_sums,
+                                yr_next,
+                                choice_ind,
+                                ω_yr)
                 end
-                # dS_xy_list[q_i,r_i] = dS_xy[:]
 
-                hess_obs = combine_hess(gll_t1,gll_t2,
-                            dS_xy,dS_x,dS_y)
+                hess_obs = hess_calc_ll(dS_xy,dS_x_full,dS_y_full,
+                                        dlnL_x,dlnL_y,ll_n,
+                                        s_hat,choice_ind)
 
                 hess[q,r]+= hess_obs
                 if (q!=r)
@@ -250,32 +270,27 @@ function ll_obs!(grad::Vector{Float64},
     return ll
 end
 
+function hess_calc_ll(dS_xy::Matrix{T},dS_x::Matrix{T},dS_y::Matrix{T},
+                    dlnLd_x::Vector{T},dlnLd_y::Vector{T},ll_n::Vector{T},
+                    s_hat::Matrix{T},choice_ind::Vector{Int}) where {T}
 
-function hess_calc!(dS_xy::Vector{Float64},s_n::Vector{Float64},
-                    μ_ij::Matrix{Float64},
-                    X_mat::S,Y::T,
-                    μ_ij_sums::Vector{Float64}) where {S,T}
-    dS_xy[:] .= 0.0
-
-
-    (N,K) = size(μ_ij)
-
-    ### 0 Draw Calculation ###
+    N = length(ll_n)
+    LL = 0.0
+    d2Ldβ = 0.0
+    dLdβ_x = 0.0
+    dLdβ_y = 0.0
     for n in 1:N
-        μ_ij_sums_n = μ_ij_sums[n]
-
-        dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums = calc_derSums_xy!(n,s_n,X_mat,Y,μ_ij,μ_ij_sums_n)
-
-        @fastmath Γ_x = dμ_ij_x_sums/μ_ij_sums_n
-        @fastmath Γ_y = dμ_ij_y_sums/μ_ij_sums_n
-        @fastmath Γ_xy = dμ_ij_xy_sums/μ_ij_sums_n
-        # s_n = μ_ij[n,:].*δ/μ_ij_sums_n
-
-        calc_prodTerms_xy!(n,dS_xy,
-                            X_mat,Y,s_n,
-                            Γ_x,Γ_y,Γ_xy)
+        d2lnLdβ = calc_d2ll(n,dS_xy,dS_x,dS_y,s_hat,choice_ind)
+        LL += ll_n[n]
+        d2Ldβ += ll_n[n]*(d2lnLdβ+dlnLd_x[n]*dlnLd_y[n])
+        dLdβ_x += dlnLd_x[n]*ll_n[n]
+        dLdβ_y += dlnLd_y[n]*ll_n[n]
     end
-    return nothing
+    dLLdx = dLdβ_x/LL
+    dLLdy = dLdβ_y/LL
+    d2LLdβ = d2Ldβ/LL - dLLdx*dLLdy
+
+    return d2LLdβ
 end
 
 
@@ -291,9 +306,10 @@ function grad_calc_s!(dS_x::Matrix{T},s_n::Matrix{T},s_hat::Matrix{T},
     (N,K) = size(μ_ij)
     dμ_ij_x_sums = Vector{T}(undef,length(yr_next)+1)
 
-    dLLdβ = 0.0
+    dLdβ = 0.0
     LL = 0.0
     Γ_x = Vector{T}(undef,length(yr_next)+1)
+    dlnLdβ = Vector{T}(undef,N)
     for n in 1:N
         # μ_ij_sums_n = μ_ij_sums[:,n]
         calc_derSums_x!(n,dμ_ij_x_sums,X_mat,μ_ij,yr_next)
@@ -305,16 +321,50 @@ function grad_calc_s!(dS_x::Matrix{T},s_n::Matrix{T},s_hat::Matrix{T},
 
         # s_hat = y_last.*(1 .- ω_yr) + ω_yr.*s_n
 
-        dlnLdβ = calc_dll(dS_x,n,X_mat,Γ_x,ω_i,s_n,s_hat,choice_ind)
+        dl = calc_dll(dS_x,n,X_mat,Γ_x,ω_i,s_n,s_hat,choice_ind)
+        dlnLdβ[n] = dl
         LL += ll_n[n]
-        dLLdβ += dlnLdβ*ll_n[n]
+        dLdβ += dl*ll_n[n]
         # s_n = s_n./μ_ij_sums_n
         # calc_prodTerms_x!(n,dS_x,X_mat,s_n,Γ_x)
     end
 
-    dLLdβ = dLLdβ/LL
+    dLLdβ = dLdβ/LL
     LL = log(LL/N)
-    return dLLdβ, LL
+    return dLLdβ, LL, dlnLdβ
+end
+
+
+
+function hess_calc_s!(dS_xy::Matrix{T},s_n::Matrix{T},
+                    μ_ij::Matrix{T},
+                    X_mat::S,Y_mat::R,
+                    μ_ij_sums::Matrix{T},
+                    yr_next::Vector{Int},
+                    choice_ind::Vector{Int},
+                    ω_i::Vector{Float64}) where {S,R,T}
+
+    (N,K) = size(μ_ij)
+    dμ_ij_x_sums = Vector{T}(undef,length(yr_next)+1)
+    dμ_ij_y_sums = Vector{T}(undef,length(yr_next)+1)
+    dμ_ij_xy_sums = Vector{T}(undef,length(yr_next)+1)
+
+    Γ_x = Vector{T}(undef,length(yr_next)+1)
+    Γ_y = Vector{T}(undef,length(yr_next)+1)
+    Γ_xy = Vector{T}(undef,length(yr_next)+1)
+    for n in 1:N
+        calc_derSums_xy!(n,dμ_ij_x_sums,dμ_ij_y_sums,dμ_ij_xy_sums,
+                        X_mat,Y_mat,μ_ij,yr_next)
+
+        for y in 1:length(Γ_x)
+            Γ_x[y] = dμ_ij_x_sums[y]/μ_ij_sums[y,n]
+            Γ_y[y] = dμ_ij_y_sums[y]/μ_ij_sums[y,n]
+            Γ_xy[y] = dμ_ij_xy_sums[y]/μ_ij_sums[y,n]
+        end
+
+        calc_d2S(dS_xy,n,X_mat,Y_mat,Γ_x,Γ_y,Γ_xy,ω_i,s_n,choice_ind)
+    end
+    return nothing
 end
 
 function grad_calc_ω!(dS_x::Matrix{T},s_n::Matrix{T},s_hat::Matrix{T},
@@ -326,42 +376,36 @@ function grad_calc_ω!(dS_x::Matrix{T},s_n::Matrix{T},s_hat::Matrix{T},
                     ω_i::Vector{Float64}) where {S,T}
 
     (K,N) = size(s_n)
-    dLLdβ = 0.0
+    dLdβ = 0.0
     LL = 0.0
+    dlnLdβ = Vector{T}(undef,N)
     for n in 1:N
         @inbounds ll = ll_n[n]
-        dlnLdβ = calc_dll_ω(dS_x,n,X_mat,y_last,ω_i,s_n,s_hat,choice_ind)
-        @fastmath LL += ll
-        @fastmath dLLdβ += dlnLdβ*ll
+        dl = calc_dll_ω(dS_x,n,X_mat,y_last,ω_i,s_n,s_hat,choice_ind)
+        dlnLdβ[n] = dl
+        LL += ll_n[n]
+        dLdβ += dl*ll_n[n]
     end
 
-    dLLdβ = dLLdβ/LL
+    dLLdβ = dLdβ/LL
     LL = log(LL/N)
-    return dLLdβ, LL
+    return dLLdβ, LL, dlnLdβ
 end
 
 
-function grad_calc_ω!(dS_xy::Matrix{T},s_n::Matrix{T},s_hat::Matrix{T},
-                    ll_n::Vector{Float64},
+function hess_calc_ω!(dS_xy::Matrix{T},s_n::Matrix{T},
                     X_mat::S,
+                    Y_mat::S,
                     yr_next::Vector{Int},
                     choice_ind::Vector{Int},
                     y_last::Vector{Float64},
                     ω_i::Vector{Float64}) where {S,T}
 
     (K,N) = size(s_n)
-    dLLdβ = 0.0
-    LL = 0.0
     for n in 1:N
-        @inbounds ll = ll_n[n]
-        d2lnLdβ = calc_d2ll_ω(dS_xy,n,X_mat,y_last,ω_i,s_n,s_hat,choice_ind)
-        @fastmath LL += ll
-        @fastmath dLLdβ += dlnLdβ*ll
+        calc_d2S_ω(dS_xy,n,X_mat,Y_mat,y_last,ω_i,s_n,choice_ind)
     end
-
-    dLLdβ = dLLdβ/LL
-    LL = log(LL/N)
-    return dLLdβ, LL
+    return nothing
 end
 
 
@@ -482,4 +526,255 @@ function returnParameterX!(q::Int64,X_mat::Matrix{Float64},
         X = F_t[q-σlen,:]
     end
     return X
+end
+
+
+function find_par_rel(app::ChoiceData,d::InsuranceLogit)
+
+        ind, S_ij, wgt, idxitr, X_t, X_0_t,X_int, Z, F_t, X_last, y_last = unPackChars(app,d)
+        draws = d.draws
+
+        Q = d.parLength[:All]
+        N = size(d.draws,1)
+        K = size(X_0_t,2)
+        X_mat = Array{Float64}(undef,N,K)
+
+        γlen = 0
+        Ilen = γlen + d.parLength[:I]
+        β0len = Ilen + d.parLength[:β]
+        βlen = β0len + d.parLength[:γ]*length(d.data._prodInteract)
+        σlen = βlen  + d.parLength[:σ]
+        FElen = σlen + d.parLength[:FE]
+
+        pars_rel = Int.(1:Q)
+        pars_bool = Vector{Bool}(undef,Q)
+        ll = 0
+        for q in 1:Q
+            X = returnParameterX!(q,X_mat,
+                            Z,X_0_t,X_t,X_last,X_int,draws,F_t,
+                            γlen,Ilen,β0len,βlen,σlen)
+            rel = any(abs.(X).>0)
+            pars_bool[q] = rel
+        end
+    return pars_rel[pars_bool]
+end
+
+function calc_relParDict!(d::InsuranceLogit)
+    for app in eachperson(d.data)
+        ind = person(app)[1]
+        d._rel_par_Dict[ind] = find_par_rel(app,d)
+    end
+    return nothing
+end
+
+
+function test_grad!(hess::Matrix{Float64},grad::Vector{Float64},
+                    app::ChoiceData,d::InsuranceLogit,p0::Vector{Float64})
+    params = parDict(d,p0)
+    individual_values!(d,params)
+    share = test_grad!(hess,grad,app,d,params)
+    return share
+end
+
+function test_grad(app::ChoiceData,d::InsuranceLogit,p0::Vector{T}) where T
+    params = parDict(d,p0)
+    individual_values!(d,params)
+    share = test_grad(app,d,params)
+    return share
+end
+
+function test_grad!(hess::Matrix{Float64},grad::Vector{Float64},
+                    app::ChoiceData,d::InsuranceLogit,p::parDict{T}) where T
+        hess[:].=0.0
+        grad[:].=0.0
+        ind, S_ij, wgt, idxitr, X_t, X_0_t,X_int, Z, F_t, X_last, y_last = unPackChars(app,d)
+        wgt = convert(Array{Float64,2},wgt)
+        S_ij = convert(Array{Float64,2},S_ij)
+        ω_i = p.ω_i[app._searchDict[ind]]
+        choice_ind = findall(S_ij[:].==1)
+
+        prodidx = Int.(product(app))
+
+        draws = d.draws
+
+        # Get Utility and derivative of Utility
+        μ_ij,s_hat,s_uncond = unPackParChars(p,idxitr)
+
+        sumShares!(s_hat)
+
+        (N,K) = size(μ_ij)
+
+        # Initialize Gradient
+        #(Q,N,K) = size(dμ_ij)
+        pars_relevant = d._rel_par_Dict[ind]
+        pars_relevant = 1:d.parLength[:All]
+
+        # Year Indices
+        yr_next = findYearInd(app._personYearDict[ind])
+
+        # Pre-Calculate Shares
+        # μ_ij_sums = preCalcμ(μ_ij,app._personYearDict[ind])
+        s_hat, s_n, ll_n, μ_ij_sums = calc_shares_mat(μ_ij,ω_i,y_last,choice_ind,yr_next)
+        ω_yr = expandYear(ω_i,yr_next,K)
+        ll_mean = log(mean(ll_n))
+
+        # Pre-Calculate Log-Likelihood Terms for Gradient
+        # Also Calculate Log-Likelihood itself
+        # gll_t1, gll_t2, gll_t3, ll_obs = ll_Terms(wgt,S_ij,s_hat)
+
+        #hess = zeros(Q,Q)
+        #hess[:] = 0.0
+        #grad[:] = 0.0
+        X_mat = Array{Float64}(undef,N,K)
+        Y_list = Array{Union{Float64, Array{Float64,1}, Array{Float64,2}},1}(undef,length(pars_relevant))
+        #Y_mat = Array{Float64}(N,K)
+
+        # Allocate Memory
+        # dS_xyz = Vector{Float64}(undef,K)
+
+        dS_x = Matrix{Float64}(undef,length(choice_ind),N)
+        dS_x_full = Matrix{Float64}(undef,length(choice_ind),N)
+        dS_xy = Matrix{Float64}(undef,length(choice_ind),N)
+        dlnL_list = Vector{Vector{Float64}}(undef,length(pars_relevant))
+
+
+        dS_x_list = Vector{Matrix{Float64}}(undef,length(pars_relevant))
+        dS_full_list = Vector{Matrix{Float64}}(undef,length(pars_relevant))
+        dω_list = Vector{Vector{Float64}}(undef,length(pars_relevant))
+        # dS_xy_list = Array{Vector{Float64},2}(undef,length(pars_relevant),length(pars_relevant))
+
+        # s_n = Vector{Float64}(undef,K)
+
+
+        #γlen = 1 + d.parLength[:γ]
+        γlen = 0
+        Ilen = γlen + d.parLength[:I]
+        β0len = Ilen + d.parLength[:β]
+        βlen = β0len + d.parLength[:γ]*length(d.data._prodInteract)
+        σlen = βlen  + d.parLength[:σ]
+        FElen = σlen + d.parLength[:FE]
+
+        s_adjust = s_uncond .- y_last
+
+        ll = 0
+        for (q_i,q) in enumerate(pars_relevant)
+            X = returnParameterX!(q,X_mat,
+                            Z,X_0_t,X_t,X_last,X_int,draws,F_t,
+                            γlen,Ilen,β0len,βlen,σlen)
+            @inbounds Y_list[q_i] = copy(X)
+
+            if (γlen < q <= Ilen)
+                dlldβ, ll, dlnL_x = grad_calc_ω!(dS_x,
+                            s_n,s_hat,ll_n,
+                            X,
+                            yr_next,
+                            choice_ind,
+                            y_last,
+                            ω_yr)
+                (K,N) = size(dS_x)
+                for (c,k) in enumerate(choice_ind)
+                    for n in 1:N
+                    dS_x_full[c,n] = dS_x[c,n]*(s_n[k,n] - y_last[k])
+                    end
+                end
+            else
+                dlldβ, ll, dlnL_x = grad_calc_s!(dS_x,
+                            s_n,s_hat,ll_n,
+                            μ_ij,X,
+                            μ_ij_sums,
+                            yr_next,
+                            choice_ind,
+                            ω_yr)
+                (K,N) = size(dS_x)
+                for k in 1:K, n in 1:N
+                    dS_x_full[k,n] = dS_x[k,n]*ω_i[k]
+                end
+            end
+            # Save Answers
+            dS_x_list[q_i] = dS_x[:,:]
+            dS_full_list[q_i] = dS_x_full[:,:]
+            dlnL_list[q_i] = dlnL_x[:]
+
+            ## Calculate Gradient
+            grad[q]+= dS_x_full[2,1]
+
+
+            for (r_i,r) in enumerate(pars_relevant)
+                if r>q
+                    continue
+                end
+                Y_mat = Y_list[r_i]
+
+
+                dS_y = dS_x_list[r_i]
+                dS_y_full = dS_full_list[r_i]
+                dlnL_y = dlnL_list[r_i]
+                # dω_y = dω_list[r_i]
+                # dS_u_y = dS_uncond_list[r_i]
+
+                if (q <= Ilen)
+                    hess_calc_ω!(dS_xy,
+                                s_n,
+                                X,Y_mat,
+                                yr_next,
+                                choice_ind,
+                                y_last,
+                                ω_yr)
+                elseif (r <= Ilen)
+                    dS_xy = dS_y.*dS_x
+                else
+                    hess_calc_s!(dS_xy,
+                                s_n,
+                                μ_ij,X,Y_mat,
+                                μ_ij_sums,
+                                yr_next,
+                                choice_ind,
+                                ω_yr)
+                end
+
+                hess_obs = hess_calc_ll(dS_xy,dS_x_full,dS_y_full,
+                                        dlnL_x,dlnL_y,ll_n,
+                                        s_hat,choice_ind)
+
+                hess[q,r]+= dS_xy[2,1]
+                if (q!=r)
+                    hess[r,q]+= dS_xy[2,1]
+                end
+            end
+        end
+
+    return s_hat[choice_ind[2],1]
+end
+
+
+function test_grad(app::ChoiceData,d::InsuranceLogit,p::parDict{T}) where T
+        ind, S_ij, wgt, idxitr, X_t, X_0_t,X_int, Z, F_t, X_last, y_last = unPackChars(app,d)
+        wgt = convert(Array{Float64,2},wgt)
+        S_ij = convert(Array{Float64,2},S_ij)
+        ω_i = p.ω_i[app._searchDict[ind]]
+        choice_ind = findall(S_ij[:].==1)
+
+        prodidx = Int.(product(app))
+
+        draws = d.draws
+
+        # Get Utility and derivative of Utility
+        μ_ij,s_hat,s_uncond = unPackParChars(p,idxitr)
+
+        sumShares!(s_hat)
+
+        (N,K) = size(μ_ij)
+
+        # Initialize Gradient
+        #(Q,N,K) = size(dμ_ij)
+        pars_relevant = d._rel_par_Dict[ind]
+        pars_relevant = 1:d.parLength[:All]
+
+        # Year Indices
+        yr_next = findYearInd(app._personYearDict[ind])
+
+        # Pre-Calculate Shares
+        # μ_ij_sums = preCalcμ(μ_ij,app._personYearDict[ind])
+        s_hat, s_n, ll_n, μ_ij_sums = calc_shares_mat(μ_ij,ω_i,y_last,choice_ind,yr_next)
+    return s_hat[choice_ind[2],1]
 end

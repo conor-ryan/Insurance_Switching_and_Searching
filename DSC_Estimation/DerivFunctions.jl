@@ -1,213 +1,126 @@
-function calc_derSums_xy!(n::Int64,s_n::Vector{T},
-                    X_mat::Matrix{Float64},Y::Matrix{Float64},
+function calc_derSums_xy!(n::Int64,
+                    dμ_ij_x_sums::Vector{T},
+                    dμ_ij_y_sums::Vector{T},
+                    dμ_ij_xy_sums::Vector{T},
+                    X_mat::Matrix{Float64},
+                    Y_mat::Matrix{Float64},
                     μ_ij::Matrix{T},
-                    μ_ij_sums_n::T) where T
+                    yr_next::Vector{Int}) where T
 
-    dμ_ij_x_sums = 0.0
-    dμ_ij_y_sums = 0.0
-    dμ_ij_xy_sums = 0.0
+    dμ_ij_x_sums[:].= 0.0
+    dμ_ij_y_sums[:].= 0.0
+    dμ_ij_xy_sums[:].= 0.0
 
-    K = length(s_n)
+    K = size(μ_ij,2)
+    yr_ind = 1
     for k in 1:K
+        if k in yr_next
+            yr_ind +=1
+        end
         @inbounds @fastmath u = μ_ij[n,k]
         @inbounds @fastmath x = X_mat[n,k]
-        @inbounds @fastmath y = Y[n,k]
+        @inbounds @fastmath y = Y_mat[n,k]
 
-        @inbounds @fastmath s_n[k] = u/μ_ij_sums_n
-        @inbounds @fastmath dμ_ij_x_sums+= u*x
-        @inbounds @fastmath dμ_ij_y_sums+= u*y
-        @inbounds @fastmath dμ_ij_xy_sums+= u*x*y
+        @inbounds @fastmath dμ_ij_x_sums[yr_ind] += u*x
+        @inbounds @fastmath dμ_ij_y_sums[yr_ind] += u*y
+        @inbounds @fastmath dμ_ij_xy_sums[yr_ind] += u*x*y
     end
 
-    return dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums
+    return nothing
 end
 
-function calc_derSums_xy!(n::Int64,s_n::Vector{T},
-                    X_mat::Matrix{Float64},Y::Vector{Float64},
+function calc_derSums_xy!(n::Int64,
+                    dμ_ij_x_sums::Vector{T},
+                    dμ_ij_y_sums::Vector{T},
+                    dμ_ij_xy_sums::Vector{T},
+                    X_mat::Matrix{Float64},
+                    Y_mat::Vector{Float64},
                     μ_ij::Matrix{T},
-                    μ_ij_sums_n::T) where T
+                    yr_next::Vector{Int}) where T
 
-    dμ_ij_x_sums = 0.0
-    dμ_ij_y_sums = 0.0
-    dμ_ij_xy_sums = 0.0
+    dμ_ij_x_sums[:].= 0.0
+    dμ_ij_y_sums[:].= 0.0
+    dμ_ij_xy_sums[:].= 0.0
 
-    K = length(s_n)
+    K = size(μ_ij,2)
+    yr_ind = 1
     for k in 1:K
+        if k in yr_next
+            yr_ind +=1
+        end
         @inbounds @fastmath u = μ_ij[n,k]
         @inbounds @fastmath x = X_mat[n,k]
-        @inbounds @fastmath y = Y[k]
+        @inbounds @fastmath y = Y_mat[k]
 
-        @inbounds @fastmath s_n[k] = u/μ_ij_sums_n
-        @inbounds @fastmath dμ_ij_x_sums+= u*x
-        @inbounds @fastmath dμ_ij_y_sums+= u*y
-        @inbounds @fastmath dμ_ij_xy_sums+= u*x*y
+        @inbounds @fastmath dμ_ij_x_sums[yr_ind] += u*x
+        @inbounds @fastmath dμ_ij_y_sums[yr_ind] += u*y
+        @inbounds @fastmath dμ_ij_xy_sums[yr_ind] += u*x*y
     end
 
-    return dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums
+    return nothing
 end
 
-function calc_derSums_xy!(n::Int64,s_n::Vector{T},
-                    X_mat::Matrix{Float64},y::Float64,
+function calc_derSums_xy!(n::Int64,
+                    dμ_ij_x_sums::Vector{T},
+                    dμ_ij_y_sums::Vector{T},
+                    dμ_ij_xy_sums::Vector{T},
+                    X_mat::Vector{Float64},
+                    Y_mat::Matrix{Float64},
                     μ_ij::Matrix{T},
-                    μ_ij_sums_n::T) where T
+                    yr_next::Vector{Int}) where T
 
-    dμ_ij_x_sums = 0.0
-    dμ_ij_y_sums = 0.0
-    dμ_ij_xy_sums = 0.0
+    dμ_ij_x_sums[:].= 0.0
+    dμ_ij_y_sums[:].= 0.0
+    dμ_ij_xy_sums[:].= 0.0
 
-    K = length(s_n)
+    K = size(μ_ij,2)
+    yr_ind = 1
     for k in 1:K
-        @inbounds @fastmath u = μ_ij[n,k]
-        @inbounds @fastmath x = X_mat[n,k]
-
-        @inbounds @fastmath s_n[k] = u/μ_ij_sums_n
-        @inbounds @fastmath dμ_ij_x_sums+= u*x
-        @inbounds @fastmath dμ_ij_y_sums+= u*y
-        @inbounds @fastmath dμ_ij_xy_sums+= u*x*y
-    end
-
-    return dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums
-end
-
-function calc_derSums_xy!(n::Int64,s_n::Vector{T},
-                    X_mat::Vector{Float64},Y::Matrix{Float64},
-                    μ_ij::Matrix{T},
-                    μ_ij_sums_n::T) where T
-
-    dμ_ij_x_sums = 0.0
-    dμ_ij_y_sums = 0.0
-    dμ_ij_xy_sums = 0.0
-
-    K = length(s_n)
-    for k in 1:K
+        if k in yr_next
+            yr_ind +=1
+        end
         @inbounds @fastmath u = μ_ij[n,k]
         @inbounds @fastmath x = X_mat[k]
-        @inbounds @fastmath y = Y[n,k]
+        @inbounds @fastmath y = Y_mat[n,k]
 
-        @inbounds @fastmath s_n[k] = u/μ_ij_sums_n
-        @inbounds @fastmath dμ_ij_x_sums+= u*x
-        @inbounds @fastmath dμ_ij_y_sums+= u*y
-        @inbounds @fastmath dμ_ij_xy_sums+= u*x*y
+        @inbounds @fastmath dμ_ij_x_sums[yr_ind] += u*x
+        @inbounds @fastmath dμ_ij_y_sums[yr_ind] += u*y
+        @inbounds @fastmath dμ_ij_xy_sums[yr_ind] += u*x*y
     end
 
-    return dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums
+    return nothing
 end
 
-function calc_derSums_xy!(n::Int64,s_n::Vector{T},
-                    X_mat::Vector{Float64},Y::Vector{Float64},
+function calc_derSums_xy!(n::Int64,
+                    dμ_ij_x_sums::Vector{T},
+                    dμ_ij_y_sums::Vector{T},
+                    dμ_ij_xy_sums::Vector{T},
+                    X_mat::Vector{Float64},
+                    Y_mat::Vector{Float64},
                     μ_ij::Matrix{T},
-                    μ_ij_sums_n::T) where T
+                    yr_next::Vector{Int}) where T
 
-    dμ_ij_x_sums = 0.0
-    dμ_ij_y_sums = 0.0
-    dμ_ij_xy_sums = 0.0
+    dμ_ij_x_sums[:].= 0.0
+    dμ_ij_y_sums[:].= 0.0
+    dμ_ij_xy_sums[:].= 0.0
 
-    K = length(s_n)
+    K = size(μ_ij,2)
+    yr_ind = 1
     for k in 1:K
+        if k in yr_next
+            yr_ind +=1
+        end
         @inbounds @fastmath u = μ_ij[n,k]
         @inbounds @fastmath x = X_mat[k]
-        @inbounds @fastmath y = Y[k]
+        @inbounds @fastmath y = Y_mat[k]
 
-        @inbounds @fastmath s_n[k] = u/μ_ij_sums_n
-        @inbounds @fastmath dμ_ij_x_sums+= u*x
-        @inbounds @fastmath dμ_ij_y_sums+= u*y
-        @inbounds @fastmath dμ_ij_xy_sums+= u*x*y
+        @inbounds @fastmath dμ_ij_x_sums[yr_ind] += u*x
+        @inbounds @fastmath dμ_ij_y_sums[yr_ind] += u*y
+        @inbounds @fastmath dμ_ij_xy_sums[yr_ind] += u*x*y
     end
 
-    return dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums
+    return nothing
 end
-
-function calc_derSums_xy!(n::Int64,s_n::Vector{T},
-                    X_mat::Vector{Float64},y::Float64,
-                    μ_ij::Matrix{T},
-                    μ_ij_sums_n::T) where T
-
-    dμ_ij_x_sums = 0.0
-    dμ_ij_y_sums = 0.0
-    dμ_ij_xy_sums = 0.0
-
-    K = length(s_n)
-    for k in 1:K
-        @inbounds @fastmath u = μ_ij[n,k]
-        @inbounds @fastmath x = X_mat[k]
-
-        @inbounds @fastmath s_n[k] = u/μ_ij_sums_n
-        @inbounds @fastmath dμ_ij_x_sums+= u*x
-        @inbounds @fastmath dμ_ij_y_sums+= u*y
-        @inbounds @fastmath dμ_ij_xy_sums+= u*x*y
-    end
-
-    return dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums
-end
-
-function calc_derSums_xy!(n::Int64,s_n::Vector{T},
-                    x::Float64,Y::Matrix{Float64},
-                    μ_ij::Matrix{T},
-                    μ_ij_sums_n::T) where T
-
-    dμ_ij_x_sums = 0.0
-    dμ_ij_y_sums = 0.0
-    dμ_ij_xy_sums = 0.0
-
-    K = length(s_n)
-    for k in 1:K
-        @inbounds @fastmath u = μ_ij[n,k]
-        @inbounds @fastmath y = Y[n,k]
-
-        @inbounds @fastmath s_n[k] = u/μ_ij_sums_n
-        @inbounds @fastmath dμ_ij_x_sums+= u*x
-        @inbounds @fastmath dμ_ij_y_sums+= u*y
-        @inbounds @fastmath dμ_ij_xy_sums+= u*x*y
-    end
-
-    return dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums
-end
-
-function calc_derSums_xy!(n::Int64,s_n::Vector{T},
-                    x::Float64,Y::Vector{Float64},
-                    μ_ij::Matrix{T},
-                    μ_ij_sums_n::T) where T
-
-    dμ_ij_x_sums = 0.0
-    dμ_ij_y_sums = 0.0
-    dμ_ij_xy_sums = 0.0
-
-    K = length(s_n)
-    for k in 1:K
-        @inbounds @fastmath u = μ_ij[n,k]
-        @inbounds @fastmath y = Y[k]
-
-        @inbounds @fastmath s_n[k] = u/μ_ij_sums_n
-        @inbounds @fastmath dμ_ij_x_sums+= u*x
-        @inbounds @fastmath dμ_ij_y_sums+= u*y
-        @inbounds @fastmath dμ_ij_xy_sums+= u*x*y
-    end
-
-    return dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums
-end
-
-function calc_derSums_xy!(n::Int64,s_n::Vector{T},
-                    x::Float64,y::Float64,
-                    μ_ij::Matrix{T},
-                    μ_ij_sums_n::T) where T
-
-    dμ_ij_x_sums = 0.0
-    dμ_ij_y_sums = 0.0
-    dμ_ij_xy_sums = 0.0
-
-    K = length(s_n)
-    for k in 1:K
-        @inbounds @fastmath u = μ_ij[n,k]
-
-        @inbounds @fastmath s_n[k] = u/μ_ij_sums_n
-        @inbounds @fastmath dμ_ij_x_sums+= u*x
-        @inbounds @fastmath dμ_ij_y_sums+= u*y
-        @inbounds @fastmath dμ_ij_xy_sums+= u*x*y
-    end
-
-    return dμ_ij_x_sums, dμ_ij_y_sums, dμ_ij_xy_sums
-end
-
 
 function calc_derSums_x!(n::Int64,
                     dμ_ij_x_sums::Vector{T},
@@ -256,26 +169,50 @@ function calc_derSums_x!(n::Int64,
     return nothing
 end
 
-function calc_derSums_x!(n::Int64,
-                    dμ_ij_x_sums::Vector{T},
-                    x::Float64,
-                    μ_ij::Matrix{T},
-                    yr_next::Vector{Int}) where T
-
-    dμ_ij_x_sums[:].= 0.0
-
-    K = size(μ_ij,2)
-    yr_ind = 1
-    for k in 1:K
-        if k in yr_next
-            yr_ind +=1
-        end
-        @inbounds @fastmath u = μ_ij[n,k]
-        @inbounds @fastmath dμ_ij_x_sums[yr_ind] += u*x
+function calc_d2S(dS_xy::Matrix{T},n::Int64,
+                    X_mat::Matrix{Float64},Y_mat::Matrix{Float64},
+                    Γ_x::Vector{T},Γ_y::Vector{T},Γ_xy::Vector{T},
+                    ω::Vector{T},s_n::Matrix{T},choice_ind::Vector{Int64}) where T
+    for (c,k) in enumerate(choice_ind)
+        s = ((X_mat[n,k]-Γ_x[c])*(Y_mat[n,k]-Γ_y[c])-Γ_xy[c] + Γ_x[c]*Γ_y[c])*s_n[k,n]
+        dS_xy[c,n] = ω[k]*s
     end
-
     return nothing
 end
+
+function calc_d2S(dS_xy::Matrix{T},n::Int64,
+                    X_mat::Matrix{Float64},Y_mat::Vector{Float64},
+                    Γ_x::Vector{T},Γ_y::Vector{T},Γ_xy::Vector{T},
+                    ω::Vector{T},s_n::Matrix{T},choice_ind::Vector{Int64}) where T
+    for (c,k) in enumerate(choice_ind)
+        s = ((X_mat[n,k]-Γ_x[c])*(Y_mat[k]-Γ_y[c])-Γ_xy[c] + Γ_x[c]*Γ_y[c])*s_n[k,n]
+        dS_xy[c,n] = ω[k]*s
+    end
+    return nothing
+end
+
+function calc_d2S(dS_xy::Matrix{T},n::Int64,
+                    X_mat::Vector{Float64},Y_mat::Matrix{Float64},
+                    Γ_x::Vector{T},Γ_y::Vector{T},Γ_xy::Vector{T},
+                    ω::Vector{T},s_n::Matrix{T},choice_ind::Vector{Int64}) where T
+    for (c,k) in enumerate(choice_ind)
+        s = ((X_mat[k]-Γ_x[c])*(Y_mat[n,k]-Γ_y[c])-Γ_xy[c] + Γ_x[c]*Γ_y[c])*s_n[k,n]
+        dS_xy[c,n] = ω[k]*s
+    end
+    return nothing
+end
+
+function calc_d2S(dS_xy::Matrix{T},n::Int64,
+                    X_mat::Vector{Float64},Y_mat::Vector{Float64},
+                    Γ_x::Vector{T},Γ_y::Vector{T},Γ_xy::Vector{T},
+                    ω::Vector{T},s_n::Matrix{T},choice_ind::Vector{Int64}) where T
+    for (c,k) in enumerate(choice_ind)
+        s = ((X_mat[k]-Γ_x[c])*(Y_mat[k]-Γ_y[c])-Γ_xy[c] + Γ_x[c]*Γ_y[c])*s_n[k,n]
+        dS_xy[c,n] = ω[k]*s
+    end
+    return nothing
+end
+
 
 
 
@@ -309,20 +246,10 @@ function calc_dll(dS_x::Matrix{T},n::Int64,X_mat::Vector{Float64},Γ_x::Vector{T
     return dlnLdβ
 end
 
-function calc_dll(dS_x::Matrix{T},n::Int64,x::Float64,Γ_x::Vector{T},ω::Vector{T},
-                    s_n::Matrix{T},s_hat::Matrix{T},choice_ind::Vector{Int64}) where T
-    dlnLdβ = 0.0
-    yr_ind = 1
-    for (y,k) in enumerate(choice_ind)
-        s = (x-Γ_x[yr_ind])*s_n[k,n]
-        dS_x[y,n] = s
-        dlnLdβ += ω[k]*s./s_hat[k,n]
-        yr_ind+=1
-    end
-    # dlnLdβ = sum(dlnSdβ[choice_ind])
-    # ll_n = prod(s_hat[choice_ind,n])
-    return dlnLdβ
-end
+
+
+
+
 
 function calc_dll_ω(dS_x::Matrix{T},n::Int64,X_mat::Matrix{Float64},y_last::Vector{Float64},ω::Vector{T},
                     s_n::Matrix{T},s_hat::Matrix{T},choice_ind::Vector{Int64}) where T
@@ -360,348 +287,35 @@ function calc_dll_ω(dS_x::Matrix{T},n::Int64,x::Float64,y_last::Vector{Float64}
     return dlnLdβ
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function calc_prodTerms_xy!(n::Int64,dS_xy::Vector{Float64},
-                        X_mat::Matrix{Float64},Y::Matrix{Float64},
-                        s_n::Vector{Float64},
-                        Γ_x::Float64,Γ_y::Float64,Γ_xy::Float64)
-
-    K = length(dS_xy)
-    t_last = Γ_x*Γ_y -Γ_xy
-    for k in 1:K
-        @inbounds @fastmath txy = s_n[k]*((X_mat[n,k] - Γ_x)*(Y[n,k] - Γ_y)+t_last)
-        @inbounds @fastmath dS_xy[k]+= txy
-    end
-end
-
-function calc_prodTerms_xy!(n::Int64,dS_xy::Vector{Float64},
-                        X_mat::Matrix{Float64},Y::Vector{Float64},
-                        s_n::Vector{Float64},
-                        Γ_x::Float64,Γ_y::Float64,Γ_xy::Float64)
-
-    K = length(dS_xy)
-    t_last = Γ_x*Γ_y -Γ_xy
-    for k in 1:K
-        @inbounds @fastmath txy = s_n[k]*((X_mat[n,k] - Γ_x)*(Y[k] - Γ_y)+t_last)
-        @inbounds @fastmath dS_xy[k]+= txy
-    end
-end
-
-function calc_prodTerms_xy!(n::Int64,dS_xy::Vector{Float64},
-                        X_mat::Matrix{Float64},Y::Float64,
-                        s_n::Vector{Float64},
-                        Γ_x::Float64,Γ_y::Float64,Γ_xy::Float64)
-
-    K = length(dS_xy)
-    t_last = Γ_x*Γ_y -Γ_xy
-    for k in 1:K
-        @inbounds @fastmath txy = s_n[k]*((X_mat[n,k] - Γ_x)*(Y - Γ_y)+t_last)
-        @inbounds @fastmath dS_xy[k]+= txy
-    end
-end
-
-
-
-function calc_prodTerms_xy!(n::Int64,dS_xy::Vector{Float64},
-                        X_mat::Vector{Float64},Y::Matrix{Float64},
-                        s_n::Vector{Float64},
-                        Γ_x::Float64,Γ_y::Float64,Γ_xy::Float64)
-
-    K = length(dS_xy)
-    t_last = Γ_x*Γ_y -Γ_xy
-    for k in 1:K
-        @inbounds @fastmath txy = s_n[k]*((X_mat[k] - Γ_x)*(Y[n,k] - Γ_y)+t_last)
-        @inbounds @fastmath dS_xy[k]+= txy
-    end
-end
-
-function calc_prodTerms_xy!(n::Int64,dS_xy::Vector{Float64},
-                        X_mat::Vector{Float64},Y::Vector{Float64},
-                        s_n::Vector{Float64},
-                        Γ_x::Float64,Γ_y::Float64,Γ_xy::Float64)
-
-    K = length(dS_xy)
-    t_last = Γ_x*Γ_y -Γ_xy
-    for k in 1:K
-        @inbounds @fastmath txy = s_n[k]*((X_mat[k] - Γ_x)*(Y[k] - Γ_y)+t_last)
-        @inbounds @fastmath dS_xy[k]+= txy
-    end
-end
-
-function calc_prodTerms_xy!(n::Int64,dS_xy::Vector{Float64},
-                        X_mat::Vector{Float64},Y::Float64,
-                        s_n::Vector{Float64},
-                        Γ_x::Float64,Γ_y::Float64,Γ_xy::Float64)
-
-    K = length(dS_xy)
-    t_last = Γ_x*Γ_y -Γ_xy
-    for k in 1:K
-        @inbounds @fastmath txy = s_n[k]*((X_mat[k] - Γ_x)*(Y - Γ_y)+t_last)
-        @inbounds @fastmath dS_xy[k]+= txy
-    end
-end
-
-
-function calc_prodTerms_xy!(n::Int64,dS_xy::Vector{Float64},
-                        X_mat::Float64,Y::Matrix{Float64},
-                        s_n::Vector{Float64},
-                        Γ_x::Float64,Γ_y::Float64,Γ_xy::Float64)
-
-    K = length(dS_xy)
-    t_last = Γ_x*Γ_y -Γ_xy
-    for k in 1:K
-        @inbounds @fastmath txy = s_n[k]*((X_mat - Γ_x)*(Y[n,k] - Γ_y)+t_last)
-        @inbounds @fastmath dS_xy[k]+= txy
-    end
-end
-
-function calc_prodTerms_xy!(n::Int64,dS_xy::Vector{Float64},
-                        X_mat::Float64,Y::Vector{Float64},
-                        s_n::Vector{Float64},
-                        Γ_x::Float64,Γ_y::Float64,Γ_xy::Float64)
-
-    K = length(dS_xy)
-    t_last = Γ_x*Γ_y -Γ_xy
-    for k in 1:K
-        @inbounds @fastmath txy = s_n[k]*((X_mat - Γ_x)*(Y[k] - Γ_y)+t_last)
-        @inbounds @fastmath dS_xy[k]+= txy
-    end
-end
-
-function calc_prodTerms_xy!(n::Int64,dS_xy::Vector{Float64},
-                        X_mat::Float64,Y::Float64,
-                        s_n::Vector{Float64},
-                        Γ_x::Float64,Γ_y::Float64,Γ_xy::Float64)
-
-    K = length(dS_xy)
-    t_last = Γ_x*Γ_y -Γ_xy
-    for k in 1:K
-        @inbounds @fastmath txy = s_n[k]*((X_mat - Γ_x)*(Y - Γ_y)+t_last)
-        @inbounds @fastmath dS_xy[k]+= txy
-    end
-end
-
-function calc_prodTerms_x!(n::Int64,
-                        dS_x::Vector{T},
-                        X_mat::Matrix{Float64},
-                        s_n::Vector{T},
-                        Γ_x::T) where T
-
-    K = length(dS_x)
-    for k in 1:K
-        @inbounds @fastmath tx = s_n[k]*(X_mat[n,k] - Γ_x)
-        @inbounds @fastmath dS_x[k]+= tx
-    end
-end
-
-function calc_prodTerms_x!(n::Int64,
-                        dS_x::Vector{T},
-                        X_mat::Vector{Float64},
-                        s_n::Vector{T},
-                        Γ_x::T) where T
-
-    K = length(dS_x)
-    for k in 1:K
-        @inbounds @fastmath tx = s_n[k]*(X_mat[k] - Γ_x)
-        @inbounds @fastmath dS_x[k]+= tx
-    end
-end
-
-function calc_prodTerms_x!(n::Int64,
-                        dS_x::Vector{T},
-                        X_mat::Float64,
-                        s_n::Vector{T},
-                        Γ_x::T) where T
-
-    K = length(dS_x)
-    for k in 1:K
-        @inbounds @fastmath tx = s_n[k]*(X_mat - Γ_x)
-        @inbounds @fastmath dS_x[k]+= tx
-    end
-end
-
-
-
-function hess_calc_ω!(dS_xy::Vector{T},s_uncond::Vector{T},
-                    ω::T,
-                    X_mat::Matrix{Float64},Y_mat::Matrix{Float64},
-                    y_last::Vector{Float64}) where T
-
-    dS_xy[:] .= 0.0
-    K = length(dS_xy)
-    for k in 1:K
-        dS_xy[k] = (X_mat[1,k]*Y_mat[1,k]*ω*(1-ω)*(1-2*ω))*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
-
-function hess_calc_ω!(dS_xy::Vector{T},s_uncond::Vector{T},
-                    ω::T,
-                    X_mat::Matrix{Float64},Y_mat::Vector{Float64},
-                    y_last::Vector{Float64}) where T
-
-    dS_xy[:] .= 0.0
-    K = length(dS_xy)
-    for k in 1:K
-        dS_xy[k] = (X_mat[1,k]*Y_mat[k]*ω*(1-ω)*(1-2*ω))*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
-
-function hess_calc_ω!(dS_xy::Vector{T},s_uncond::Vector{T},
-                    ω::T,
-                    X_mat::Matrix{Float64},Y_mat::Float64,
-                    y_last::Vector{Float64}) where T
-
-    dS_xy[:] .= 0.0
-    K = length(dS_xy)
-    for k in 1:K
-        dS_xy[k] = (X_mat[1,k]*Y_mat*ω*(1-ω)*(1-2*ω))*(s_uncond[k] - y_last[k])
+function calc_d2S_ω(dS_xy::Matrix{T},n::Int64,X_mat::Vector{Float64},Y_mat::Vector{Float64},
+                    y_last::Vector{Float64},ω::Vector{T},
+                    s_n::Matrix{T},choice_ind::Vector{Int64}) where T
+    for (c,k) in enumerate(choice_ind)
+        s = X_mat[k]*Y_mat[k]*ω[k]*(1 - ω[k])*(1-2*ω[k])*(s_n[k,n] - y_last[k])
+        dS_xy[c,n] = s
     end
     return nothing
 end
 
 
-function hess_calc_ω!(dS_xy::Vector{T},s_uncond::Vector{T},
-                    ω::T,
-                    X_mat::Vector{Float64},Y_mat::Matrix{Float64},
-                    y_last::Vector{Float64}) where T
-
-    dS_xy[:] .= 0.0
-    K = length(dS_xy)
-    for k in 1:K
-        dS_xy[k] = (X_mat[k]*Y_mat[1,k]*ω*(1-ω)*(1-2*ω))*(s_uncond[k] - y_last[k])
+function calc_d2ll(n::Int64,dS_xy::Matrix{T},dS_x::Matrix{T},dS_y::Matrix{T},s_hat::Matrix{T},choice_ind::Vector{Int64}) where T
+    dlnLdβ = 0.0
+    for (c,k) in enumerate(choice_ind)
+        dlnLdβ += dS_xy[c,n]/s_hat[k,n] - (dS_x[c,n]*dS_y[c,n])/(s_hat[k,n])^2
     end
-    return nothing
+    return dlnLdβ
 end
 
-function hess_calc_ω!(dS_xy::Vector{T},s_uncond::Vector{T},
-                    ω::T,
-                    X_mat::Vector{Float64},Y_mat::Vector{Float64},
-                    y_last::Vector{Float64}) where T
 
-    dS_xy[:] .= 0.0
-    K = length(dS_xy)
-    for k in 1:K
-        dS_xy[k] = (X_mat[k]*Y_mat[k]*ω*(1-ω)*(1-2*ω))*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
 
-function hess_calc_ω!(dS_xy::Vector{T},s_uncond::Vector{T},
-                    ω::T,
-                    X_mat::Vector{Float64},Y_mat::Float64,
-                    y_last::Vector{Float64}) where T
 
-    dS_xy[:] .= 0.0
-    K = length(dS_xy)
-    for k in 1:K
-        dS_xy[k] = (X_mat[k]*Y_mat*ω*(1-ω)*(1-2*ω))*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
 
-function hess_calc_ω!(dS_xy::Vector{T},s_uncond::Vector{T},
-                    ω::T,
-                    X_mat::Float64,Y_mat::Matrix{Float64},
-                    y_last::Vector{Float64}) where T
 
-    dS_xy[:] .= 0.0
-    K = length(dS_xy)
-    for k in 1:K
-        dS_xy[k] = (X_mat*Y_mat[1,k]*ω*(1-ω)*(1-2*ω))*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
 
-function hess_calc_ω!(dS_xy::Vector{T},s_uncond::Vector{T},
-                    ω::T,
-                    X_mat::Float64,Y_mat::Vector{Float64},
-                    y_last::Vector{Float64}) where T
 
-    dS_xy[:] .= 0.0
-    K = length(dS_xy)
-    for k in 1:K
-        dS_xy[k] = (X_mat*Y_mat[k]*ω*(1-ω)*(1-2*ω))*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
 
-function hess_calc_ω!(dS_xy::Vector{T},s_uncond::Vector{T},
-                    ω::T,
-                    X_mat::Float64,Y_mat::Float64,
-                    y_last::Vector{Float64}) where T
 
-    dS_xy[:] .= 0.0
-    K = length(dS_xy)
-    for k in 1:K
-        dS_xy[k] = (X_mat*Y_mat*ω*(1-ω)*(1-2*ω))*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
 
-function grad_calc_ω!(dω_x::Vector{T},
-                    ω::T,
-                    X_mat::Matrix{Float64}) where T
-
-    dω_x[:] .= 0.0
-    K = length(dω_x)
-    for k in 1:K
-        dω_x[k] = (X_mat[1,k]*ω*(1-ω))#*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
-
-function grad_calc_ω!(dω_x::Vector{T},
-                    ω::T,
-                    X_mat::Vector{Float64}) where T
-
-    dω_x[:] .= 0.0
-    K = length(dω_x)
-    for k in 1:K
-        dω_x[k] = (X_mat[k]*ω*(1-ω))#*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
-
-function grad_calc_ω!(dω_x::Vector{T},
-                    ω::T,
-                    X_mat::Float64) where T
-
-    dω_x[:] .= 0.0
-    K = length(dω_x)
-    val = (X_mat*ω*(1-ω))
-    for k in 1:K
-        dω_x[k] = val#*(s_uncond[k] - y_last[k])
-    end
-    return nothing
-end
 
 
 function getIndex_broad(A::Float64,n::Int64,k::Int64)

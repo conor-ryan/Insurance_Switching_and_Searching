@@ -184,16 +184,16 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
 
 
     # FE is a row Vector
-    if T== Float64
-        controls = zeros(length(idxitr))
-        for k in 1:length(controls)
-            for j in app._rel_fe_Dict[ind]
-                controls[k]+= fe[j]*F[j,k]
-            end
-        end
-    else
-        controls = fe*F
-    end
+    # if T== Float64
+    #     controls = zeros(length(idxitr))
+    #     for k in 1:length(controls)
+    #         for j in app._rel_fe_Dict[ind]
+    #             controls[k]+= fe[j]*F[j,k]
+    #         end
+    #     end
+    # else
+    controls = fe*F
+    # end
 
     # demos = γ_0 + dot(γ,Z)
     demos = 0.0
@@ -258,6 +258,7 @@ function calc_shares(μ_ij::Array{T,2},ω_i::Vector{T},iplan::Vector{Float64},y:
     chosen = s_hat[y,:]
     ll = prod(chosen,dims=1)
     ll_mean = log(mean(ll))
+    # ll_mean = mean(ll)
 
     return s_mean,ll_mean
 end

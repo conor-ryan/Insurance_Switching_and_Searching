@@ -46,8 +46,6 @@ struct ChoiceData <: ModelData
     _personYearDict::Dict{Int, Dict{Int,UnitRange}}
     _searchDict::Dict{Int, UnitRange{Int}}
     _productDict::Dict{Int, Array{Int,1}}
-
-    _rel_fe_Dict::Dict{Real,Array{Int64,1}}
 end
 
 function ChoiceData(data_choice::DataFrame;
@@ -180,11 +178,32 @@ function ChoiceData(data_choice::DataFrame;
 
     println("Check Collinearity")
     if length(_inertchars)>0
+        smallest_ev = 0
         all_ind = vcat(_inertchars)
-        all_data = dmat[all_ind,:]
-        X = all_data*all_data'
-        smallest_ev = minimum(abs.(eigvals(X)))
-        println("Smallest Data Eigenvalue (search): $smallest_ev")
+        while abs(smallest_ev).<1e-10
+            all_data = dmat[all_ind,:]
+            X = all_data*all_data'
+            smallest_ev = minimum(abs.(eigvals(X)))
+            all_vals = abs.(eigvals(X))
+            num_zero_vals = length(findall(all_vals.<1e-10))
+            smallest_ev = minimum(all_vals)
+            println("Smallest Data Eigenvalue (search): $smallest_ev")
+            println("Number of Zero Eigenvalues (search): $num_zero_vals")
+            pdim = size(dmat[all_ind,:],1)
+            if abs(smallest_ev)<1e-10
+                v = eigvecs(X)
+                zero_vals = findall(all_vals.<1e-10)
+                drop_list = Vector{Int}(undef,0)
+                for ind_v in zero_vals
+                    ind_colin = maximum(findall(abs.(v[:,ind_v]).>1e-10))
+                    drop_list = vcat(drop_list,[ind_colin])
+                end
+                for k in drop_list
+                    all_ind = all_ind[all_ind.!=k]
+                end
+                println("Dropping: $drop_list")
+            end
+        end
     else
         println("Smallest Data Eigenvalue (search):No Search Variable")
     end
@@ -292,14 +311,14 @@ function ChoiceData(data_choice::DataFrame;
     # end
 
     # Relevant Parameters Per Person
-    println("Find Relevant Parameters")
-    rel_fe_Dict = Dict{Real,Array{Int64,1}}()
-    for (id,idxitr) in _personDict
-        F_t = view(F,:,idxitr)
-        any_positive = maximum(abs.(F_t),dims=2)[:,1]
-        pars_relevant = findall(any_positive .>0)
-        rel_fe_Dict[id] = pars_relevant
-    end
+    # println("Find Relevant Parameters")
+    # rel_par_Dict = Dict{Real,Array{Int64,1}}()
+    # for (id,idxitr) in _personDict
+    #     F_t = view(F,:,idxitr)
+    #     any_positive = maximum(abs.(F_t),dims=2)[:,1]
+    #     pars_relevant = findall(any_positive .>0)
+    #     rel_fe_Dict[id] = pars_relevant
+    # end
 
     # Make the data object
     m = ChoiceData(dmat, F, index,
@@ -308,8 +327,8 @@ function ChoiceData(data_choice::DataFrame;
             _choice,_choice_last, _demoRaw, _wgt,
              _randCoeffs,_prodInteract,
              uniqids,_personDict,_personYearDict,_searchDict,
-             _productDict,
-            rel_fe_Dict)
+             _productDict)
+
     return m
 end
 
@@ -512,8 +531,7 @@ function subset(d::T, idx) where T<:ModelData
     d._personDict,
     d._personYearDict,
     d._searchDict,
-    d._productDict,
-    d._rel_fe_Dict)
+    d._productDict)
 end
 
 ########## People Iterator ###############
@@ -574,6 +592,7 @@ abstract type LogitModel end
 mutable struct InsuranceLogit <: LogitModel
     # Dictionary of Parameters and implied lengths
     parLength::Dict{Symbol, Int64}
+    _rel_par_Dict::Dict{Real,Array{Int64,1}}
     # ChoiceData struct
     data::ChoiceData
 
@@ -636,9 +655,13 @@ function InsuranceLogit(c_data::ChoiceData,haltonDim::Int;
         draws = zeros(1,dim_min)
     end
 
+    println("Compute Relevant Parameters")
+    rel_par_Dict = Dict{Real,Array{Int64,1}}()
 
     d = InsuranceLogit(parLength,
+                        rel_par_Dict,
                         c_data,
                         draws)
+    calc_relParDict!(d)
     return d
 end

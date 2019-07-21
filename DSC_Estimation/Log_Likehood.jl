@@ -46,13 +46,14 @@ function log_likelihood!(hess::Matrix{Float64},grad::Vector{Float64},
     hess[:] .= 0.0
     grad[:] .= 0.0
     ll = 0.0
-    Pop =sum(weight(d.data).*choice(d.data))
+    Pop = length(p.L_i)
+    # Pop =sum(weight(d.data).*choice(d.data))
 
     individual_values!(d,p)
-    individual_shares(d,p)
+    # individual_shares(d,p)
 
     for app in eachperson(d.data)
-        ll_obs,pars_relevant = ll_obs!(hess,grad,app,d,p)
+        ll_obs = ll_obs!(hess,grad,app,d,p)
         ll+=ll_obs
     end
 

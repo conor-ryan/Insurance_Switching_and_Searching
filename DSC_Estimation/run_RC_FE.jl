@@ -58,8 +58,8 @@ c = ChoiceData(df_LA;
                         # Network Fixed Effects
                         :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
                         :def_issfe_6, :def_issfe_7, # Leave Out LA Care
-                        :def_netfe_2, :def_netfe_3, :def_netfe_4, :def_netfe_6,
-                        :def_netfe_8, :def_netfe_9, :def_netfe_10, :def_netfe_12,
+                        :def_netfe_2, :def_netfe_4, :def_netfe_6, # Drop net03
+                        :def_netfe_8, :def_netfe_9, :def_netfe_12, # Drop net10
                         # Year Fixed Effects
                         :year_2015,:year_2016,:year_2017,:year_2018],
     demR =[:agefe_1,:agefe_2,:fam,:hassub],
@@ -68,7 +68,7 @@ c = ChoiceData(df_LA;
     wgt=[:constant])
 
 # Fit into model
-m = InsuranceLogit(c,100)
+m = InsuranceLogit(c,50)
 println("Data Loaded")
 
 #γ0start = rand(1)-.5
@@ -92,14 +92,18 @@ individual_shares(m,par)
 println("Compute Gradient")
 grad = Vector{Float64}(undef,length(p0))
 hess = Matrix{Float64}(undef,length(p0),length(p0))
-ll = log_likelihood!(grad,m,p0)
+ll = log_likelihood!(hess,grad,m,p0)
+
+# app = iterate(eachperson(m.data),7)[1]
+# ll = test_grad!(hess,grad,app,m,p0)
 
 
 # # #
 # # #
 f_obj(x) = log_likelihood(m,x)
+# f_obj(x) = test_grad(app,m,x)
 grad_1 = Vector{Float64}(undef,length(p0))
-# hess_1 = Matrix{Float64}(undef,length(p0),length(p0))
+hess_1 = Matrix{Float64}(undef,length(p0),length(p0))
 fval_old = f_obj(p0)
 println(fval_old-ll)
 # # # # # #
@@ -108,11 +112,9 @@ ForwardDiff.gradient!(grad_1,f_obj, p0)#, cfg)
 println(maximum(abs.(grad_1-grad)))
 grad_ind = findall(abs.(grad_1-grad).>1e-12)
 println("Hessian")
-
-
 # cfg = ForwardDiff.HessianConfig(f_obj, p0, ForwardDiff.Chunk{3}())
 ForwardDiff.hessian!(hess_1,f_obj, p0)
-println(maximum(abs.(hess_1-hess_2)))
+println(maximum(abs.(hess_1-hess)))
 
 
 
@@ -121,7 +123,7 @@ Profile.init(n=10^8,delay=.001)
 Profile.clear()
 #Juno.@profile add_obs_mat!(hess,grad,hess_obs,grad_obs,Pop)
 # Juno.@profile log_likelihood!(thD_2,hess_2,grad_2,m,par0)
-Juno.@profile log_likelihood!(grad,m,p0)
+Juno.@profile log_likelihood!(hess,grad,m,p0)
 Juno.profiletree()
 Juno.profiler()
 
