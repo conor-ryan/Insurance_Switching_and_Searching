@@ -41,7 +41,7 @@ end
 
 
 function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
-    max_itr=2000,strict=true,Hess_Skip_Steps=5)
+    max_itr=2000,strict=true,Hess_Skip_Steps=30)
     ## Initialize Parameter Vector
     p_vec = p0
     N = length(p0)
