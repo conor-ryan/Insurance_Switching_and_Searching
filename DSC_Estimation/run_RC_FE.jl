@@ -24,7 +24,7 @@ println("Code Loaded")
 # Load the Data
 include("load.jl")
 # 1% Sample of LA
-df_LA = df
+df_LA = df[df[:samp1].==1.0,:]
 # df = df[df[:samp1].==1,:]
 # df_LA = df[df[:gra].==16,:]
 
@@ -58,8 +58,8 @@ c = ChoiceData(df_LA;
                         # Network Fixed Effects
                         :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
                         :def_issfe_6, :def_issfe_7, # Leave Out LA Care
-                        :def_netfe_2, :def_netfe_4, :def_netfe_6, # Drop net03
-                        :def_netfe_8, :def_netfe_9, :def_netfe_12, # Drop net10
+                        :def_netfe_4, :def_netfe_6, # Drop net02, net03
+                        :def_netfe_9, :def_netfe_12, # Drop net10, net08
                         # Year Fixed Effects
                         :year_2015,:year_2016,:year_2017,:year_2018],
     demR =[:agefe_1,:agefe_2,:fam,:hassub],
@@ -92,8 +92,8 @@ individual_shares(m,par)
 println("Compute Gradient")
 grad = Vector{Float64}(undef,length(p0))
 hess = Matrix{Float64}(undef,length(p0),length(p0))
-ll = log_likelihood!(hess,grad,m,p0)
-
+@time ll = log_likelihood!(hess,grad,m,p0)
+@time ll = log_likelihood!(grad,m,p0)
 # app = iterate(eachperson(m.data),7)[1]
 # ll = test_grad!(hess,grad,app,m,p0)
 

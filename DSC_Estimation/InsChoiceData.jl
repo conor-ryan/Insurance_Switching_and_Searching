@@ -180,29 +180,27 @@ function ChoiceData(data_choice::DataFrame;
     if length(_inertchars)>0
         smallest_ev = 0
         all_ind = vcat(_inertchars)
-        while abs(smallest_ev).<1e-10
-            all_data = dmat[all_ind,:]
-            X = all_data*all_data'
-            smallest_ev = minimum(abs.(eigvals(X)))
-            all_vals = abs.(eigvals(X))
-            num_zero_vals = length(findall(all_vals.<1e-10))
-            smallest_ev = minimum(all_vals)
-            println("Smallest Data Eigenvalue (search): $smallest_ev")
-            println("Number of Zero Eigenvalues (search): $num_zero_vals")
-            pdim = size(dmat[all_ind,:],1)
-            if abs(smallest_ev)<1e-10
-                v = eigvecs(X)
-                zero_vals = findall(all_vals.<1e-10)
-                drop_list = Vector{Int}(undef,0)
-                for ind_v in zero_vals
-                    ind_colin = maximum(findall(abs.(v[:,ind_v]).>1e-10))
-                    drop_list = vcat(drop_list,[ind_colin])
-                end
-                for k in drop_list
-                    all_ind = all_ind[all_ind.!=k]
-                end
-                println("Dropping: $drop_list")
+        all_data = dmat[all_ind,:]
+        X = all_data*all_data'
+        smallest_ev = minimum(abs.(eigvals(X)))
+        all_vals = abs.(eigvals(X))
+        num_zero_vals = length(findall(all_vals.<1e-10))
+        smallest_ev = minimum(all_vals)
+        println("Smallest Data Eigenvalue (search): $smallest_ev")
+        println("Number of Zero Eigenvalues (search): $num_zero_vals")
+        pdim = size(dmat[all_ind,:],1)
+        if abs(smallest_ev)<1e-10
+            v = eigvecs(X)
+            zero_vals = findall(all_vals.<1e-10)
+            drop_list = Vector{Int}(undef,0)
+            for ind_v in zero_vals
+                ind_colin = maximum(findall(abs.(v[:,ind_v]).>1e-10))
+                drop_list = vcat(drop_list,[ind_colin])
             end
+            for k in drop_list
+                all_ind = all_ind[all_ind.!=k]
+            end
+            println("Need to Drop: $drop_list")
         end
     else
         println("Smallest Data Eigenvalue (search):No Search Variable")

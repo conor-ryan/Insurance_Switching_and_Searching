@@ -14,6 +14,7 @@ include("Halton.jl")
 # Random Coefficients MLE
 include("RandomCoefficients.jl")
 include("RandomCoefficients_der.jl")
+include("DerivFunctions.jl")
 include("Log_Likehood.jl")
 include("Estimate_Basic.jl")
 include("utility.jl")
@@ -22,10 +23,11 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
-df_LA = df[df[:gra].==16,:]
+df_LA = df[df[:samp1].==1.0,:]
+# df_LA = df[df[:gra].==16,:]
 
 ### Add Anthem Fixed Effect
-df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
+# df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 
 println("Data Loaded")
 
@@ -115,8 +117,8 @@ mx_out_1 = MainSpec(df_LA,filename,
                         # Network Fixed Effects
                         :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
                         :def_issfe_6, :def_issfe_7, # Leave Out LA Care
-                        :def_netfe_2, :def_netfe_3, :def_netfe_4, :def_netfe_6,
-                        :def_netfe_8, :def_netfe_9, :def_netfe_10, :def_netfe_12,
+                        :def_netfe_4, :def_netfe_6, # Drop net02, net03
+                        :def_netfe_9, :def_netfe_12, # Drop net10, net08
                         # Year Fixed Effects
                         :year_2015,:year_2016,:year_2017,:year_2018],
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
@@ -177,8 +179,8 @@ mx_out_1 = MainSpec(df_LA,filename,
                         # Network Fixed Effects
                         :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
                         :def_issfe_6, :def_issfe_7, # Leave Out LA Care
-                        :def_netfe_2, :def_netfe_3, :def_netfe_4, :def_netfe_6,
-                        :def_netfe_8, :def_netfe_9, :def_netfe_10, :def_netfe_12,
+                        :def_netfe_4, :def_netfe_6, # Drop net02, net03
+                        :def_netfe_9, :def_netfe_12, # Drop net10, net08
                         # Year Fixed Effects
                         :year_2015,:year_2016,:year_2017,:year_2018],
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
