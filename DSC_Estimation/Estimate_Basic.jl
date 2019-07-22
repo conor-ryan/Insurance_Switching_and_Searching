@@ -83,6 +83,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
     ## Tolerance Counts
     f_tol_cnt = 0
     x_tol_cnt = 0
+    skip_x_tol = 0
     # Maximize by Newtons Method
     while (grad_size>grad_tol) & (cnt<max_itr) & (max_trial_cnt<20)
         cnt+=1
@@ -109,7 +110,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
             if abs(fval-f_min)<f_tol
                 f_tol_cnt += 1
             end
-            if maximum(abs.(p_vec - p_min))<x_tol
+            if (maximum(abs.(p_vec - p_min))<x_tol) & (skip_x_tol==0)
                 x_tol_cnt += 1
             end
 
@@ -120,6 +121,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
         else
             no_progress+=1
         end
+        skip_x_tol = 0
 
 
         grad_size = maximum(abs.(grad_new))
@@ -169,7 +171,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
         end
 
         step_size = maximum(abs.(update))
-        if step_size>2
+        if step_size>10
         update = update./step_size
         ind = findall(abs.(update).==1)
         val_disp = p_vec[ind]
@@ -214,6 +216,8 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
                 p_test, f_test = gradient_ascent(d,p_vec,max_itr=5,strict=true)
             else
                 println("No Advancement")
+                hess_steps = 0
+                skip_x_tol = 1
                 p_test = copy(p_vec)
                 break
             end

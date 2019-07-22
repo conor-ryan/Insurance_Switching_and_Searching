@@ -44,9 +44,12 @@ c = ChoiceData(df_LA;
     prd = [:product],
     ch = [:choice],
     ch_last = [:iplan],
-    prodchr =  [:padj,:iplan],
-    prodchr_0=Vector{Symbol}(undef,0),
-    # prodchr_0=[:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+    prodchr =  [:padj,:iplan,
+    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+    :issfe_6, :issfe_7, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
     # inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
     #                     #Metal Fixed Effects
     #                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld, # Leave Out Silver
@@ -59,13 +62,13 @@ c = ChoiceData(df_LA;
     #                     :def_netfe_9, :def_netfe_12, # Drop net10, net08
     #                     # Year Fixed Effects
     #                     :year_2015,:year_2016,:year_2017,:year_2018],
-    # demR =[:agefe_1,:agefe_2,:fam,:hassub],
-    # prodInt=[:padj,:iplan,:inet,:iiss],
-    fixEff=[:mtlfe,:netfe],
+    demR =[:agefe_1,:agefe_2,:fam,:hassub],
+    prodInt=[:padj,:iplan],
+    fixEff=[:metal],
     wgt=[:constant])
 
 # Fit into model
-m = InsuranceLogit(c,1)
+m = InsuranceLogit(c,50)
 println("Data Loaded")
 
 #γ0start = rand(1)-.5
@@ -79,16 +82,11 @@ FEstart = rand(m.parLength[:FE])/100 .-.005
 
 p0 = vcat(Istart,βstart,γstart,σstart,FEstart)
 
-p0 = mx_out_1[1]
-p0 = [-2.302804, 4.127905, -.2422113,   .0343167 , -1.136551  ,
- .2548169 , -.1537574 ,  22.11  , 22.2401  , 22.1613 , -.6443291 ,
-  -.401474 , .1880456 ,  -1.36805  , .3886224 , -.0283792 ,  -.1232826 ,
-    -2.587274  , -.6321607 , .0870148 , .5673644 , -.9464765 , -1.155923 , -1.247887]
 par = parDict(m,p0)
-
 individual_values!(m,par)
 individual_shares(m,par)
 
+@time v = calc_Avar(m,par)
 
 
 println("Compute Gradient")

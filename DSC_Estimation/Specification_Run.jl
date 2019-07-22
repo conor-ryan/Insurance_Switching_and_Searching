@@ -94,7 +94,7 @@ end
 
 function res_process(model::InsuranceLogit,p_est::Vector{Float64})
     ##Total Population
-    Pop = sum(weight(model.data).*choice(model.data))
+    Pop = length(model.data._personIDs)
 
     ## Create Param Dictionary
     paramFinal = parDict(model,p_est)
