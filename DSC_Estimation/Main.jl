@@ -32,7 +32,7 @@ df_LA = df
 println("Data Loaded")
 
 #### General Specification ####
-spec_per = [:hh_year_id]
+spec_per = [:hh_id]
 spec_prd = [:product]
 spec_ch = [:choice]
 spec_ch_last = [:iplan]
@@ -62,7 +62,7 @@ rundate = Dates.today()
 #     spec_fixEff=[:mtlfe,:netfe],
 #     spec_wgt= spec_wgt,
 #     method="ga",ga_itr = 0) #,x_start = x_start)
-#
+
 
 println("###############################")
 println("Specification 1")
