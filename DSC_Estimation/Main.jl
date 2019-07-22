@@ -23,9 +23,9 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
-df_LA = df[df[:samp1].==1.0,:]
 # df_LA = df[df[:gra].==16,:]
-
+# df_LA = df[df[:hasi].==1.0,:]
+df_LA = df
 ### Add Anthem Fixed Effect
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 
@@ -43,30 +43,26 @@ mixed_draws = 500
 
 rundate = Dates.today()
 
-println("###############################")
-println("Specification 0")
-### Only plan-level switching cost, no Inertia
-filename = "Spec0_$rundate"
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = 1,
-    spec_per = spec_per,
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,
-    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
-    :issfe_6, :issfe_7, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
-    spec_prodchr_0= Vector{Symbol}(undef,0),
-    spec_inertchr= Vector{Symbol}(undef,0),
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 10)
-
+# println("###############################")
+# println("Specification 0")
+# ### Only plan-level switching cost, no Inertia
+# filename = "Spec0_$rundate"
+# mx_out_1 = MainSpec(df_LA,filename,
+#     haltonDim = 1,
+#     spec_per = spec_per,
+#     spec_prd = spec_prd,
+#     spec_ch = spec_ch,
+#     spec_ch_last = spec_ch_last,
+#     spec_prodchr = [:padj,:iplan],
+#     spec_prodchr_0= Vector{Symbol}(undef,0),
+#     spec_inertchr= Vector{Symbol}(undef,0),
+#     spec_demR=Vector{Symbol}(undef,0),
+#     spec_prodInt=Vector{Symbol}(undef,0),
+#     spec_fixInt=Vector{Symbol}(undef,0),
+#     spec_fixEff=[:mtlfe,:netfe],
+#     spec_wgt= spec_wgt,
+#     method="ga",ga_itr = 0) #,x_start = x_start)
+#
 
 println("###############################")
 println("Specification 1")

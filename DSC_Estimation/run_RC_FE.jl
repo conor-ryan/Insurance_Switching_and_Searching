@@ -24,9 +24,10 @@ println("Code Loaded")
 # Load the Data
 include("load.jl")
 # 1% Sample of LA
-df_LA = df[df[:samp1].==1.0,:]
+# df_LA = df[df[:samp5].==1.0,:]
 # df = df[df[:samp1].==1,:]
 # df_LA = df[df[:gra].==16,:]
+df_LA = df
 
 
 ### Add Anthem Fixed Effect
@@ -39,36 +40,32 @@ println("Data Loaded")
 
 # Structure the data
 c = ChoiceData(df_LA;
-    per = [:hh_id],
+    per = [:hh_year_id],
     prd = [:product],
     ch = [:choice],
     ch_last = [:iplan],
-    prodchr =  [:padj,:iplan,:inet,:iiss,
-    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
-    :issfe_6, :issfe_7, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
-    # prodchr_0=Vector{Symbol}(undef,0),
-    prodchr_0=[:issfe_1, :issfe_2, :issfe_3, :issfe_4],
-    inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
-                        #Metal Fixed Effects
-                        :def_mtl_brz,:def_mtl_cat,:def_mtl_gld, # Leave Out Silver
-                        :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-                        :def_mtl_s87,:def_mtl_s94,
-                        # Network Fixed Effects
-                        :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
-                        :def_issfe_6, :def_issfe_7, # Leave Out LA Care
-                        :def_netfe_4, :def_netfe_6, # Drop net02, net03
-                        :def_netfe_9, :def_netfe_12, # Drop net10, net08
-                        # Year Fixed Effects
-                        :year_2015,:year_2016,:year_2017,:year_2018],
-    demR =[:agefe_1,:agefe_2,:fam,:hassub],
-    prodInt=[:padj,:iplan,:inet,:iiss],
-    fixEff=[:metal],
+    prodchr =  [:padj,:iplan],
+    prodchr_0=Vector{Symbol}(undef,0),
+    # prodchr_0=[:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+    # inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
+    #                     #Metal Fixed Effects
+    #                     :def_mtl_brz,:def_mtl_cat,:def_mtl_gld, # Leave Out Silver
+    #                     :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+    #                     :def_mtl_s87,:def_mtl_s94,
+    #                     # Network Fixed Effects
+    #                     :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
+    #                     :def_issfe_6, :def_issfe_7, # Leave Out LA Care
+    #                     :def_netfe_4, :def_netfe_6, # Drop net02, net03
+    #                     :def_netfe_9, :def_netfe_12, # Drop net10, net08
+    #                     # Year Fixed Effects
+    #                     :year_2015,:year_2016,:year_2017,:year_2018],
+    # demR =[:agefe_1,:agefe_2,:fam,:hassub],
+    # prodInt=[:padj,:iplan,:inet,:iiss],
+    fixEff=[:mtlfe,:netfe],
     wgt=[:constant])
 
 # Fit into model
-m = InsuranceLogit(c,50)
+m = InsuranceLogit(c,1)
 println("Data Loaded")
 
 #γ0start = rand(1)-.5
@@ -82,6 +79,11 @@ FEstart = rand(m.parLength[:FE])/100 .-.005
 
 p0 = vcat(Istart,βstart,γstart,σstart,FEstart)
 
+p0 = mx_out_1[1]
+p0 = [-2.302804, 4.127905, -.2422113,   .0343167 , -1.136551  ,
+ .2548169 , -.1537574 ,  22.11  , 22.2401  , 22.1613 , -.6443291 ,
+  -.401474 , .1880456 ,  -1.36805  , .3886224 , -.0283792 ,  -.1232826 ,
+    -2.587274  , -.6321607 , .0870148 , .5673644 , -.9464765 , -1.155923 , -1.247887]
 par = parDict(m,p0)
 
 individual_values!(m,par)
@@ -92,8 +94,15 @@ individual_shares(m,par)
 println("Compute Gradient")
 grad = Vector{Float64}(undef,length(p0))
 hess = Matrix{Float64}(undef,length(p0),length(p0))
-@time ll = log_likelihood!(hess,grad,m,p0)
-@time ll = log_likelihood!(grad,m,p0)
+ll = log_likelihood!(grad,m,p0)
+
+
+
+# log_likelihood!(hess,grad,m,p0)
+
+
+
+# @time ll = log_likelihood!(grad,m,p0)
 # app = iterate(eachperson(m.data),7)[1]
 # ll = test_grad!(hess,grad,app,m,p0)
 

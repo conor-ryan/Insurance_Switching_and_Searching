@@ -261,7 +261,7 @@ function ll_obs!(hess::Matrix{Float64},grad::Vector{Float64},
             end
         end
 
-    return ll
+    return ll_mean
 end
 
 
@@ -360,7 +360,7 @@ function ll_obs!(grad::Vector{Float64},
             grad[q]+= dlldβ
         end
 
-    return ll
+    return ll_mean
 end
 
 function hess_calc_ll(dS_xy::Matrix{T},dS_x::Matrix{T},dS_y::Matrix{T},

@@ -41,7 +41,7 @@ end
 
 
 function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
-    max_itr=2000,strict=true,Hess_Skip_Steps=30)
+    max_itr=2000,strict=true,Hess_Skip_Steps=10)
     ## Initialize Parameter Vector
     p_vec = p0
     N = length(p0)
@@ -51,6 +51,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
     f_eval_old = 1.0
     # # Initialize δ
     param_dict = parDict(d,p_vec)
+    Pop = length(d.data._personIDs)
 
     # Initialize Gradient
     grad_new = similar(p0)
@@ -168,7 +169,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
         end
 
         step_size = maximum(abs.(update))
-        if step_size>10
+        if step_size>2
         update = update./step_size
         ind = findall(abs.(update).==1)
         val_disp = p_vec[ind]
@@ -210,7 +211,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
                 hess_steps = 0
                 trial_max = 1
                 println("RUN ROUND OF GRADIENT ASCENT")
-                p_test, f_test = gradient_ascent_ll(d,p_vec,max_itr=5,strict=true)
+                p_test, f_test = gradient_ascent(d,p_vec,max_itr=5,strict=true)
             else
                 println("No Advancement")
                 p_test = copy(p_vec)
@@ -220,7 +221,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
         if NaN_steps>5
             println("Hessian might be singular")
             println("RUN ROUND OF GRADIENT ASCENT")
-            p_test, f_test = gradient_ascent_ll(d,p_test,max_itr=20,strict=true)
+            p_test, f_test = gradient_ascent(d,p_test,max_itr=20,strict=true)
         end
 
         p_last = copy(p_vec)
@@ -234,10 +235,12 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
 
         println("Gradient Size: $grad_size")
         println("Step Size: $step_size")
-        println("Function Value is $f_test at iteration $cnt")
+        f_full = f_min*Pop
+        println("Function Value is $f_test, $f_full at iteration $cnt")
         println("Steps since last improvement: $no_progress")
     end
-    println("Lowest Function Value is $f_min at $p_min")
+    f_full = f_min*Pop
+    println("Lowest Function Value is $f_min, $f_full at $p_min")
     return p_min,f_min
 end
 
@@ -460,7 +463,6 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
             real_gradient=0
         end
 
-
         # grad_size = sqrt(dot(grad_new,grad_new))
         grad_size = maximum(abs.(grad_new))
         if grad_size<.1
@@ -501,7 +503,7 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
 
         f_test = log_likelihood(d,p_test)
 
-        if (f_test>fval) & (real_gradient==0)
+        if (f_test<fval) & (real_gradient==0)
             grad_steps=0
             continue
         elseif (grad_steps<Grad_Skip_Steps)
@@ -520,6 +522,8 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
             step/= 20
             p_test = p_vec .+ step.*grad_new
             f_test = log_likelihood(d,p_test)
+                println("Trial: Got $f_test at parameters $p_test_disp")
+                println("Previous Iteration at $fval")
             trial_cnt+=1
             if (step<x_tol) & (real_gradient==0)
                 println("Failed with Approximate Gradient")

@@ -72,7 +72,11 @@ function estimate_specification(df::DataFrame;
     if method == "non_gradient"
         flag,fval,p_est = estimate_ng!(m,p0,method=:LN_NELDERMEAD)
     elseif method =="ga"
-        p_est,fval,flag = gradient_ascent(m,p0,grad_tol = 1e-8,max_itr=ga_itr)
+        if ga_itr>1
+            p_est,fval,flag = gradient_ascent(m,p0,grad_tol = 1e-8,max_itr=ga_itr)
+        else
+            p_est = p0
+        end
         println("Run NR Estimation")
         p_disp = p_est[1:20]
         println("Starting at $p_disp")
