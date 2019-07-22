@@ -76,12 +76,12 @@ function estimate_specification(df::DataFrame;
         println("Run NR Estimation")
         p_disp = p_est[1:20]
         println("Starting at $p_disp")
-        p_est,fval,flag = newton_raphson_ll(m,p_est)
+        p_est,fval = newton_raphson_ll(m,p_est)
     elseif method=="nr"
-        p_est, fval, flag = newton_raphson_ll(m,p0)
+        p_est, fval = newton_raphson_ll(m,p0)
     end
 
-    return m, p_est, spec_Dict, spec_labels, fval, flag
+    return m, p_est, spec_Dict, spec_labels, fval
 
 end
 
@@ -172,7 +172,7 @@ function MainSpec(df::DataFrame,filename::String;
 
     println("Save Results")
     # Unpack
-    m, p_est, spec_Dict, spec_labels, fval, flag = spec
+    m, p_est, spec_Dict, spec_labels, fval = spec
 
     file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$filename.jld2"
     @save file p_est spec_Dict fval
