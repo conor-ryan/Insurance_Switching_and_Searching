@@ -107,7 +107,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
         end
 
         if (cnt==1) | (fval>f_min)
-            if abs(fval-f_min)<f_tol
+            if (abs(fval-f_min)<f_tol) & (skip_x_tol==0)
                 f_tol_cnt += 1
             end
             if (maximum(abs.(p_vec - p_min))<x_tol) & (skip_x_tol==0)
@@ -191,6 +191,9 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
 
         trial_max = 0
         while ((f_test<fval*mistake_thresh) | isnan(f_test)) & (trial_max==0)
+            if real_hessian==0
+                skip_x_tol = 1
+            end
             if trial_cnt==0
                 p_test_disp = p_test[1:20]
                 println("Trial (Init): Got $f_test at parameters $p_test_disp")
@@ -217,7 +220,6 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
             else
                 println("No Advancement")
                 hess_steps = 0
-                skip_x_tol = 1
                 p_test = copy(p_vec)
                 break
             end
