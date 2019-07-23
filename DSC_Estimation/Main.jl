@@ -140,13 +140,13 @@ mx_out_1 = MainSpec(df_LA,filename,
                         :def_netfe_4, :def_netfe_6, # Drop net02, net03
                         :def_netfe_9, :def_netfe_12, # Drop net10, net08
                         # Year Fixed Effects
-                        :year_2015,:year_2016,:year_2017,:year_2018],
+                        :year_2016,:year_2017,:year_2018],
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
     spec_prodInt=[:padj,:iplan,:inet,:iiss],
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 500)
+    method="ga",ga_itr = 350)
 
 
 
@@ -202,10 +202,10 @@ mx_out_1 = MainSpec(df_LA,filename,
                         :def_netfe_4, :def_netfe_6, # Drop net02, net03
                         :def_netfe_9, :def_netfe_12, # Drop net10, net08
                         # Year Fixed Effects
-                        :year_2015,:year_2016,:year_2017,:year_2018],
+                        :year_2016,:year_2017,:year_2018],
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
     spec_prodInt=[:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais],
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 200)
+    method="ga",ga_itr = 350)
