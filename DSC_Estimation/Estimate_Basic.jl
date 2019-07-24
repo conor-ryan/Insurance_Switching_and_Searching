@@ -84,6 +84,8 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
     f_tol_cnt = 0
     x_tol_cnt = 0
     skip_x_tol = 0
+    ga_cnt = 0
+    ga_max_itr = 10
     # Maximize by Newtons Method
     while (grad_size>grad_tol) & (cnt<max_itr) & (max_trial_cnt<20)
         cnt+=1
@@ -189,6 +191,12 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
             hess_steps=0
         end
 
+        if ga_cnt>2
+            ga_max_itr = 50
+        else
+            ga_max_itr = 10
+        end
+
         trial_max = 0
         while ((f_test<fval*mistake_thresh) | isnan(f_test)) & (trial_max==0)
             if real_hessian==0
@@ -215,14 +223,18 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
             elseif real_hessian==1
                 hess_steps = 0
                 trial_max = 1
+                ga_cnt+=1
                 println("RUN ROUND OF GRADIENT ASCENT")
-                p_test, f_test = gradient_ascent(d,p_vec,max_itr=5,strict=true)
+                p_test, f_test = gradient_ascent(d,p_vec,max_itr=ga_max_itr,strict=true)
             else
                 println("No Advancement")
                 hess_steps = 0
                 p_test = copy(p_vec)
                 break
             end
+        end
+        if (step_size>x_tol)
+            ga_cnt = 0
         end
         if NaN_steps>5
             println("Hessian might be singular")
