@@ -191,7 +191,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
             hess_steps=0
         end
 
-        if ga_cnt>2
+        if ga_cnt>=2
             ga_max_itr = 50
         else
             ga_max_itr = 10
