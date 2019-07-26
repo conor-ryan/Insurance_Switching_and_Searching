@@ -15,7 +15,8 @@ function estimate_specification(df::DataFrame;
                             nested = false,
                             x_start::Union{Missing,Vector{Float64}} = missing,
                             method="nr",
-                            ga_itr=200)
+                            ga_itr=200,
+                            ll_start = false)
 
     ## Build Model
     c_data = ChoiceData(df;
@@ -55,11 +56,40 @@ function estimate_specification(df::DataFrame;
 
     spec_labels = unpack_labels(m,spec_Dict)
 
-    if ismissing(x_start)
+    p0 = zeros(m.parLength[:All])
+    if ll_start
+        println("Compute Starting Point with No Heterogeneity")
+        ll_ga = 0
+        if length(spec_inertchr)>0
+            ll_ga = 200
+        end
+        ll_res = estimate_specification(df,
+                            haltonDim = 1,
+                                spec_per = spec_per,
+                                spec_prd = spec_prd,
+                                spec_ch = spec_ch,
+                                spec_ch_last = spec_ch_last,
+                                spec_prodchr = spec_prodchr,
+                                spec_prodchr_0= Vector{Symbol}(undef,0),
+                                spec_inertchr=spec_inertchr,
+                                spec_demR=spec_demR,
+                                spec_prodInt=spec_prodInt,
+                                spec_fixInt=spec_fixInt,
+                                spec_fixEff=spec_fixEff,
+                                spec_wgt=spec_wgt,
+                                method = "ga",ga_itr = ll_ga)
+        x_est = ll_res[2]
+        ind1 = 1:(length(p0) - m.parLength[:FE] - m.parLength[:σ])
+        ind2 = (length(p0) - m.parLength[:FE] + 1):m.parLength[:All]
+        p0[ind1] = x_est[ind1]
+        p0[ind2] = x_est[ind2 .- m.parLength[:σ]]
+        indσ = (maximum(ind1) + 1):(minimum(ind2) - 1)
+        p0[indσ].= rand(m.parLength[:σ])/10 .+ 1e-4
+    elseif ismissing(x_start)
         Istart = rand(m.parLength[:I])/10 .-.05
         βstart = rand(m.parLength[:β])/10 .-.05
         γstart = rand(m.parLength[:γ]*length(m.data._prodInteract))/10 .-.05
-        σstart = rand(m.parLength[:σ])/10 .- .05
+        σstart = rand(m.parLength[:σ])/10 .+ 1e-5
         FEstart = rand(m.parLength[:FE])/10 .-.05
 
         p0 = vcat(Istart,βstart,γstart,σstart,FEstart)
@@ -86,7 +116,6 @@ function estimate_specification(df::DataFrame;
     end
 
     return m, p_est, spec_Dict, spec_labels, fval
-
 end
 
 
@@ -153,7 +182,8 @@ function MainSpec(df::DataFrame,filename::String;
                             nested = false,
                             x_start::Union{Missing,Vector{Float64}} = missing,
                             method="nr",
-                            ga_itr = 200)
+                            ga_itr = 200,
+                            ll_start = false)
 
     println("Estimate Specification")
     spec = estimate_specification(df,
@@ -172,7 +202,8 @@ function MainSpec(df::DataFrame,filename::String;
                             spec_wgt=spec_wgt,
                             x_start = x_start,
                             method = method,
-                            ga_itr = ga_itr)
+                            ga_itr = ga_itr,
+                            ll_start = ll_start)
 
     println("Save Results")
     # Unpack

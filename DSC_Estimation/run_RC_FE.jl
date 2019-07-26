@@ -40,7 +40,7 @@ println("Data Loaded")
 
 # Structure the data
 c = ChoiceData(df_LA;
-    per = [:hh_year_id],
+    per = [:hh_id],
     prd = [:product],
     ch = [:choice],
     ch_last = [:iplan],
@@ -68,7 +68,7 @@ c = ChoiceData(df_LA;
     wgt=[:constant])
 
 # Fit into model
-m = InsuranceLogit(c,50)
+m = InsuranceLogit(c,100)
 println("Data Loaded")
 
 #γ0start = rand(1)-.5

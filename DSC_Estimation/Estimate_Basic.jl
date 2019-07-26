@@ -80,6 +80,15 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
     step = 1
     real_hessian=0
 
+    ## Bound Index
+    bound_ind =  Int.((length(p0) - d.parLength[:FE] - d.parLength[:σ] + 1):((length(p0) - d.parLength[:FE])))
+    if d.parLength[:σ]==0
+        bound_ind = Vector{Int64}(undef,0)
+    end
+    println("Bounded Parameters: $bound_ind")
+    constrained = 0
+    constraint = 1e-4
+
     ## Tolerance Counts
     f_tol_cnt = 0
     x_tol_cnt = 0
@@ -91,24 +100,43 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
         cnt+=1
         trial_cnt=0
 
+        ## Check Constraint
+        if any(p_vec[bound_ind].<constraint)
+            ind = bound_ind[findall(p_vec[bound_ind].<constraint)]
+            println("Hit Constraint at $ind")
+            p_vec[ind] = abs.(p_vec[ind])
+            if any(abs.(p_vec[bound_ind]).<constraint)
+                ind = bound_ind[findall(p_vec[bound_ind].<constraint)]
+                println("Hit Constraint at $ind, in magnitude")
+                p_vec[ind].= constraint
+                constrained = 1
+            else
+                constrained = 0
+            end
+        else
+            constrained = 0
+        end
+
         # Compute Gradient, holding δ fixed
         if hess_steps==0
             println("Compute Hessian")
             fval = log_likelihood!(hess_new,grad_new,d,p_vec)
-            H_k = inv(hess_new)
+            update, H_k = boundAtZero(bound_ind,p_vec,hess_new,grad_new,constraint)
+            # H_k = inv(hess_new)
             real_hessian=1
         else
             println("BFGS Approximation")
             fval = log_likelihood!(grad_new,d,p_vec)
             Δxk = p_vec - p_last
             yk = grad_new - grad_last
-            # Δhess =  (yk*yk')./(yk'*Δxk) - (hess_new*Δxk*(hess_new*Δxk)')./(Δxk'*hess_new*Δxk)
-            # hess_new = hess_new + (yk*yk')./(yk'*Δxk) - (yk*yk')./(yk'*Δxk) - (hess_new*Δxk*(hess_new*Δxk)')./(Δxk'*hess_new*Δxk)
-            H_k = (Eye - (Δxk*yk')./(yk'*Δxk) )*H_last*(Eye - (yk*Δxk')./(yk'*Δxk) ) + (Δxk*Δxk')./(yk'*Δxk)
+            # H_k = (Eye - (Δxk*yk')./(yk'*Δxk) )*H_last*(Eye - (yk*Δxk')./(yk'*Δxk) ) + (Δxk*Δxk')./(yk'*Δxk)
+            update, H_k = boundAtZero(bound_ind,p_vec,Eye,H_last,Δxk,yk,grad_new,constraint)
             real_hessian=0
         end
+        # H_k = inv(hess_new)
+        # update = -H_k*grad_new
 
-        if (cnt==1) | (fval>f_min)
+        if (cnt==1) | (fval>f_min) | (constrained == 1)
             if (abs(fval-f_min)<f_tol) & (skip_x_tol==0)
                 f_tol_cnt += 1
             end
@@ -143,7 +171,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
             end
         end
 
-        update = -H_k*grad_new
+
         if any(isnan.(update))
             println("Step contains NaN")
             println("Algorithm Failed")
@@ -203,7 +231,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
                 skip_x_tol = 1
             end
             if trial_cnt==0
-                p_test_disp = p_test[1:20]
+                p_test_disp = p_test[vcat(1:10,bound_ind)]
                 println("Trial (Init): Got $f_test at parameters $p_test_disp")
                 println("Previous Iteration at $fval")
             end
@@ -216,7 +244,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
             if (step_size>x_tol)
                 p_test = p_vec .+ update
                 f_test = log_likelihood(d,p_test)
-                p_test_disp = p_test[1:20]
+                p_test_disp = p_test[vcat(1:10,bound_ind)]
                 println("Trial (NR): Got $f_test at parameters $p_test_disp")
                 println("Previous Iteration at $fval")
                 trial_cnt+=1
@@ -246,7 +274,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
         p_vec = copy(p_test)
         grad_last = copy(grad_new)
         H_last = copy(H_k)
-        p_vec_disp = p_vec[1:20]
+        p_vec_disp = p_vec[vcat(1:10,bound_ind)]
         f_final_val = fval
         println("Update Parameters to $p_vec_disp")
 
@@ -455,6 +483,15 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
     restart = 0
     flag = "empty"
 
+    ## Bound Index
+    bound_ind =  Int.((length(p0) - d.parLength[:FE] - d.parLength[:σ] + 1):((length(p0) - d.parLength[:FE])))
+    if d.parLength[:σ]==0
+        bound_ind = Vector{Int64}(undef,0)
+    end
+    println("Bounded Parameters: $bound_ind")
+    constrained = 0
+    constraint = 1e-4
+
     ### Tolerance Counts
     f_tol_cnt = 0
     x_tol_cnt = 0
@@ -468,6 +505,16 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
     while (grad_size>grad_tol) & (cnt<max_itr) & (max_trial_cnt<20)
         cnt+=1
         trial_cnt = 0
+
+        ## Check Constraint
+        if any(p_vec[bound_ind].<constraint)
+            ind = bound_ind[findall(p_vec[bound_ind].<constraint)]
+            p_vec[ind].= constraint
+            constrained = 1
+            println("Hit Constraint at $ind")
+        else
+            constrained = 0
+        end
 
         # Compute Gradient, holding δ fixed
 
@@ -517,7 +564,9 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
             mistake_thresh = 1.00
         end
 
-        p_test = p_vec .+ step.*grad_new
+        update = boundAtZero(bound_ind,p_vec,step,grad_new,constraint)
+
+        p_test = p_vec .+ update
 
         f_test = log_likelihood(d,p_test)
 
@@ -537,8 +586,8 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
                 println("Previous Iteration at $fval")
                 println("Reducing Step Size...")
             end
-            step/= 20
-            p_test = p_vec .+ step.*grad_new
+            update/= 20
+            p_test = p_vec .+ update
             f_test = log_likelihood(d,p_test)
                 println("Trial: Got $f_test at parameters $p_test_disp")
                 println("Previous Iteration at $fval")
@@ -550,7 +599,7 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
         end
 
         ## Update Minimum Value
-        if (cnt==1) | (f_test>f_max)
+        if (cnt==1) | (f_test>f_max) | (constrained==1)
             if (abs(f_test-f_max)<f_tol) & (real_gradient==1)
                 f_tol_cnt += 1
             end
@@ -570,7 +619,7 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
         end
         p_vec = copy(p_test)
         fval = copy(f_test)
-        p_vec_disp = p_vec[1:20]
+        p_vec_disp = p_vec[vcat(1:10,bound_ind)]
         f_final_val = fval
         println("Update Parameters to $p_vec_disp")
         println("Gradient Size: $grad_size")
@@ -591,4 +640,86 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
 
     println("Lowest Function Value is $f_max at $p_min")
     return p_min,f_max, flag
+end
+
+function boundAtZero(p_ind::Vector{Int64},p::Vector{Float64},
+    α::Float64,grad::Vector{Float64},bound::Float64)
+
+    update = α*grad
+    if length(p_ind)==0
+        return update
+    end
+
+    bound_ind = p_ind[findall((p[p_ind].<=bound) .& (update[p_ind].<0))]
+
+    if length(bound_ind)==0
+        return update
+    end
+
+    update = zeros(length(p))
+    unbounded = .!(inlist(1:length(p0),bound_ind))
+
+    update[unbounded] = α*grad[unbounded]
+    return update
+end
+
+function boundAtZero(p_ind::Vector{Int64},p::Vector{Float64},hess::Matrix{Float64},grad::Vector{Float64},bound::Float64)
+    H_k_f = inv(hess)
+    update = -H_k_f*grad
+
+    if length(p_ind)==0
+        println("Standard Update 1")
+        return update, H_k_f
+    end
+
+    bound_ind = p_ind[findall((p[p_ind].<=bound) .& (update[p_ind].<0))]
+
+    if length(bound_ind)==0
+        println("Standard Update 2")
+        return update, H_k_f
+    end
+
+    update = zeros(length(p))
+    unbounded = .!(inlist(1:length(p0),bound_ind))
+
+    H_k = inv(hess[unbounded,unbounded])
+    update[unbounded] = -H_k*grad[unbounded]
+
+    H_k_f[unbounded,unbounded] = H_k
+
+    println("Bounded Update")
+    return update, H_k_f
+end
+
+function boundAtZero(p_ind::Vector{Int64},p::Vector{Float64},
+    Eye::Matrix{Float64},H_last::Matrix{Float64},Δx::Vector{Float64},Δy::Vector{Float64},
+    grad::Vector{Float64},bound::Float64)
+    H_k_f = (Eye - (Δx*Δy')./(Δy'*Δx) )*H_last*(Eye - (Δy*Δx')./(Δy'*Δx) ) + (Δx*Δx')./(Δy'*Δx)
+    update = -H_k_f*grad
+
+    if length(p_ind)==0
+        println("Standard Update 1")
+        return update, H_k_f
+    end
+
+    bound_ind = p_ind[findall((p[p_ind].<=bound) .& (update[p_ind].<0))]
+
+    if length(bound_ind)==0
+        println("Standard Update 2")
+        return update, H_k_f
+    end
+
+    update = zeros(length(p))
+    unbounded = .!(inlist(1:length(p0),bound_ind))
+
+    Δxk = Δx[unbounded]
+    Δyk = Δy[unbounded]
+
+    H_k = (Eye[unbounded,unbounded] - (Δxk*Δyk')./(Δyk'*Δxk) )*H_last[unbounded,unbounded]*(Eye[unbounded,unbounded] - (Δyk*Δxk')./(Δyk'*Δxk) ) + (Δxk*Δxk')./(Δyk'*Δxk)
+    update[unbounded] = -H_k*grad[unbounded]
+
+    H_k_f[unbounded,unbounded] = H_k
+
+    println("Bounded Update")
+    return update, H_k_f
 end

@@ -53,15 +53,25 @@ rundate = Dates.today()
 #     spec_prd = spec_prd,
 #     spec_ch = spec_ch,
 #     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan],
+#     spec_prodchr = [:padj,:iplan,
+#     :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+#     :issfe_6, :issfe_7, # Leave Out LA Care
+#     :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+#     :netfe_8, :netfe_9, :netfe_10, :netfe_12],
 #     spec_prodchr_0= Vector{Symbol}(undef,0),
 #     spec_inertchr= Vector{Symbol}(undef,0),
-#     spec_demR=Vector{Symbol}(undef,0),
-#     spec_prodInt=Vector{Symbol}(undef,0),
+#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+#     spec_prodInt=[:padj,:iplan],
 #     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:mtlfe,:netfe],
+#     spec_fixEff=[:metal],
 #     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 0) #,x_start = x_start)
+#     method="ga",ga_itr = 0)
+#
+# x_est = mx_out_1[1]
+# p0 = zeros(length(x_est)+4)
+# p0[1:(length(p0)-12)] = x_est[1:(length(x_est)-8)]
+# p0[(length(p0)-7):end] = x_est[(length(x_est)-7):end]
+# p0[25:28].=1e-2
 
 
 println("###############################")
@@ -86,7 +96,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 0)
+    method="ga",ga_itr = 50,ll_start = true)
 
 println("###############################")
 println("Specification 2")
@@ -110,7 +120,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 10)
+    method="ga",ga_itr = 50,ll_start = true)
 
 
 println("###############################")
@@ -146,7 +156,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 200)
+    method="ga",ga_itr = 200,ll_start=true)
 
 
 
@@ -172,7 +182,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 10)
+    method="ga",ga_itr = 50,ll_start=true)
 
 
 println("###############################")
@@ -208,4 +218,4 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 200)
+    method="ga",ga_itr = 200,ll_start=true)
