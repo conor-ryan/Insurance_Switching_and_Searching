@@ -92,6 +92,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
     ## Tolerance Counts
     f_tol_cnt = 0
     x_tol_cnt = 0
+    ga_conv_cnt = 0
     skip_x_tol = 0
     ga_cnt = 0
     ga_max_itr = 10
@@ -155,11 +156,12 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
 
 
         grad_size = maximum(abs.(grad_new))
-        if (grad_size<grad_tol) |(f_tol_cnt>1) | (x_tol_cnt>1)
+        if (grad_size<grad_tol) |(f_tol_cnt>1) | (x_tol_cnt>1) | (ga_conv_cnt>1)
             println("Got to Break Point...?")
             println(grad_size)
             println(f_tol_cnt)
             println(x_tol_cnt)
+            println(ga_conv_cnt)
             flag = "converged"
             break
         end
@@ -253,7 +255,8 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
                 trial_max = 1
                 ga_cnt+=1
                 println("RUN ROUND OF GRADIENT ASCENT")
-                p_test, f_test = gradient_ascent(d,p_vec,max_itr=ga_max_itr,strict=true)
+                p_test, f_test, ga_conv = gradient_ascent(d,p_vec,max_itr=ga_max_itr,strict=true)
+                ga_conv_cnt += ga_conv
             else
                 println("No Advancement")
                 hess_steps = 0
@@ -267,7 +270,8 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
         if NaN_steps>5
             println("Hessian might be singular")
             println("RUN ROUND OF GRADIENT ASCENT")
-            p_test, f_test = gradient_ascent(d,p_test,max_itr=20,strict=true)
+            p_test, f_test,ga_conv = gradient_ascent(d,p_test,max_itr=20,strict=true)
+            ga_conv_cnt += ga_conv
         end
 
         p_last = copy(p_vec)
@@ -481,7 +485,7 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
     no_progress=0
     mistake_thresh = 1.25
     restart = 0
-    flag = "empty"
+    flag = 0
 
     ## Bound Index
     bound_ind =  Int.((length(p0) - d.parLength[:FE] - d.parLength[:σ] + 1):((length(p0) - d.parLength[:FE])))
@@ -544,7 +548,7 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
             println(grad_size)
             println(x_tol_cnt)
             println(f_tol_cnt)
-            flag = "near zero"
+            flag = 1
             break
         end
 

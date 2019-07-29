@@ -61,7 +61,7 @@ function estimate_specification(df::DataFrame;
         println("Compute Starting Point with No Heterogeneity")
         ll_ga = 0
         if length(spec_inertchr)>0
-            ll_ga = 200
+            ll_ga = 500
         end
         ll_res = estimate_specification(df,
                             haltonDim = 1,
