@@ -4,7 +4,7 @@ using CSV
 #################### Loading and Cleaning Data #########################
 ########################################################################
 # Load the data
-df = CSV.read("$(homedir())/Documents/Research/CovCAInertia/Output/analysis_i2.csv")
+df = CSV.read("$(homedir())/Documents/Research/CovCAInertia/Output/analysis_i2.csv";copycols=true)
 
 # No constant
 df[:constant] = ones(size(df, 1))
