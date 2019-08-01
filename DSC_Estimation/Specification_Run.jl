@@ -259,7 +259,7 @@ function unpack_labels(m::InsuranceLogit,spec_Dict::Dict{String,Any})
 end
 
 
-function predict_switching(m::InsuranceLogit,p_vec::Vector{Float64};
+function predict_switching(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{String,Any};
     fullAtt::Bool=false,
     noCont::Bool=false,
     noHass::Bool=false)
@@ -267,22 +267,29 @@ function predict_switching(m::InsuranceLogit,p_vec::Vector{Float64};
     p_est = copy(p_vec)
 
     Ilength = m.parLength[:I]
-    # cont_pars = vcat(Ilength .+ (2:4),(Ilength.+ m.parLength[:β]).+ vcat((2:4), 4 .+ (2:4),8 .+ (2:4),12 .+ (2:4)))
-    cont_pars = vcat(Ilength .+ (3:4),(Ilength.+ m.parLength[:β]).+ vcat((3:4), 4 .+ (3:4),8 .+ (3:4),12 .+ (3:4)))
-    hassle_pars = vcat([Ilength + 2],(Ilength.+ m.parLength[:β]).+ [2, 6,10,14])
-    if noCont
-        p_est[cont_pars].=0.0
-        # p_est[hassle_pars].=0.0
-    end
-    if noHass
-        p_est[hassle_pars].=0.0
-    end
 
     parBase = parDict(m,p_est)
+
+    # cont_pars = vcat(Ilength .+ (2:4),(Ilength.+ m.parLength[:β]).+ vcat((2:4), 4 .+ (2:4),8 .+ (2:4),12 .+ (2:4)))
+    # cont_pars = vcat(Ilength .+ (3:4),(Ilength.+ m.parLength[:β]).+ vcat((3:4), 4 .+ (3:4),8 .+ (3:4),12 .+ (3:4)))
+    # hassle_pars = vcat([Ilength + 2],(Ilength.+ m.parLength[:β]).+ [2, 6,10,14])
+    if noCont
+        β_ind = inlist(spec["prodchr"],[:inet,:iiss])
+        parBase.β[β_ind,:].=0.0
+        parBase.β_0[β_ind].= 0.0
+    end
+    if noHass
+        β_ind = findall(spec["prodchr"].==:iplan)
+        parBase.β[β_ind,:].=0.0
+        parBase.β_0[β_ind].= 0.0
+    end
+
+
+
     individual_values!(m,parBase)
 
     if fullAtt
-        parBase.ω_i .= 1
+        parBase.ω_i[:] .= 1.0
     end
 
     individual_shares(m,parBase)
@@ -301,16 +308,19 @@ function count_switchers(m::InsuranceLogit,par::parDict{Float64})
     All_Stay_Obs = 0.0
     for i in m.data._personIDs
         idx = m.data._personDict[i]
-        returning = sum(inertPlan[idx])
-        if returning==0.0
-            continue
-        end
-        All_Return +=  1.0
-        retplan = findall(inertPlan[idx].>0)
-        All_Stay += par.s_hat[idx[retplan]][1]
-        obs = findall(obsPlan[idx].>0)
-        if retplan==obs
-            All_Stay_Obs += 1.0
+        for (yr, per_idx_yr) in m.data._personYearDict[i]
+            idx_yr = idx[per_idx_yr]
+            returning = sum(inertPlan[idx_yr])
+            if returning==0.0
+                continue
+            end
+            All_Return +=  1.0
+            retplan = findall(inertPlan[idx_yr].>0)
+            All_Stay += par.s_hat[idx_yr[retplan]][1]
+            obs = findall(obsPlan[idx_yr].>0)
+            if retplan==obs
+                All_Stay_Obs += 1.0
+            end
         end
     end
     data = All_Stay_Obs/All_Return
@@ -326,21 +336,31 @@ function activePredict(m::InsuranceLogit,p_est::Vector{Float64},df::DataFrame)
     inertPlan = choice_last(m.data)
     obsPlan = choice(m.data)
     active_long = df[:active]
-    active_obs = Vector{Float64}(undef,length(m.data._personIDs))
-    active_pred = Vector{Float64}(undef,length(m.data._personIDs))
-    returning = Vector{Float64}(undef,length(m.data._personIDs))
-    switch = zeros(length(m.data._personIDs))
+    active_obs = Vector{Float64}(undef,length(par.ω_i))
+    active_pred = Vector{Float64}(undef,length(par.ω_i))
+    returning = Vector{Float64}(undef,length(par.ω_i))
+    switch = zeros(length(par.ω_i))
 
-    for (ind,i) in enumerate(m.data._personIDs)
+    ind = 0
+    for i in m.data._personIDs
         idx = m.data._personDict[i]
-        returning[ind] = sum(inertPlan[idx])
-        active_obs[ind] = active_long[idx[1]]
-        active_pred[ind] = par.ω_i[Int(i)]
+        s_idx = m.data._searchDict[i]
+        years = sort(Int.(keys(m.data._personYearDict[i])))
+        yr_ind = 0
+        for yr in years
+            ind+=1
+            yr_ind+=1
+            per_idx_yr = m.data._personYearDict[i][yr]
+            idx_yr = idx[per_idx_yr]
+            returning[ind] = sum(inertPlan[idx_yr])
+            active_obs[ind] = active_long[idx_yr[1]]
+            active_pred[ind] = par.ω_i[s_idx[yr_ind]]
 
-        retplan = findall(inertPlan[idx].>0)
-        obs = findall(obsPlan[idx].>0)
-        if retplan==obs
-            switch[ind] = 1.0
+            retplan = findall(inertPlan[idx_yr].>0)
+            obs = findall(obsPlan[idx_yr].>0)
+            if retplan==obs
+                switch[ind] = 1.0
+            end
         end
     end
 
