@@ -45,27 +45,27 @@ rundate = Dates.today()
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/ML_spec6_2019-05-25.jld2"
 @load file p_est spec_Dict fval
 
-println("###############################")
-println("Specification 0")
-### Only plan-level switching cost, no Inertia
-filename = "Spec0a_$rundate"
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = spec_Dict["haltonDim"],
-    spec_per =spec_Dict["per"],
-    spec_prd = spec_Dict["prd"],
-    spec_ch = spec_Dict["ch"],
-    spec_ch_last = spec_Dict["ch_last"],
-    spec_prodchr = spec_Dict["prodchr"],
-    spec_prodchr_0= spec_Dict["prodchr_0"],
-    spec_inertchr = spec_Dict["inertchr"],
-    spec_demR=spec_Dict["demR"],
-    spec_prodInt=spec_Dict["prodInt"],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=spec_Dict["fixEff"],
-    spec_wgt=spec_Dict["wgt"],
-    method="ga",ga_itr = 5,x_start=p_est)
-
-x_start = mx_out_1[1]
+# println("###############################")
+# println("Specification 0")
+# ### Only plan-level switching cost, no Inertia
+# filename = "Spec0a_$rundate"
+# mx_out_1 = MainSpec(df_LA,filename,
+#     haltonDim = spec_Dict["haltonDim"],
+#     spec_per =spec_Dict["per"],
+#     spec_prd = spec_Dict["prd"],
+#     spec_ch = spec_Dict["ch"],
+#     spec_ch_last = spec_Dict["ch_last"],
+#     spec_prodchr = spec_Dict["prodchr"],
+#     spec_prodchr_0= spec_Dict["prodchr_0"],
+#     spec_inertchr = spec_Dict["inertchr"],
+#     spec_demR=spec_Dict["demR"],
+#     spec_prodInt=spec_Dict["prodInt"],
+#     spec_fixInt=Vector{Symbol}(undef,0),
+#     spec_fixEff=spec_Dict["fixEff"],
+#     spec_wgt=spec_Dict["wgt"],
+#     method="ga",ga_itr = 5,x_start=p_est)
+#
+# x_start = mx_out_1[1]
 
 println("###############################")
 println("Specification 0")
@@ -73,7 +73,7 @@ println("Specification 0")
 filename = "Spec0b_$rundate"
 mx_out_1 = MainSpec(df_LA,filename,
     haltonDim = spec_Dict["haltonDim"],
-    spec_per =spec_Dict["per"],
+    spec_per =[:household],
     spec_prd = spec_Dict["prd"],
     spec_ch = spec_Dict["ch"],
     spec_ch_last = spec_Dict["ch_last"],
@@ -85,7 +85,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=spec_Dict["fixEff"],
     spec_wgt=spec_Dict["wgt"],
-    method="ga",ga_itr = 5,x_start = p_est)
+    method="ga",ga_itr = 50,x_start = p_est)
 
 #
 # println("###############################")

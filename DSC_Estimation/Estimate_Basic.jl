@@ -128,7 +128,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
             if cnt==1
                 f_min = fval
                 p_min = p_vec
-                println("Initial Minimum Value: $f_max")
+                println("Initial Minimum Value: $f_min")
             end
         else
             println("BFGS Approximation")
