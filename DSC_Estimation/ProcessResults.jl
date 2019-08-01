@@ -22,13 +22,14 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
-df_LA = df
-
+# df_LA = df
+ df_LA = df[df[:gra].==16,:]
+df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
 
 
-rundate = "2019-06-25"
-file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/ML_spec5_$rundate.jld2"
+rundate = "2019-05-25"
+file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/ML_spec6_$rundate.jld2"
 @load file p_est spec_Dict fval
 
 # ## Full Model
