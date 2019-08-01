@@ -94,10 +94,11 @@ function estimate_specification(df::DataFrame;
 
         p0 = vcat(Istart,βstart,γstart,σstart,FEstart)
     else
-        p0 = x_start
+        p0[:] = x_start[:]
+        println(log_likelihood(m,x_start))
     end
     println("Begin Estimation")
-
+    println(log_likelihood(m,p0))
     ## Estimate
     if method == "non_gradient"
         flag,fval,p_est = estimate_ng!(m,p0,method=:LN_NELDERMEAD)

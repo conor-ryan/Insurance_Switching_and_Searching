@@ -50,19 +50,19 @@ println("Specification 0")
 ### Only plan-level switching cost, no Inertia
 filename = "Spec0a_$rundate"
 mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = 500,
-    spec_per = [:hh_year_id],
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj, :iplan, :inet, :iiss, :issfe_1, :issfe_2, :issfe_5, :issfe_6, :issfe_8, :issfe_9, :netfe_2, :netfe_3, :netfe_4, :netfe_7, :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-    spec_inertchr= [:constant, :agefe_1, :agefe_2, :fam, :hassub, :dprem, :def_padj, :def_mtl_brz, :def_mtl_cat, :def_mtl_gld, :def_mtl_hdp, :def_mtl_plt, :def_mtl_s73, :def_mtl_s87, :def_mtl_s94],
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj, :iplan, :inet, :iiss],
+    haltonDim = spec_Dict["haltonDim"],
+    spec_per =spec_Dict["per"],
+    spec_prd = spec_Dict["prd"],
+    spec_ch = spec_Dict["ch"],
+    spec_ch_last = spec_Dict["ch_last"],
+    spec_prodchr = spec_Dict["prodchr"],
+    spec_prodchr_0= spec_Dict["prodchr_0"],
+    spec_inertchr = spec_Dict["inertchr"],
+    spec_demR=spec_Dict["demR"],
+    spec_prodInt=spec_Dict["prodInt"],
     spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal],
-    spec_wgt= spec_wgt,
+    spec_fixEff=spec_Dict["fixEff"],
+    spec_wgt=spec_Dict["wgt"],
     method="ga",ga_itr = 5,x_start=p_est)
 
 x_start = mx_out_1[1]
@@ -72,20 +72,20 @@ println("Specification 0")
 ### Only plan-level switching cost, no Inertia
 filename = "Spec0b_$rundate"
 mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = 500,
-    spec_per = [:hh_id],
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj, :iplan, :inet, :iiss, :issfe_1, :issfe_2, :issfe_5, :issfe_6, :issfe_8, :issfe_9, :netfe_2, :netfe_3, :netfe_4, :netfe_7, :netfe_11, :netfe_12, :netfe_13, :netfe_15],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-    spec_inertchr= [:constant, :agefe_1, :agefe_2, :fam, :hassub, :dprem, :def_padj, :def_mtl_brz, :def_mtl_cat, :def_mtl_gld, :def_mtl_hdp, :def_mtl_plt, :def_mtl_s73, :def_mtl_s87, :def_mtl_s94],
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj, :iplan, :inet, :iiss],
+    haltonDim = spec_Dict["haltonDim"],
+    spec_per =spec_Dict["per"],
+    spec_prd = spec_Dict["prd"],
+    spec_ch = spec_Dict["ch"],
+    spec_ch_last = spec_Dict["ch_last"],
+    spec_prodchr = spec_Dict["prodchr"],
+    spec_prodchr_0= spec_Dict["prodchr_0"],
+    spec_inertchr = spec_Dict["inertchr"],
+    spec_demR=spec_Dict["demR"],
+    spec_prodInt=spec_Dict["prodInt"],
     spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 5,x_start = x_start)
+    spec_fixEff=spec_Dict["fixEff"],
+    spec_wgt=spec_Dict["wgt"],
+    method="ga",ga_itr = 5,x_start = p_est)
 
 #
 # println("###############################")

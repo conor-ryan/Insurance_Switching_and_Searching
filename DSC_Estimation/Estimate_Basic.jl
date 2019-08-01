@@ -87,7 +87,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
     end
     println("Bounded Parameters: $bound_ind")
     constrained = 0
-    constraint = 1e-4
+    constraint = -1e4
 
     ## Tolerance Counts
     f_tol_cnt = 0
@@ -125,6 +125,11 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
             update, H_k = boundAtZero(bound_ind,p_vec,hess_new,grad_new,constraint)
             # H_k = inv(hess_new)
             real_hessian=1
+            if cnt==1
+                f_min = fval
+                p_min = p_vec
+                println("Initial Minimum Value: $f_max")
+            end
         else
             println("BFGS Approximation")
             fval = log_likelihood!(grad_new,d,p_vec)
@@ -137,7 +142,7 @@ function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
         # H_k = inv(hess_new)
         # update = -H_k*grad_new
 
-        if (cnt==1) | (fval>f_min) | (constrained == 1)
+        if (fval>f_min) | (constrained == 1)
             if (abs(fval-f_min)<f_tol) & (skip_x_tol==0)
                 f_tol_cnt += 1
             end
@@ -463,7 +468,7 @@ end
 
 function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,strict=false)
     ## Initialize Parameter Vector
-    p_vec = p0
+    p_vec = copy(p0)
     N = length(p0)
 
     cnt = 0
@@ -494,7 +499,10 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
     end
     println("Bounded Parameters: $bound_ind")
     constrained = 0
-    constraint = 1e-10
+    constraint = -1e4
+
+    init_val = log_likelihood(d,p_vec)
+    println("Initial Value is $init_val")
 
     ### Tolerance Counts
     f_tol_cnt = 0
@@ -534,6 +542,11 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
             println("Compute Gradient")
             fval = log_likelihood!(grad_new,d,p_vec)
             real_gradient=1
+            if cnt==1
+                f_max = fval
+                p_min = p_vec
+                println("Initial Minimum Value: $f_max")
+            end
         else
             # fval = GMM_objective(d,p_vec,W)
             real_gradient=0
@@ -610,7 +623,7 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
         end
 
         ## Update Minimum Value
-        if (cnt==1) | (f_test>f_max) | (constrained==1)
+        if (f_test>f_max) | (constrained==1)
             if (abs(f_test-f_max)<f_tol) & (real_gradient==1)
                 f_tol_cnt += 1
             end
@@ -622,6 +635,7 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
             no_progress=0
         else
             no_progress+=1
+            grad_steps=0
         end
 
         if real_gradient==1

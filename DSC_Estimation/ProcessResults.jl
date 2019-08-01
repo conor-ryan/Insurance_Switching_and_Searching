@@ -14,6 +14,7 @@ include("Halton.jl")
 # Random Coefficients MLE
 include("RandomCoefficients.jl")
 include("RandomCoefficients_der.jl")
+include("DerivFunctions.jl")
 include("Log_Likehood.jl")
 include("Estimate_Basic.jl")
 include("utility.jl")
@@ -54,6 +55,12 @@ if m.parLength[:All]!=length(p_est)
     error("WARNING: Specification Error!")
 end
 
+parBase = parDict(m,p_est)
+individual_values!(m,parBase)
+individual_shares(m,parBase)
+# grad = Vector{Float64}(undef,length(p_est))
+# ll = log_likelihood!(grad,m,p_est)
+
 ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict)
 println(ReturnPercObs)
 println(ReturnPercBase)
@@ -69,9 +76,7 @@ ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noH
 println(ReturnNone)
 
 #### Average Willingness to Pay ####
-parBase = parDict(m,p_est)
-individual_values!(m,parBase)
-individual_shares(m,parBase)
+
 
 βMat = coeff_values(m,parBase)
 wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
