@@ -63,7 +63,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 50,x_start=p_est)
+    method="ga",ga_itr = 5,x_start=p_est)
 
 x_start = mx_out_1[1]
 
@@ -85,7 +85,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
-    method="ga",ga_itr = 50,x_start = x_start)
+    method="ga",ga_itr = 5,x_start = x_start)
 
 #
 # println("###############################")
