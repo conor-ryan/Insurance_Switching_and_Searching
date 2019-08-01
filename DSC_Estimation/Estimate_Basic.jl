@@ -494,7 +494,7 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
     end
     println("Bounded Parameters: $bound_ind")
     constrained = 0
-    constraint = 1e-4
+    constraint = 1e-10
 
     ### Tolerance Counts
     f_tol_cnt = 0
@@ -513,9 +513,16 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
         ## Check Constraint
         if any(p_vec[bound_ind].<constraint)
             ind = bound_ind[findall(p_vec[bound_ind].<constraint)]
-            p_vec[ind].= constraint
-            constrained = 1
             println("Hit Constraint at $ind")
+            p_vec[ind] = abs.(p_vec[ind])
+            if any(abs.(p_vec[bound_ind]).<constraint)
+                ind = bound_ind[findall(p_vec[bound_ind].<constraint)]
+                println("Hit Constraint at $ind, in magnitude")
+                p_vec[ind].= constraint
+                constrained = 1
+            else
+                constrained = 0
+            end
         else
             constrained = 0
         end
@@ -661,7 +668,7 @@ function boundAtZero(p_ind::Vector{Int64},p::Vector{Float64},
     end
 
     update = zeros(length(p))
-    unbounded = .!(inlist(1:length(p0),bound_ind))
+    unbounded = .!(inlist(1:length(p),bound_ind))
 
     update[unbounded] = α*grad[unbounded]
     return update
@@ -699,7 +706,7 @@ function boundAtZero(p_ind::Vector{Int64},p::Vector{Float64},hess::Matrix{Float6
     end
 
     update = zeros(length(p))
-    unbounded = .!(inlist(1:length(p0),bound_ind))
+    unbounded = .!(inlist(1:length(p),bound_ind))
 
     H_k = inv(hess[unbounded,unbounded])
     update[unbounded] = -H_k*grad[unbounded]
@@ -729,7 +736,7 @@ function boundAtZero(p_ind::Vector{Int64},p::Vector{Float64},
     end
 
     update = zeros(length(p))
-    unbounded = .!(inlist(1:length(p0),bound_ind))
+    unbounded = .!(inlist(1:length(p),bound_ind))
 
     Δxk = Δx[unbounded]
     Δyk = Δy[unbounded]
