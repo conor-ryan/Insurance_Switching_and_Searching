@@ -25,7 +25,7 @@ println("Code Loaded")
 include("load.jl")
 df_LA = df[df[:gra].==16,:]
 # df_LA = df[df[:hasi].==1.0,:]
-df_LA = df
+# df_LA = df
 ### Add Anthem Fixed Effect
 df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 
