@@ -622,9 +622,9 @@ function InsuranceLogit(c_data::ChoiceData,haltonDim::Int;
     println(γlen)
     println(βlen)
 
-    if haltonDim<=1 & !nested
+    if ((haltonDim<1) | (β0len==0))  & !nested
         σlen = 0
-    elseif (haltonDim>1) & (!nested)
+    elseif (haltonDim>=1) & (!nested)
         # σlen = (size(prodchars(c_data),1)-1)
         σlen = β0len
     elseif (haltonDim<=1) & nested

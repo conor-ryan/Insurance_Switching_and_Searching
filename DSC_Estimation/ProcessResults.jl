@@ -23,20 +23,22 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
-# df_LA = df
- df_LA = df[df[:gra].==16,:]
-df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
+df_LA = df
+ # df_LA = df[df[:gra].==16,:]
+# df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
 
 
-rundate = "2019-05-25"
-file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/ML_spec6_$rundate.jld2"
+rundate = "2019-08-02"
+spec = "Spec1b_"
+file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
 # ## Full Model
 # Structure the data
 c = ChoiceData(df_LA;
-    per = spec_Dict["per"],
+    per = [:hh_id],
+    # per = spec_Dict["per"],
     prd = spec_Dict["prd"],
     ch = spec_Dict["ch"],
     ch_last = spec_Dict["ch_last"],
@@ -55,11 +57,14 @@ if m.parLength[:All]!=length(p_est)
     error("WARNING: Specification Error!")
 end
 
+ll = log_likelihood(m,p_est)
+println(ll)
+
 parBase = parDict(m,p_est)
 individual_values!(m,parBase)
 individual_shares(m,parBase)
 # grad = Vector{Float64}(undef,length(p_est))
-# ll = log_likelihood!(grad,m,p_est)
+
 
 ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict)
 println(ReturnPercObs)

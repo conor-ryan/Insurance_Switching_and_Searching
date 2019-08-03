@@ -6,8 +6,9 @@ function log_likelihood(d::InsuranceLogit,p::parDict{T}) where T
     individual_values!(d,p)
     individual_shares(d,p)
 
-    ll = mean(p.L_i[Int.(d.data._personIDs)])
-    return ll
+    ll = sum(p.L_i[Int.(d.data._personIDs)])
+    Pop = length(p.ω_i)
+    return ll/Pop
 end
 
 
@@ -17,7 +18,7 @@ function log_likelihood!(grad::Vector{Float64},
     N = size(d.draws,1)
     grad[:] .= 0.0
     ll = 0.0
-    Pop = length(d.data._personIDs)
+    Pop = length(p.ω_i)
 
 
     individual_values!(d,p)
@@ -46,7 +47,7 @@ function log_likelihood!(hess::Matrix{Float64},grad::Vector{Float64},
     hess[:] .= 0.0
     grad[:] .= 0.0
     ll = 0.0
-    Pop = length(d.data._personIDs)
+    Pop = length(p.ω_i)
     # Pop =sum(weight(d.data).*choice(d.data))
 
     individual_values!(d,p)
@@ -110,7 +111,7 @@ function calc_Avar(d::InsuranceLogit,p::parDict{T}) where T
     individual_shares(d,p)
 
     Σ = zeros(d.parLength[:All],d.parLength[:All])
-    Pop = length(d.data._personIDs)
+    Pop = length(p.ω_i)
     grad_obs = Vector{Float64}(undef,d.parLength[:All])
 
     for app in eachperson(d.data)

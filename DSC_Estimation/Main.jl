@@ -41,7 +41,7 @@ mixed_draws = 500
 
 ### interact default plans and "active" choice with preference parameters
 
-# rundate = Dates.today()
+rundate = Dates.today()
 # file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/ML_spec6_2019-05-25.jld2"
 # @load file p_est spec_Dict fval
 
@@ -86,29 +86,7 @@ mixed_draws = 500
 #     spec_fixEff=spec_Dict["fixEff"],
 #     spec_wgt=spec_Dict["wgt"],
 #     method="ga",ga_itr = 50,x_start = p_est)
-println("###############################")
-println("Specification 1")
-### Only plan-level switching cost, no Inertia
-filename = "Spec1b_$rundate"
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = mixed_draws,
-    spec_per = [:hh_id],
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,
-    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
-    :issfe_6, :issfe_7, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
-    spec_inertchr= Vector{Symbol}(undef,0),
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 50,ll_start = true)
+
 #
 println("###############################")
 println("Specification 1")
@@ -134,31 +112,55 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_wgt= spec_wgt,
     method="ga",ga_itr = 50,ll_start = true)
 
+println("###############################")
+println("Specification 1")
+### Only plan-level switching cost, no Inertia
+filename = "Spec1b_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = [:hh_year_id],
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,
+    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+    :issfe_6, :issfe_7, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+    spec_inertchr= Vector{Symbol}(undef,0),
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 50,ll_start = true)
+
 
 #
-# println("###############################")
-# println("Specification 2")
-# ### Fully Specified Switching Costs, no Inertia
-# filename = "Spec2_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet,:iiss,
-#     :issfe_1, :issfe_2, :issfe_3, :issfe_4,
-#     :issfe_6, :issfe_7, # Leave Out LA Care
-#     :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-#     :netfe_8, :netfe_9, :netfe_10, :netfe_12],
-#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
-#     spec_inertchr= Vector{Symbol}(undef,0),
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_prodInt=[:padj,:iplan,:inet,:iiss,],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 50,ll_start = true)
+println("###############################")
+println("Specification 2")
+### Fully Specified Switching Costs, no Inertia
+filename = "Spec2_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet,:iiss,
+    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+    :issfe_6, :issfe_7, # Leave Out LA Care
+    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+    spec_inertchr= Vector{Symbol}(undef,0),
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan,:inet,:iiss,],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 50,ll_start = true)
 
 
 println("###############################")
@@ -197,64 +199,64 @@ mx_out_1 = MainSpec(df_LA,filename,
     method="ga",ga_itr = 50,ll_start=true)
 
 
-
-println("###############################")
-println("Specification 2, with Kaiser Robust Check")
-### Fully Specified Switching Costs, no Inertia
-filename = "Spec2_kais_$rundate"
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = mixed_draws,
-    spec_per = spec_per,
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais,
-    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
-    :issfe_6, :issfe_7, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
-    spec_inertchr= Vector{Symbol}(undef,0),
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 50,ll_start=true)
-
-
-println("###############################")
-println("Specification 3, with Kaiser Robust Check")
-### Full Specification
-filename = "Spec3_kais_$rundate"
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = mixed_draws,
-    spec_per = spec_per,
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais,
-    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
-    :issfe_6, :issfe_7, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
-    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
-                        #Metal Fixed Effects
-                        :def_mtl_brz,:def_mtl_cat,:def_mtl_gld, # Leave Out Silver
-                        :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-                        :def_mtl_s87,:def_mtl_s94,
-                        # Network Fixed Effects
-
-                        # :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
-                        # :def_issfe_6, :def_issfe_7, # Leave Out LA Care
-                        # :def_netfe_4, :def_netfe_6, # Drop net02, net03
-                        # :def_netfe_9, :def_netfe_12, # Drop net10, net08
-                        # Year Fixed Effects
-                        :year_2016,:year_2017,:year_2018],
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 50,ll_start=true)
+#
+# println("###############################")
+# println("Specification 2, with Kaiser Robust Check")
+# ### Fully Specified Switching Costs, no Inertia
+# filename = "Spec2_kais_$rundate"
+# mx_out_1 = MainSpec(df_LA,filename,
+#     haltonDim = mixed_draws,
+#     spec_per = spec_per,
+#     spec_prd = spec_prd,
+#     spec_ch = spec_ch,
+#     spec_ch_last = spec_ch_last,
+#     spec_prodchr = [:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais,
+#     :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+#     :issfe_6, :issfe_7, # Leave Out LA Care
+#     :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+#     :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+#     spec_inertchr= Vector{Symbol}(undef,0),
+#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+#     spec_prodInt=[:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais],
+#     spec_fixInt=Vector{Symbol}(undef,0),
+#     spec_fixEff=[:metal],
+#     spec_wgt= spec_wgt,
+#     method="ga",ga_itr = 50,ll_start=true)
+#
+#
+# println("###############################")
+# println("Specification 3, with Kaiser Robust Check")
+# ### Full Specification
+# filename = "Spec3_kais_$rundate"
+# mx_out_1 = MainSpec(df_LA,filename,
+#     haltonDim = mixed_draws,
+#     spec_per = spec_per,
+#     spec_prd = spec_prd,
+#     spec_ch = spec_ch,
+#     spec_ch_last = spec_ch_last,
+#     spec_prodchr = [:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais,
+#     :issfe_1, :issfe_2, :issfe_3, :issfe_4,
+#     :issfe_6, :issfe_7, # Leave Out LA Care
+#     :netfe_2, :netfe_3, :netfe_4, :netfe_6,
+#     :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,
+#                         #Metal Fixed Effects
+#                         :def_mtl_brz,:def_mtl_cat,:def_mtl_gld, # Leave Out Silver
+#                         :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+#                         :def_mtl_s87,:def_mtl_s94,
+#                         # Network Fixed Effects
+#
+#                         # :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
+#                         # :def_issfe_6, :def_issfe_7, # Leave Out LA Care
+#                         # :def_netfe_4, :def_netfe_6, # Drop net02, net03
+#                         # :def_netfe_9, :def_netfe_12, # Drop net10, net08
+#                         # Year Fixed Effects
+#                         :year_2016,:year_2017,:year_2018],
+#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+#     spec_prodInt=[:padj,:iplan,:inet,:iiss,:iplan_kais,:inet_kais],
+#     spec_fixInt=Vector{Symbol}(undef,0),
+#     spec_fixEff=[:metal],
+#     spec_wgt= spec_wgt,
+#     method="ga",ga_itr = 50,ll_start=true)
