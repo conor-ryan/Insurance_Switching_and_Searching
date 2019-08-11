@@ -365,3 +365,61 @@ function coeff_values(d::InsuranceLogit,p::parDict{T}) where T
     end
     return coeff_mat
 end
+
+function marginalEffects(d::InsuranceLogit,p::parDict{T}) where T
+    # Calculate μ_ij, which depends only on parameters
+    dω_i = Matrix{Float64}(undef,length(p.ω_i),d.parLength[:I])
+    returning = Vector{Float64}(undef,length(p.ω_i))
+    for app in eachperson(d.data)
+        indMargEffect(dω_i,returning,app,p)
+    end
+    dω_i[:,6] = 10*p.I[6].*p.ω_i.*(1 .- p.ω_i)
+    dω_i = dω_i[findall(returning.==1),:]
+    ### Manually do marginal effect for dprem
+    return round.(100 .*mean(dω_i,dims=1)[2:6],digits=2)
+end
+
+function indMargEffect(dω_i::Matrix{Float64},returning::Vector{Float64},app::ChoiceData,p::parDict{T}) where T
+    γ_0 = p.γ_0
+    γ = p.γ
+    ι = p.I
+    β_0= p.β_0
+    M1 = length(β_0)
+    β = p.β
+    (M2,N2) = size(β)
+    fe = p.FE
+    randIndex = app._randCoeffs
+
+    ind = person(app)[1]
+    idxitr = app._personDict[ind]
+    @inbounds X = permutedims(prodchars(app),(2,1))
+    @inbounds Z = demoRaw(app)[:,1] # Currently Requiring Demographics are Constant
+    X_last_all =inertchars(app)#[:,1]
+    y_last = choice_last(app)
+    F = fixedEffects(app,idxitr)
+
+    _yearDict = app._personYearDict[ind]
+    years = sort(Int.(keys(_yearDict)))
+    ret = zeros(length(years))
+    X_last = Matrix{Float64}(undef,length(years),size(X_last_all,1))
+    for (i,yr) in enumerate(years)
+        @inbounds ret[i] = sum(y_last[_yearDict[yr]])
+        @inbounds X_last[i,:] = X_last_all[:,_yearDict[yr][1]]
+    end
+
+    (N,K) = size(X_last)
+
+    for k in 1:K
+        X_last0 = copy(X_last)
+        X_last0[:,k] .= 0.0
+        X_last1 = copy(X_last)
+        X_last1[:,k] .= 1.0
+        search0 = exp.(X_last0*ι)
+        search1 = exp.(X_last1*ι)
+        search_prob0 = search0./(1 .+ search0)
+        search_prob1 = search1./(1 .+ search1)
+        dω_i[app._searchDict[ind],k] = ret.*(search_prob1-search_prob0)
+    end
+    returning[app._searchDict[ind]] = ret[:]
+    return nothing
+end

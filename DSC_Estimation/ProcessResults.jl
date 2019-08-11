@@ -29,16 +29,16 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2019-08-02"
-spec = "Spec1b_"
+rundate = "2019-07-30"
+spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
 # ## Full Model
 # Structure the data
 c = ChoiceData(df_LA;
-    per = [:hh_id],
-    # per = spec_Dict["per"],
+    # per = [:hh_id],
+    per = spec_Dict["per"],
     prd = spec_Dict["prd"],
     ch = spec_Dict["ch"],
     ch_last = spec_Dict["ch_last"],
@@ -60,9 +60,6 @@ end
 ll = log_likelihood(m,p_est)
 println(ll)
 
-parBase = parDict(m,p_est)
-individual_values!(m,parBase)
-individual_shares(m,parBase)
 # grad = Vector{Float64}(undef,length(p_est))
 
 
@@ -75,13 +72,22 @@ ReturnNoHass, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true)
 println(ReturnNoHass)
 ReturnNoCont, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noCont=true)
 println(ReturnNoCont)
-ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true)
-println(ReturnNone)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true)
+println(ReturnFA)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true)
+println(ReturnFA)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true)
+println(ReturnFA)
 ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true)
 println(ReturnNone)
 
 #### Average Willingness to Pay ####
+parBase = parDict(m,p_est)
+individual_values!(m,parBase)
+individual_shares(m,parBase)
 
+## Marginal Effects
+println(marginalEffects(m,parBase))
 
 βMat = coeff_values(m,parBase)
 wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
@@ -102,11 +108,35 @@ println("Total Continuity")
 println(mean(wtp_cont))
 println(std(wtp_cont))
 
+##### Demographic Buckets #####
+β0 = parBase.β_0[1:4]
+β = parBase.β[1:4,:]
+Z =[0 0 0 1;
+    1 0 0 1;
+    0 1 0 1;
+    0 0 1 1;
+    1 0 1 1;
+    0 1 1 1;
+    0 0 0 0;
+    1 0 0 0;
+    0 1 0 0;
+    0 0 0 1;
+    1 0 0 1;
+    0 1 0 1;]
+
+βz = β0 .+ β*Z'
+J,K = size(βz)
+WTP = zeros(K,J-1)
+for j in 1:(J-1), k in 1:K
+    WTP[k,j] = -100*βz[1+j,k]/βz[1,k]
+end
+out = DataFrame(WTP)
+
+file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/wtp_$spec$rundate.csv"
+CSV.write(file1,out)
 
 ##### Check Active Relationship ####
-
-switchers,returning, active_obs, active_pred = activePredict(m,p_est,df_LA)
-
-out1 = DataFrame(switch=switchers,returning=returning,active_obs=active_obs,active_pred=active_pred)
-file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/active_$rundate.csv"
-CSV.write(file1,out1)
+par = parDict(m,p_est)
+individual_values!(m,par)
+individual_shares(m,par)
+activePredict(m,par,df_LA,spec,rundate)

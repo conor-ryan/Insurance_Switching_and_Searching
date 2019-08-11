@@ -301,24 +301,28 @@ function predict_switching(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{S
 end
 
 function count_switchers(m::InsuranceLogit,par::parDict{Float64})
-    inertPlan = choice_last(m.data)
-    obsPlan = choice(m.data)
+    # inertPlan = choice_last(m.data)
+    # obsPlan = choice(m.data)
 
     All_Return = 0.0
     All_Stay = 0.0
     All_Stay_Obs = 0.0
-    for i in m.data._personIDs
+    for app in eachperson(m.data)
+        i = person(app)[1]
+        # println(i)
         idx = m.data._personDict[i]
-        for (yr, per_idx_yr) in m.data._personYearDict[i]
-            idx_yr = idx[per_idx_yr]
-            returning = sum(inertPlan[idx_yr])
+        stay_prob,inertPlan,obsPlan = calc_switch_prob(app,m,par)
+        # years = sort(Int.(keys(app._personYearDict[ind])))
+        for (yr,per_idx_yr) in app._personYearDict[i]
+            # idx_yr = idx[per_idx_yr]
+            returning = sum(inertPlan[per_idx_yr])
             if returning==0.0
                 continue
             end
             All_Return +=  1.0
-            retplan = findall(inertPlan[idx_yr].>0)
-            All_Stay += par.s_hat[idx_yr[retplan]][1]
-            obs = findall(obsPlan[idx_yr].>0)
+            All_Stay += stay_prob[yr]
+            retplan = findall(inertPlan[per_idx_yr].>0)
+            obs = findall(obsPlan[per_idx_yr].>0)
             if retplan==obs
                 All_Stay_Obs += 1.0
             end
@@ -330,40 +334,97 @@ function count_switchers(m::InsuranceLogit,par::parDict{Float64})
 end
 
 
-function activePredict(m::InsuranceLogit,p_est::Vector{Float64},df::DataFrame)
-    par = parDict(m,p_est)
-    individual_values!(m,par)
-    individual_shares(m,par)
+function activePredict(m::InsuranceLogit,par::parDict{Float64},df::DataFrame,spec,rundate)
     inertPlan = choice_last(m.data)
     obsPlan = choice(m.data)
     active_long = df[:active]
     active_obs = Vector{Float64}(undef,length(par.ω_i))
     active_pred = Vector{Float64}(undef,length(par.ω_i))
     returning = Vector{Float64}(undef,length(par.ω_i))
-    switch = zeros(length(par.ω_i))
+    stay = zeros(length(par.ω_i))
+    stay_pred = zeros(length(par.ω_i))
+    personID = Vector{Float64}(undef,length(par.ω_i))
+    yearID = Vector{Float64}(undef,length(par.ω_i))
 
     ind = 0
-    for i in m.data._personIDs
-        idx = m.data._personDict[i]
-        s_idx = m.data._searchDict[i]
-        years = sort(Int.(keys(m.data._personYearDict[i])))
+    for app in eachperson(m.data)
+        i = person(app)[1]
         yr_ind = 0
+        idx = m.data._personDict[i]
+        stay_prob,inertPlan,obsPlan = calc_switch_prob(app,m,par)
+        s_idx = app._searchDict[i]
+        dict = app._personYearDict[i]
+        years = sort(Int.(keys(dict)))
         for yr in years
+            per_idx_yr = dict[yr]
             ind+=1
             yr_ind+=1
-            per_idx_yr = m.data._personYearDict[i][yr]
             idx_yr = idx[per_idx_yr]
-            returning[ind] = sum(inertPlan[idx_yr])
+            returning[ind] = sum(inertPlan[per_idx_yr])
             active_obs[ind] = active_long[idx_yr[1]]
             active_pred[ind] = par.ω_i[s_idx[yr_ind]]
 
-            retplan = findall(inertPlan[idx_yr].>0)
-            obs = findall(obsPlan[idx_yr].>0)
+            retplan = findall(inertPlan[per_idx_yr].>0)
+            obs = findall(obsPlan[per_idx_yr].>0)
             if retplan==obs
-                switch[ind] = 1.0
+                stay[ind] = 1.0
             end
+            stay_pred[ind] = stay_prob[yr]
+            personID[ind] = i
+            yearID[ind] = yr
         end
     end
+    out1 = DataFrame(Person = personID, Year = yearID,
+                        stay_obs=stay,stay_pred=stay_pred,
+                        returning=returning,active_obs=active_obs,active_pred=active_pred)
+    file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/active_$spec$rundate.csv"
+    CSV.write(file1,out1)
 
-    return switch,returning,active_obs, active_pred
+    return nothing
+end
+
+
+
+function calc_switch_prob(app::ChoiceData,d::InsuranceLogit,p::parDict{T}) where T
+
+        ind, S_ij, wgt, idxitr, X_t, X_0_t,X_int, Z, F_t, X_last, y_last = unPackChars(app,d)
+        wgt = convert(Array{Float64,2},wgt)
+        S_ij = convert(Array{Float64,2},S_ij)
+        ω_i = p.ω_i[app._searchDict[ind]]
+        choice_ind = findall(S_ij[:].==1)
+
+        draws = d.draws
+
+        # Get Utility and derivative of Utility
+        μ_ij,s_hat,s_uncond = unPackParChars(p,idxitr)
+
+        # Year Indices
+        yr_next = findYearInd(app._personYearDict[ind])
+
+        # Pre-Calculate Shares
+        # μ_ij_sums = preCalcμ(μ_ij,app._personYearDict[ind])
+        s_hat, s_n, ll_n, μ_ij_sums = calc_shares_mat(μ_ij,ω_i,y_last,choice_ind,yr_next)
+
+        stay_prob = Dict{Int64,Float64}()
+        years = sort(Int.(keys(app._personYearDict[ind])))
+        last_choice = Vector{Int64}(undef,0)
+        for (i,yr) in enumerate(years)
+            idx_yr = app._personYearDict[ind][yr]
+            if sum(y_last[idx_yr])==0.0
+                last_choice = vcat(last_choice,choice_ind[i])
+                stay_prob[yr] = 0.0
+                continue
+            end
+            ret_choice = idx_yr[findall(y_last[idx_yr].>0)]
+            if (yr-1) in years
+                choice_seq = vcat(last_choice,ret_choice)
+                stay_prob[yr] = mean(prod(s_hat[choice_seq,:],dims=1))/mean(prod(s_hat[last_choice,:],dims=1))
+                last_choice = vcat(last_choice,choice_ind[i])
+            else
+                last_choice = Vector{Int64}(undef,0)
+                stay_prob[yr] = mean(s_hat[ret_choice,:])
+            end
+        end
+
+    return stay_prob,y_last,S_ij
 end
