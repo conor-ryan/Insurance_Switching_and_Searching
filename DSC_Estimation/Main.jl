@@ -112,31 +112,6 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_wgt= spec_wgt,
     method="ga",ga_itr = 50,ll_start = true)
 
-println("###############################")
-println("Specification 1")
-### Only plan-level switching cost, no Inertia
-filename = "Spec1b_$rundate"
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = mixed_draws,
-    spec_per = [:hh_year_id],
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,
-    :issfe_1, :issfe_2, :issfe_3, :issfe_4,
-    :issfe_6, :issfe_7, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
-    spec_inertchr= Vector{Symbol}(undef,0),
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 50,ll_start = true)
-
-
 #
 println("###############################")
 println("Specification 2")
@@ -148,7 +123,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_prd = spec_prd,
     spec_ch = spec_ch,
     spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,:inet,:iiss,
+    spec_prodchr = [:padj,:iplan,:inet,
     :issfe_1, :issfe_2, :issfe_3, :issfe_4,
     :issfe_6, :issfe_7, # Leave Out LA Care
     :netfe_2, :netfe_3, :netfe_4, :netfe_6,
@@ -156,7 +131,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
     spec_inertchr= Vector{Symbol}(undef,0),
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan,:inet,:iiss,],
+    spec_prodInt=[:padj,:iplan,:inet],
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
@@ -173,7 +148,7 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_prd = spec_prd,
     spec_ch = spec_ch,
     spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,:inet,:iiss,
+    spec_prodchr = [:padj,:iplan,:inet,#:iiss,
     :issfe_1, :issfe_2, :issfe_3, :issfe_4,
     :issfe_6, :issfe_7, # Leave Out LA Care
     :netfe_2, :netfe_3, :netfe_4, :netfe_6,
@@ -192,7 +167,7 @@ mx_out_1 = MainSpec(df_LA,filename,
                         # Year Fixed Effects
                         :year_2016,:year_2017,:year_2018],
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan,:inet,:iiss],
+    spec_prodInt=[:padj,:iplan,:inet],
     spec_fixInt=Vector{Symbol}(undef,0),
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,

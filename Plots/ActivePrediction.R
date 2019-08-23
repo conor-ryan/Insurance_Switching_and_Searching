@@ -35,15 +35,15 @@ df[,active_min:=pmax(active_obs-1.96*active_sd,0)]
 
 png("Writing/ActivePrediction.png",width=2000,height=1500,res=275)
 ggplot(df) + aes(x=active_pred_bucket) + 
-  geom_point(size=2,aes(y=stay_obs,group="Switch Plans",color="Switch Plans")) + 
-  geom_line(size=1,aes(y=stay_obs,group="Switch Plans",color="Switch Plans")) + 
-  geom_line(size=1,aes(y=stay_max,group="Switch Plans",color="Switch Plans"),linetype=2) + 
-  geom_line(size=1,aes(y=stay_min,group="Switch Plans",color="Switch Plans"),linetype=2) + 
+  geom_point(size=3,aes(y=stay_obs,shape="Switch Plans")) + 
+  geom_line(size=1,aes(y=stay_obs)) + 
+  geom_line(size=1,aes(y=stay_max),linetype=2) + 
+  geom_line(size=1,aes(y=stay_min),linetype=2) + 
   # geom_errorbar(width=0.05,aes(ymax=stay_max,ymin=stay_min)) + 
-  geom_point(size=2,aes(y=active_obs,group="Active on Website",color="Active on Website")) + 
-  geom_line(size=1,aes(y=active_obs,group="Active on Website",color="Active on Website")) + 
-  geom_line(size=1,aes(y=active_max,group="Active on Website",color="Active on Website"),linetype=2) + 
-  geom_line(size=1,aes(y=active_min,group="Active on Website",color="Active on Website"),linetype=2) + 
+  geom_point(size=3,aes(y=active_obs,shape="Active on Website")) + 
+  geom_line(size=1,aes(y=active_obs)) + 
+  geom_line(size=1,aes(y=active_max),linetype=2) + 
+  geom_line(size=1,aes(y=active_min),linetype=2) + 
   # geom_errorbar(width=0.05,aes(ymax=active_max,ymin=active_min)) + 
   xlab("Predicted Attention Probability") + 
   ylab("Observed Choices") + 

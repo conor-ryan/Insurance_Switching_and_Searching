@@ -34,6 +34,8 @@ spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
+
+
 # ## Full Model
 # Structure the data
 c = ChoiceData(df_LA;
@@ -57,7 +59,16 @@ if m.parLength[:All]!=length(p_est)
     error("WARNING: Specification Error!")
 end
 
-ll = log_likelihood(m,p_est)
+numPar = length(p_est)
+par = parDict(m,p_est)
+Pop = length(par.ω_i)
+ll = fval*Pop
+BIC = log(Pop)*(numPar+1) - 2*ll
+println("Number of Parameters: $numPar, Log-Likelihood: $ll, BIC: $BIC")
+
+
+
+ll = likelihood(m,p_est)
 println(ll)
 
 # grad = Vector{Float64}(undef,length(p_est))
@@ -120,9 +131,9 @@ Z =[0 0 0 1;
     0 0 0 0;
     1 0 0 0;
     0 1 0 0;
-    0 0 0 1;
-    1 0 0 1;
-    0 1 0 1;]
+    0 0 1 0;
+    1 0 1 0;
+    0 1 1 0;]
 
 βz = β0 .+ β*Z'
 J,K = size(βz)

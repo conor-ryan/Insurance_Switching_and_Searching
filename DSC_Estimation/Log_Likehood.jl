@@ -1,6 +1,14 @@
 # using NLopt
 using ForwardDiff
 
+function likelihood(d::InsuranceLogit,p::parDict{T}) where T
+    individual_values!(d,p)
+    individual_shares(d,p)
+
+    ll = prod(exp.(p.L_i[Int.(d.data._personIDs)]))
+    return ll
+end
+
 # Calculate Log Likelihood
 function log_likelihood(d::InsuranceLogit,p::parDict{T}) where T
     individual_values!(d,p)
@@ -85,6 +93,11 @@ end
 function log_likelihood(d::InsuranceLogit,p::Array{T}) where T
     params = parDict(d,p)
     ll = log_likelihood(d,params)
+    return ll
+end
+function likelihood(d::InsuranceLogit,p::Array{T}) where T
+    params = parDict(d,p)
+    ll = likelihood(d,params)
     return ll
 end
 
