@@ -94,7 +94,7 @@ grad = Vector{Float64}(undef,length(p0))
 hess = Matrix{Float64}(undef,length(p0),length(p0))
 ll = log_likelihood!(hess,grad,m,p0)
 
-
+#hello maria
 
 # log_likelihood!(hess,grad,m,p0)
 
