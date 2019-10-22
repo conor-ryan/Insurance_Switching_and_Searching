@@ -29,7 +29,7 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2019-07-30"
+rundate = "2019-08-23"
 spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
@@ -100,11 +100,20 @@ individual_shares(m,parBase)
 ## Marginal Effects
 println(marginalEffects(m,parBase))
 
+
 βMat = coeff_values(m,parBase)
 wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
 wtp_inet = -100*(βMat[:,3]./βMat[:,1])
 wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
-wtp_cont = -100*((βMat[:,2]+βMat[:,3] .+ βMat[:,4])./βMat[:,1])
+wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
+
+
+alpha_long = parBase.β_0[1] .+ parBase.β[1,:]'*demoRaw(m.data)
+price_long = prodchars(m.data)[1,:]
+elas = Vector{Float64}(undef,length(alpha_long))
+for i in 1:length(elas)
+    elas[i] = alpha_long[i]*price_long[i]*(1 - parBase.s_hat[i])
+end
 
 println("Plan Level")
 println(mean(wtp_iplan))
@@ -112,9 +121,9 @@ println(std(wtp_iplan))
 println("Network Level")
 println(mean(wtp_inet))
 println(std(wtp_inet))
-println("Issuer Level")
-println(mean(wtp_iiss))
-println(std(wtp_iiss))
+# println("Issuer Level")
+# println(mean(wtp_iiss))
+# println(std(wtp_iiss))
 println("Total Continuity")
 println(mean(wtp_cont))
 println(std(wtp_cont))
