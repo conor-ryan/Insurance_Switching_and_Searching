@@ -698,7 +698,7 @@ function boundAtZero(p_ind::Vector{Int64},p::Vector{Float64},hess::Matrix{Float6
         Λ = -abs.(Diagonal(E.values))
         hess = E.vectors*Λ*E.vectors'
 
-        if min(abs.(E.values))<1e-10
+        if minimum(abs.(E.values))<1e-10
             println("An Eigenvalue is close to 0")
             max_param = maximum(abs.(p))
             max_index = findall(abs.(p).==max_param)
