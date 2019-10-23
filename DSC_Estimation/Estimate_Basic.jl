@@ -691,12 +691,18 @@ end
 function boundAtZero(p_ind::Vector{Int64},p::Vector{Float64},hess::Matrix{Float64},grad::Vector{Float64},bound::Float64)
     check = issuccess(cholesky(-hess,check=false))
     if !check
-        println("Not Concave: Compute Direction of Sufficient Descent") #http://web.stanford.edu/class/cme304/docs/newton-type-methods.pdf
+        println("Not Concave: Compute Direction of Sufficient Ascent") #http://web.stanford.edu/class/cme304/docs/newton-type-methods.pdf
         E = eigen(hess)
         max_eig_val = maximum(E.values)
         println("Max Eigenvalue is $max_eig_val")
         Λ = -abs.(Diagonal(E.values))
         hess = E.vectors*Λ*E.vectors'
+
+        if min(abs.(E.values))<1e-10
+            println("An Eigenvalue is close to 0")
+            max_param = maximum(abs.(p))
+            max_index = findall(abs.(p).==max_param))
+            println("Parameter w/ largest magnitude: $max_index is $max_param")
         # (J,K) = size(H_adj)
         # for j in 1:J
         #     for k in 1:j
