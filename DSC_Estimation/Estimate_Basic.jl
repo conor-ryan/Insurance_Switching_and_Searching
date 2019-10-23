@@ -701,7 +701,7 @@ function boundAtZero(p_ind::Vector{Int64},p::Vector{Float64},hess::Matrix{Float6
         if min(abs.(E.values))<1e-10
             println("An Eigenvalue is close to 0")
             max_param = maximum(abs.(p))
-            max_index = findall(abs.(p).==max_param))
+            max_index = findall(abs.(p).==max_param)
             println("Parameter w/ largest magnitude: $max_index is $max_param")
         end
         # (J,K) = size(H_adj)
