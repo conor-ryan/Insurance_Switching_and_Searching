@@ -341,70 +341,6 @@ function build_ProdDict(j::Array{T,N}) where {T,N}
     return _productDict
 end
 
-# function build_FE(data_choice::DataFrame,fe_list::Vector{T}) where T
-#     # Create Fixed Effects
-#     n, k = size(data_choice)
-#     L = 0
-#
-#     # No Fixed effects for empty lists
-#     if typeof(fe_list)!=Vector{Symbol}
-#         println("No Fixed Effects")
-#         F = Matrix{Float64}(undef,n,L)
-#         feNames = Vector{Symbol}(undef,0)
-#         return F,feNames
-#     end
-#
-#     for fe in fe_list
-#         fac_variables = data_choice[fe]
-#         factor_list = sort(unique(fac_variables))
-#         # if fe==:constant
-#         #     num_effects=1
-#         # elseif (!(:constant in fe_list)) & (fe==fe_list[1])
-#         #     num_effects = length(factor_list)
-#         #     # if fe==:Market
-#         #     #     num_effects = length(factor_list) - 3
-#         #     # end
-#         # else
-#         num_effects = length(factor_list)-1
-#         # end
-#         L+=num_effects
-#     end
-#
-#     F = zeros(n,L)
-#     feNames = Vector{Symbol}(undef,0)
-#     ind = 1
-#     for fe in fe_list
-#         if fe==:constant
-#             F[:,ind] = 1
-#             ind+=1
-#             continue
-#         end
-#         fac_variables = data_choice[fe]
-#         factor_list = sort(unique(fac_variables))
-#         filter!(!ismissing,factor_list)
-#         # if (!(:constant in fe_list)) & (fe==fe_list[1])
-#         #     st_ind = 1
-#         # else
-#         st_ind = 2
-#         # end
-#
-#         for fac in factor_list[st_ind:length(factor_list)]
-#             # fac_data = zeros(n)
-#             # fac_data[fac_variables.==fac] = 1.0
-#             # if fac in ["ND_4","MD_4","IA_7"]
-#             #     continue
-#             # end
-#             fac_index = fac_variables.==fac
-#             fac_index[ismissing.(fac_index)] .= false
-#             fac_index = Bool.(fac_index)
-#             F[fac_index,ind] .= 1
-#             ind+= 1
-#
-#             feNames = vcat(feNames,Symbol(fac))
-#         end
-#     end
-#     return F, feNames
-# end
 
 
 function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasConstant=false) where T
@@ -447,7 +383,7 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasCon
         if (!((:constant in fe_list) | hasConstant)) & (fe==fe_list[1])
             st_ind = 1
         else
-            println("Skip")
+            println("Skip: $(factor_list[1])")
             st_ind = 2
         end
 

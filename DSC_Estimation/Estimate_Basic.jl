@@ -616,8 +616,11 @@ function gradient_ascent(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,max_itr=2000,s
                 println("Trial: Got $f_test at parameters $p_test_disp")
                 println("Previous Iteration at $fval")
             trial_cnt+=1
-            if (step<x_tol) & (real_gradient==0)
+            if (maximum(abs.(update))<x_tol) & (real_gradient==0)
                 println("Failed with Approximate Gradient")
+                break
+            elseif (maximum(abs.(update))<1e-16)
+                println("Failed Step is too small")
                 break
             end
         end

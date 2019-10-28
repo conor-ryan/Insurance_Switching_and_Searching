@@ -156,8 +156,9 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_prodchr_0 =[:issfe_1, :issfe_2, :issfe_3, :issfe_4],
     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:autodp,
                         #Metal Fixed Effects
-                        :def_mtl_brz,:def_mtl_cat,:def_mtl_gld, # Leave Out Silver
-                        :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
+                        :def_mtl_cat,:def_mtl_gld, # Leave Out Bronze
+                        :def_mtl_hdp,:def_mtl_plt,
+                        :def_mtl_slv,:def_mtl_s73,
                         :def_mtl_s87,:def_mtl_s94,
                         # Network Fixed Effects
                         # :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
