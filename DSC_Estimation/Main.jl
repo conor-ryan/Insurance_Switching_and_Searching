@@ -46,47 +46,24 @@ rundate = Dates.today()
 # @load file p_est spec_Dict fval
 
 # println("###############################")
-# println("Specification 0")
+# println("Specification 1")
 # ### Only plan-level switching cost, no Inertia
-# filename = "Spec0a_$rundate"
+# filename = "Spec1_$rundate"
 # mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = spec_Dict["haltonDim"],
-#     spec_per =spec_Dict["per"],
-#     spec_prd = spec_Dict["prd"],
-#     spec_ch = spec_Dict["ch"],
-#     spec_ch_last = spec_Dict["ch_last"],
-#     spec_prodchr = spec_Dict["prodchr"],
-#     spec_prodchr_0= spec_Dict["prodchr_0"],
-#     spec_inertchr = spec_Dict["inertchr"],
-#     spec_demR=spec_Dict["demR"],
-#     spec_prodInt=spec_Dict["prodInt"],
+#     haltonDim = 1,
+#     spec_per = spec_per,
+#     spec_prd = spec_prd,
+#     spec_ch = spec_ch,
+#     spec_ch_last = spec_ch_last,
+#     spec_prodchr = [:padj],
+#     spec_prodchr_0= Vector{Symbol}(undef,0),
+#     spec_inertchr= Vector{Symbol}(undef,0),
+#     spec_demR=Vector{Symbol}(undef,0),
+#     spec_prodInt=Vector{Symbol}(undef,0),
 #     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=spec_Dict["fixEff"],
-#     spec_wgt=spec_Dict["wgt"],
-#     method="ga",ga_itr = 5,x_start=p_est)
-#
-# x_start = mx_out_1[1]
-
-# println("###############################")
-# println("Specification 0")
-# ### Only plan-level switching cost, no Inertia
-# filename = "Spec0b_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = spec_Dict["haltonDim"],
-#     spec_per =[:household],
-#     spec_prd = spec_Dict["prd"],
-#     spec_ch = spec_Dict["ch"],
-#     spec_ch_last = spec_Dict["ch_last"],
-#     spec_prodchr = spec_Dict["prodchr"],
-#     spec_prodchr_0= spec_Dict["prodchr_0"],
-#     spec_inertchr = spec_Dict["inertchr"],
-#     spec_demR=spec_Dict["demR"],
-#     spec_prodInt=spec_Dict["prodInt"],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=spec_Dict["fixEff"],
-#     spec_wgt=spec_Dict["wgt"],
-#     method="ga",ga_itr = 50,x_start = p_est)
-
+#     spec_fixEff=[:netname,:metal],
+#     spec_wgt= spec_wgt,
+#     method="ga",ga_itr = 50,ll_start = true)
 #
 println("###############################")
 println("Specification 1")
@@ -101,8 +78,8 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_prodchr = [:padj,:iplan,
     :issfe_1, :issfe_2, :issfe_3, :issfe_4,
     :issfe_6, :issfe_7, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    :netfe_2, :netfe_3, :netfe_5, :netfe_6,
+    :netfe_8, :netfe_9],
     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
     spec_inertchr= Vector{Symbol}(undef,0),
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
@@ -126,8 +103,8 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_prodchr = [:padj,:iplan,:inet,
     :issfe_1, :issfe_2, :issfe_3, :issfe_4,
     :issfe_6, :issfe_7, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    :netfe_2, :netfe_3, :netfe_5, :netfe_6,
+    :netfe_8, :netfe_9],
     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
     spec_inertchr= Vector{Symbol}(undef,0),
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
@@ -136,7 +113,6 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_fixEff=[:metal],
     spec_wgt= spec_wgt,
     method="ga",ga_itr = 50,ll_start = true)
-
 
 println("###############################")
 println("Specification 3")
@@ -148,11 +124,11 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_prd = spec_prd,
     spec_ch = spec_ch,
     spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,:inet,#:iiss,
+    spec_prodchr = [:padj,:iplan,:inet,
     :issfe_1, :issfe_2, :issfe_3, :issfe_4,
     :issfe_6, :issfe_7, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_6,
-    :netfe_8, :netfe_9, :netfe_10, :netfe_12],
+    :netfe_2, :netfe_3, :netfe_5, :netfe_6,
+    :netfe_8, :netfe_9],
     spec_prodchr_0 =[:issfe_1, :issfe_2, :issfe_3, :issfe_4],
     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:autodp,
                         #Metal Fixed Effects

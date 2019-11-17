@@ -29,8 +29,8 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2019-08-23"
-spec = "Spec3_"
+rundate = "2019-10-29"
+spec = "Spec2_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 

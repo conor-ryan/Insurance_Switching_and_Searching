@@ -33,6 +33,7 @@ struct ChoiceData <: ModelData
     _inertchars::Array{Int,1}
     _choice::Array{Int,1}
     _choice_last::Array{Int,1}
+    _auto_elig::Array{Int,1}
     _demoRaw::Array{Int,1}
     _wgt::Array{Int,1}
 
@@ -57,6 +58,7 @@ function ChoiceData(data_choice::DataFrame;
         inertchr= Vector{Symbol}(undef,0),
         ch=[:choice],
         ch_last = [:iplan],
+        auto = [:autoelig],
         demR=Vector{Symbol}(undef,0),
         prodInt=Vector{Symbol}(undef,0),
         # demoRaw=[:F0_Y0_LI1,
@@ -79,6 +81,7 @@ function ChoiceData(data_choice::DataFrame;
     In = convert(Matrix{Float64},data_choice[inertchr])
     y = convert(Matrix{Float64},data_choice[ch])
     y_last = convert(Matrix{Float64},data_choice[ch_last])
+    a_elig = convert(Matrix{Float64},data_choice[auto])
     Z = convert(Matrix{Float64},data_choice[demR])
     w = convert(Matrix{Float64},data_choice[wgt])
 
@@ -99,8 +102,8 @@ function ChoiceData(data_choice::DataFrame;
     # Create a data matrix, only including person id
     println("Put Together Data non FE data together")
     k = 0
-    for (d, var) in zip([i,yr,j,X, Z, y,In,y_last,w], [per,panel,prd,prodchr,
-        demR, ch,inertchr,ch_last, wgt])
+    for (d, var) in zip([i,yr,j,X, Z, y,In,y_last,a_elig,w], [per,panel,prd,prodchr,
+        demR, ch,inertchr,ch_last,auto, wgt])
         for l=1:size(d,2)
             k+=1
             dmat = hcat(dmat, d[:,l])
@@ -173,6 +176,7 @@ function ChoiceData(data_choice::DataFrame;
     _inertchars = getDictArray(index, inertchr)
     _choice = getDictArray(index, ch)
     _choice_last =  getDictArray(index, ch_last)
+    _auto_elig =  getDictArray(index, ch_last)
     _demoRaw = getDictArray(index, demR)
     _wgt = getDictArray(index, wgt)
 
@@ -322,7 +326,7 @@ function ChoiceData(data_choice::DataFrame;
     m = ChoiceData(dmat, F, index,
             prodchr,prodchr_0,ch, demR,wgt,
              _person,_panel,_product, _prodchars,_prodchars_0,_inertchars,
-            _choice,_choice_last, _demoRaw, _wgt,
+            _choice,_choice_last,_auto_elig, _demoRaw, _wgt,
              _randCoeffs,_prodInteract,
              uniqids,_personDict,_personYearDict,_searchDict,
              _productDict)
@@ -388,6 +392,7 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasCon
         end
 
         for fac in factor_list[st_ind:length(factor_list)]
+            println("Factor $ind: $fac")
             F[map(!,ismissing.(fac_variables)) .& (fac_variables.==fac),ind] .= 1
             ind+= 1
 
@@ -414,6 +419,7 @@ product(m::ChoiceData)      = m[m._product]
 inertchars(m::ChoiceData)   = m[m._inertchars]
 choice(m::ChoiceData)      = m[m._choice]
 choice_last(m::ChoiceData)      = m[m._choice_last]
+autoelig(m::ChoiceData)      = m[m._auto_elig]
 @inbounds demoRaw(m::ChoiceData)     = m[m._demoRaw]
 weight(m::ChoiceData)      = m[m._wgt]
 
@@ -457,6 +463,7 @@ function subset(d::T, idx) where T<:ModelData
     d._inertchars,
     d._choice,
     d._choice_last,
+    d._auto_elig,
     d._demoRaw,
     d._wgt,
     d._randCoeffs,

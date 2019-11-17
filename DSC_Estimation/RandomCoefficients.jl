@@ -171,6 +171,7 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     @inbounds Z = demoRaw(app)[:,1] # Currently Requiring Demographics are Constant
     X_last_all =inertchars(app)#[:,1]
     y_last = choice_last(app)
+    elig = autoelig(app)
     F = fixedEffects(app,idxitr)
 
     _yearDict = app._personYearDict[ind]
@@ -178,7 +179,7 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     ret = zeros(length(years))
     X_last = Matrix{Float64}(undef,length(years),size(X_last_all,1))
     for (i,yr) in enumerate(years)
-        @inbounds ret[i] = sum(y_last[_yearDict[yr]])
+        @inbounds ret[i] = maximum(elig[_yearDict[yr]])
         @inbounds X_last[i,:] = X_last_all[:,_yearDict[yr][1]]
     end
 
@@ -396,6 +397,7 @@ function indMargEffect(dω_i::Matrix{Float64},returning::Vector{Float64},app::Ch
     @inbounds Z = demoRaw(app)[:,1] # Currently Requiring Demographics are Constant
     X_last_all =inertchars(app)#[:,1]
     y_last = choice_last(app)
+    elig = autoelig(app)
     F = fixedEffects(app,idxitr)
 
     _yearDict = app._personYearDict[ind]
@@ -403,7 +405,7 @@ function indMargEffect(dω_i::Matrix{Float64},returning::Vector{Float64},app::Ch
     ret = zeros(length(years))
     X_last = Matrix{Float64}(undef,length(years),size(X_last_all,1))
     for (i,yr) in enumerate(years)
-        @inbounds ret[i] = sum(y_last[_yearDict[yr]])
+        @inbounds ret[i] = maximum(elig[_yearDict[yr]])
         @inbounds X_last[i,:] = X_last_all[:,_yearDict[yr][1]]
     end
 
