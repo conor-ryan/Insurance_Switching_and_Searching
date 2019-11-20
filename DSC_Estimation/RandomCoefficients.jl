@@ -66,9 +66,11 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
     FE[1,:] = FE_vec
 
     # Fill in σ
-    σ = Vector{T}(undef,m.parLength[:β])
-    σ[:] .= 0.0
-    σ[m.data._randCoeffs] = σ_vec
+    # σ = Vector{T}(undef,m.parLength[:β])
+    # σ[:] .= 0.0
+    # σ[m.data._randCoeffs] = σ_vec
+    σ = Vector{T}(undef,m.parLength[:σ])
+    σ[:] = σ_vec[:]
 
     # Stack Beta into a matrix
     K = m.parLength[:β]
@@ -85,8 +87,10 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
 
     #Calculate Random Coefficients matrix
     (S,R) = size(m.draws)
-    randCoeffs = Array{T,2}(undef,S,m.parLength[:β])
-    calcRC!(randCoeffs,σ,m.draws,m.data._randCoeffs)
+    # randCoeffs = Array{T,2}(undef,S,m.parLength[:β])
+    # calcRC!(randCoeffs,σ,m.draws,m.data._randCoeffs)
+    randCoeffs = Array{T,2}(undef,S,m.parLength[:σ])
+    calcRC!(randCoeffs,σ,m.draws)
 
     #Initialize (ij) pairs of deltas
     L, M = size(m.data.data)
@@ -107,17 +111,13 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
     return parDict{T}(γ_0,γ,I_vec,β_0,β,σ,FE,randCoeffs,μ_ij,s_hat,s_hat_uncond,ω_i,L_i)
 end
 
-function calcRC!(randCoeffs::Array{S,2},σ::Array{T,1},draws::Array{Float64,2},randIndex::Vector{Int}) where {T,S}
+function calcRC!(randCoeffs::Array{S,2},σ::Array{T,1},draws::Array{Float64,2}) where {T,S}
     (N,K) = size(randCoeffs)
     k_ind = 0
     for k in 1:K
-        if k in randIndex
-            k_ind += 1
-            for n in 1:N
-                randCoeffs[n,k] = draws[n,k_ind]*σ[k]
-            end
-        else
-            randCoeffs[:,k] .= 0.0
+        k_ind += 1
+        for n in 1:N
+            randCoeffs[n,k] = draws[n,k_ind]*σ[k]
         end
     end
     return Nothing
@@ -129,11 +129,10 @@ end
 ###########
 
 
-function calc_indCoeffs(p::parDict{T},β::Array{T,1},d::S) where {T,S}
+function calc_indCoeffs(p::parDict{T},β::Array{T,1}) where {T}
     Q = length(β)
     (N,K) = size(p.randCoeffs)
-    β_i = Array{T,2}(undef,N,Q)
-    γ_i = d
+    β_i = zeros(N,K)
     for n in 1:N
         β_i[n,1] = β[1]
     end
@@ -143,7 +142,7 @@ function calc_indCoeffs(p::parDict{T},β::Array{T,1},d::S) where {T,S}
     end
 
     β_i = permutedims(β_i,(2,1))
-    return β_i, γ_i
+    return β_i
 end
 
 function individual_values!(d::InsuranceLogit,p::parDict{T}) where T
@@ -162,12 +161,14 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     M1 = length(β_0)
     β = p.β
     (M2,N2) = size(β)
+    M3 = length(p.σ)
     fe = p.FE
     randIndex = app._randCoeffs
 
     ind = person(app)[1]
     idxitr = app._personDict[ind]
     @inbounds X = permutedims(prodchars(app),(2,1))
+    @inbounds X_σ = permutedims(prodchars0(app),(2,1))
     @inbounds Z = demoRaw(app)[:,1] # Currently Requiring Demographics are Constant
     X_last_all =inertchars(app)#[:,1]
     y_last = choice_last(app)
@@ -197,20 +198,18 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     # end
 
     # demos = γ_0 + dot(γ,Z)
-    demos = 0.0
+    γ_i = 0.0
 
-    if M2>0
-        β_z = β*Z
-        β_i, γ_i = calc_indCoeffs(p,β_z,demos)
-        chars_int = X*β_i
-        # chars = diag(X*β_z)
-        # γ_i = 0.0
+    if M3>0
+        chars_σ = X_σ*(p.randCoeffs')
     else
-        chars = zeros(length(idxitr),1)
-        γ_i = 0.0
+        chars_σ = zeros(length(idxitr),1)
+
     end
 
-    if M1>0
+    if M1>0 & M2>0
+        chars_0 = X*(β_0 + β*Z)
+    elseif M1>0
         chars_0 = X*β_0
     else
         chars_0 = zeros(length(idxitr))
@@ -227,7 +226,7 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     K = length(idxitr)
     N = size(p.randCoeffs,1)
     for k = 1:K,n = 1:N
-        @fastmath u = exp(chars_int[k,n] + chars_0[k] + controls[k] + γ_i)
+        @fastmath u = exp(chars_σ[k,n] + chars_0[k] + controls[k] + γ_i)
         p.μ_ij[n,idxitr[k]] = u
     end
 

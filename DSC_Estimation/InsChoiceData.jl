@@ -77,7 +77,7 @@ function ChoiceData(data_choice::DataFrame;
     yr = convert(Matrix{Float64},data_choice[panel])
     j = convert(Matrix{Float64},data_choice[prd])
     X = convert(Matrix{Float64},data_choice[prodchr])
-    # X_0 = convert(Array{Float64},data_choice[prodchars_0])
+    X_0 = convert(Array{Float64},data_choice[prodchr_0])
     In = convert(Matrix{Float64},data_choice[inertchr])
     y = convert(Matrix{Float64},data_choice[ch])
     y_last = convert(Matrix{Float64},data_choice[ch_last])
@@ -101,8 +101,9 @@ function ChoiceData(data_choice::DataFrame;
 
     # Create a data matrix, only including person id
     println("Put Together Data non FE data together")
+    # prodchr_0 = Symbol.(string.(String.(spec_prodchr_0),"σ"))
     k = 0
-    for (d, var) in zip([i,yr,j,X, Z, y,In,y_last,a_elig,w], [per,panel,prd,prodchr,
+    for (d, var) in zip([i,yr,j,X,X_0,Z, y,In,y_last,a_elig,w], [per,panel,prd,prodchr,prodchr_0,
         demR, ch,inertchr,ch_last,auto, wgt])
         for l=1:size(d,2)
             k+=1
@@ -242,7 +243,8 @@ function ChoiceData(data_choice::DataFrame;
                 F_ind = F_ind[F_ind.!=k]
             end
             F = F[F_ind,:]
-            println("Dropping: $drop_list")
+            drop_vars = feNames[drop_list]
+            println("Dropping: $drop_vars")
         end
     end
 
@@ -258,9 +260,9 @@ function ChoiceData(data_choice::DataFrame;
 
     ## Rand Coefficient Index
     _randCoeffs = Array{Int,1}(undef,length(prodchr_0))
-    for (i,var) in enumerate(prodchr_0)
-        _randCoeffs[i] = findall(var.==prodchr)[1]
-    end
+    # for (i,var) in enumerate(prodchr_0)
+    #     _randCoeffs[i] = findall(var.==prodchr)[1]
+    # end
 
     ## Product Interaction Index
     if length(prodInt)==0
@@ -384,21 +386,66 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasCon
         end
         fac_variables = data_choice[fe]
         factor_list = sort(unique(fac_variables[map(!,ismissing.(fac_variables))]))
+        st_ind = 1
         if (!((:constant in fe_list) | hasConstant)) & (fe==fe_list[1])
             st_ind = 1
-        else
+        elseif (fe!=:metal) & (fe!=:netname)
             println("Skip: $(factor_list[1])")
             st_ind = 2
         end
 
         for fac in factor_list[st_ind:length(factor_list)]
             println("Factor $ind: $fac")
+
+            ## Leave-Out Factors
+            if fac=="Bronze"
+                println("Skip $fac")
+                continue
+            end
+            if fac=="LA Care HMO"
+                println("Skip $fac")
+                continue
+            end
+            if fac in ["United PPO1","Western HMO2","Western HMO3","Oscar EPO4"]
+                println("Skip $fac")
+                continue
+            end
+
+            # if fac=="Kaiser HMO"
+            #     println("Skip $fac")
+            #     continue
+            # elseif fac=="Anthem HMO"
+            #     println("Skip $fac")
+            #     continue
+            # elseif fac=="Blue Shield PPO"
+            #     println("Skip $fac")
+            #     continue
+            # elseif fac=="HealthNet HMO"
+            #     println("Skip $fac")
+            #     continue
+            # elseif fac=="Kaiser HMO16"
+            #     println("Skip $fac")
+            #     continue
+            # elseif fac=="Anthem HMO16"
+            #     println("Skip $fac")
+            #     continue
+            # elseif fac=="Blue Shield PPO16"
+            #     println("Skip $fac")
+            #     continue
+            # elseif fac=="HealthNet HMO16"
+            #     println("Skip $fac")
+            #     continue
+            # end
+
             F[map(!,ismissing.(fac_variables)) .& (fac_variables.==fac),ind] .= 1
             ind+= 1
 
             feNames = vcat(feNames,Symbol(fac))
         end
     end
+    println(size(F))
+    println(length(feNames))
+    F = F[:,1:length(feNames)]
     return F, feNames
 end
 
