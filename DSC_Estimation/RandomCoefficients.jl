@@ -207,7 +207,7 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
 
     end
 
-    if M1>0 & M2>0
+    if (M1>0) & (M2>0)
         chars_0 = X*(β_0 + β*Z)
     elseif M1>0
         chars_0 = X*β_0
