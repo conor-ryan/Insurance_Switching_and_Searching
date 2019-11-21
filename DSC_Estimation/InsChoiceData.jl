@@ -67,7 +67,8 @@ function ChoiceData(data_choice::DataFrame;
         #          :F1_Y1_LI0,:F1_Y1_LI1],
         fixEff=Vector{Symbol}(undef,0),
         fixInt=Vector{Symbol}(undef,0),
-        wgt=[:constant])
+        wgt=[:constant],
+        check_colin=true)
 
     # Get the size of the data
     n, k = size(data_choice)
@@ -181,70 +182,72 @@ function ChoiceData(data_choice::DataFrame;
     _demoRaw = getDictArray(index, demR)
     _wgt = getDictArray(index, wgt)
 
-    println("Check Collinearity")
-    if length(_inertchars)>0
-        smallest_ev = 0
-        all_ind = vcat(_inertchars)
-        all_data = dmat[all_ind,:]
-        X = all_data*all_data'
-        smallest_ev = minimum(abs.(eigvals(X)))
-        all_vals = abs.(eigvals(X))
-        num_zero_vals = length(findall(all_vals.<1e-10))
-        smallest_ev = minimum(all_vals)
-        println("Smallest Data Eigenvalue (search): $smallest_ev")
-        println("Number of Zero Eigenvalues (search): $num_zero_vals")
-        pdim = size(dmat[all_ind,:],1)
-        if abs(smallest_ev)<1e-10
-            v = eigvecs(X)
-            zero_vals = findall(all_vals.<1e-10)
-            drop_list = Vector{Int}(undef,0)
-            for ind_v in zero_vals
-                ind_colin = maximum(findall(abs.(v[:,ind_v]).>1e-10))
-                drop_list = vcat(drop_list,[ind_colin])
-            end
-            for k in drop_list
-                all_ind = all_ind[all_ind.!=k]
-            end
-            println("Need to Drop: $drop_list")
-        end
-    else
-        println("Smallest Data Eigenvalue (search):No Search Variable")
-    end
-
-    smallest_ev = 0
-    while abs(smallest_ev).<1e-10
-        all_ind = vcat(_choice,_prodchars,_demoRaw)
-        all_data = vcat(dmat[all_ind,:],F)
-        X = all_data*all_data'
-        all_vals = abs.(eigvals(X))
-        num_zero_vals = length(findall(all_vals.<1e-10))
-        smallest_ev = minimum(all_vals)
-        println("Smallest Data Eigenvalue (choice): $smallest_ev")
-        println("Number of Zero Eigenvalues (choice): $num_zero_vals")
-        pdim = size(dmat[all_ind,:],1)
-        if abs(smallest_ev)<1e-10
-            v = eigvecs(X)
-            zero_vals = findall(all_vals.<1e-10)
-            drop_list = Vector{Int}(undef,0)
-            for ind_v in zero_vals
-                ind_colin = maximum(findall(abs.(v[:,ind_v]).>1e-10))
-                ind_colin_fe = ind_colin - pdim
-                if ind_colin<pdim
-                    println("Collinearity in Product Characteristics")
-                    break
-                elseif ind_colin_fe in drop_list
-                    continue
-                else
-                    drop_list = vcat(drop_list,[ind_colin_fe])
+    if check_colin
+        println("Check Collinearity")
+        if length(_inertchars)>0
+            smallest_ev = 0
+            all_ind = vcat(_inertchars)
+            all_data = dmat[all_ind,:]
+            X = all_data*all_data'
+            smallest_ev = minimum(abs.(eigvals(X)))
+            all_vals = abs.(eigvals(X))
+            num_zero_vals = length(findall(all_vals.<1e-10))
+            smallest_ev = minimum(all_vals)
+            println("Smallest Data Eigenvalue (search): $smallest_ev")
+            println("Number of Zero Eigenvalues (search): $num_zero_vals")
+            pdim = size(dmat[all_ind,:],1)
+            if abs(smallest_ev)<1e-10
+                v = eigvecs(X)
+                zero_vals = findall(all_vals.<1e-10)
+                drop_list = Vector{Int}(undef,0)
+                for ind_v in zero_vals
+                    ind_colin = maximum(findall(abs.(v[:,ind_v]).>1e-10))
+                    drop_list = vcat(drop_list,[ind_colin])
                 end
+                for k in drop_list
+                    all_ind = all_ind[all_ind.!=k]
+                end
+                println("Need to Drop: $drop_list")
             end
-            F_ind = 1:size(F,1)
-            for k in drop_list
-                F_ind = F_ind[F_ind.!=k]
+        else
+            println("Smallest Data Eigenvalue (search):No Search Variable")
+        end
+
+        smallest_ev = 0
+        while abs(smallest_ev).<1e-10
+            all_ind = vcat(_choice,_prodchars,_demoRaw)
+            all_data = vcat(dmat[all_ind,:],F)
+            X = all_data*all_data'
+            all_vals = abs.(eigvals(X))
+            num_zero_vals = length(findall(all_vals.<1e-10))
+            smallest_ev = minimum(all_vals)
+            println("Smallest Data Eigenvalue (choice): $smallest_ev")
+            println("Number of Zero Eigenvalues (choice): $num_zero_vals")
+            pdim = size(dmat[all_ind,:],1)
+            if abs(smallest_ev)<1e-10
+                v = eigvecs(X)
+                zero_vals = findall(all_vals.<1e-10)
+                drop_list = Vector{Int}(undef,0)
+                for ind_v in zero_vals
+                    ind_colin = maximum(findall(abs.(v[:,ind_v]).>1e-10))
+                    ind_colin_fe = ind_colin - pdim
+                    if ind_colin<pdim
+                        println("Collinearity in Product Characteristics")
+                        break
+                    elseif ind_colin_fe in drop_list
+                        continue
+                    else
+                        drop_list = vcat(drop_list,[ind_colin_fe])
+                    end
+                end
+                F_ind = 1:size(F,1)
+                for k in drop_list
+                    F_ind = F_ind[F_ind.!=k]
+                end
+                F = F[F_ind,:]
+                drop_vars = feNames[drop_list]
+                println("Dropping: $drop_vars")
             end
-            F = F[F_ind,:]
-            drop_vars = feNames[drop_list]
-            println("Dropping: $drop_vars")
         end
     end
 
@@ -389,7 +392,7 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasCon
         st_ind = 1
         if (!((:constant in fe_list) | hasConstant)) & (fe==fe_list[1])
             st_ind = 1
-        elseif (fe!=:metal) & (fe!=:netname)
+        elseif (fe!=:metal) & (fe!=:netname) & (fe!=:iss_net_gra) & (fe!=:metal_gra)
             println("Skip: $(factor_list[1])")
             st_ind = 2
         end
@@ -398,18 +401,18 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasCon
             println("Factor $ind: $fac")
 
             ## Leave-Out Factors
-            if fac=="Bronze"
+            if occursin("Bronze",fac) & !occursin("HDHP",fac)
                 println("Skip $fac")
                 continue
             end
-            if fac=="LA Care HMO"
+            if occursin("Kaiser HMO",fac)
                 println("Skip $fac")
                 continue
             end
-            if fac in ["United PPO1","Western HMO2","Western HMO3","Oscar EPO4"]
-                println("Skip $fac")
-                continue
-            end
+            # if fac in ["United PPO1","Western HMO2","Western HMO3","Oscar EPO4"]
+            #     println("Skip $fac")
+            #     continue
+            # end
 
             # if fac=="Kaiser HMO"
             #     println("Skip $fac")
@@ -443,8 +446,6 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasCon
             feNames = vcat(feNames,Symbol(fac))
         end
     end
-    println(size(F))
-    println(length(feNames))
     F = F[:,1:length(feNames)]
     return F, feNames
 end
