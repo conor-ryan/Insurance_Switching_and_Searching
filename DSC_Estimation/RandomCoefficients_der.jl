@@ -633,6 +633,8 @@ function calc_relParDict!(d::InsuranceLogit)
     for app in eachperson(d.data)
         ind = person(app)[1]
         d._rel_par_Dict[ind] = find_par_rel(app,d)
+        all_pars = length(find_par_rel(app,d))
+        println("Parameters: $ind, $all_pars")
     end
     return nothing
 end
