@@ -288,7 +288,7 @@ function ll_obs!(grad::Vector{Float64},
         # Initialize Gradient
         #(Q,N,K) = size(dμ_ij)
         pars_relevant = d._rel_par_Dict[ind]
-        pars_relevant = 1:d.parLength[:All]
+        # pars_relevant = 1:d.parLength[:All]
 
         # Year Indices
         yr_next = findYearInd(app._personYearDict[ind])
