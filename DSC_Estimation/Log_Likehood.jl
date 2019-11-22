@@ -61,9 +61,10 @@ function log_likelihood!(hess::Matrix{Float64},grad::Vector{Float64},
     individual_values!(d,p)
     # individual_shares(d,p)
 
-    cnt +=1
+    cnt = 0
     for app in eachperson(d.data)
-        if cnt%500
+        cnt +=1
+        if cnt%2000
             println("Evaluated $cnt")
         end
         ll_obs = ll_obs!(hess,grad,app,d,p)
