@@ -64,7 +64,7 @@ function log_likelihood!(hess::Matrix{Float64},grad::Vector{Float64},
     cnt = 0
     for app in eachperson(d.data)
         cnt +=1
-        if cnt%2000
+        if cnt%2000==0
             println("Evaluated $cnt")
         end
         ll_obs = ll_obs!(hess,grad,app,d,p)
