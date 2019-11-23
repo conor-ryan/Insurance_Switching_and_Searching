@@ -40,7 +40,7 @@ function estimate_ng!(d::InsuranceLogit, p0;method=:LN_SBPLX)
 end
 
 
-function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-8,x_tol=1e-8,
+function newton_raphson_ll(d,p0;grad_tol=1e-8,f_tol=1e-12,x_tol=1e-12,
     max_itr=2000,strict=true,Hess_Skip_Steps=10)
     ## Initialize Parameter Vector
     p_vec = p0

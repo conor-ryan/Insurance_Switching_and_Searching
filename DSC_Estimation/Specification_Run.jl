@@ -32,7 +32,7 @@ function estimate_specification(df::DataFrame;
         fixInt=spec_fixInt,
         fixEff=spec_fixEff,
         wgt=spec_wgt,
-        check_colin=false)
+        check_colin=true)
 
     if length(spec_prodInt)==0
         spec_prodInt = copy(spec_prodchr)
