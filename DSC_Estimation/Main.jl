@@ -45,48 +45,48 @@ rundate = Dates.today()
 # file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/ML_spec6_2019-05-25.jld2"
 # @load file p_est spec_Dict fval
 
-println("###############################")
-println("Specification 1")
-### Only plan-level switching cost, no Inertia
-filename = "Spec1_$rundate"
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = mixed_draws,
-    spec_per = spec_per,
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan],
-    # spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-    spec_inertchr= Vector{Symbol}(undef,0),
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    # spec_fixEff=[:metal,:netname],
-    spec_fixEff=[:metal_gra,:iss_net_gra],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 50,ll_start = true)
+# println("###############################")
+# println("Specification 1")
+# ### Only plan-level switching cost, no Inertia
+# filename = "Spec1_$rundate"
+# mx_out_1 = MainSpec(df_LA,filename,
+#     haltonDim = mixed_draws,
+#     spec_per = spec_per,
+#     spec_prd = spec_prd,
+#     spec_ch = spec_ch,
+#     spec_ch_last = spec_ch_last,
+#     spec_prodchr = [:padj,:iplan],
+#     # spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
+#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+#     spec_inertchr= Vector{Symbol}(undef,0),
+#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+#     spec_prodInt=[:padj,:iplan],
+#     spec_fixInt=Vector{Symbol}(undef,0),
+#     # spec_fixEff=[:metal,:netname],
+#     spec_fixEff=[:metal_gra,:iss_net_gra],
+#     spec_wgt= spec_wgt,
+#     method="ga",ga_itr = 50,ll_start = true)
 
 #
-println("###############################")
-println("Specification 2")
-### Fully Specified Switching Costs, no Inertia
-filename = "Spec2_$rundate"
-mx_out_1 = MainSpec(df_LA,filename,
-    haltonDim = mixed_draws,
-    spec_per = spec_per,
-    spec_prd = spec_prd,
-    spec_ch = spec_ch,
-    spec_ch_last = spec_ch_last,
-    spec_prodchr = [:padj,:iplan,:inet],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-    spec_inertchr= Vector{Symbol}(undef,0),
-    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-    spec_prodInt=[:padj,:iplan,:inet],
-    spec_fixInt=Vector{Symbol}(undef,0),
-    spec_fixEff=[:metal_gra,:iss_net_gra],
-    spec_wgt= spec_wgt,
-    method="ga",ga_itr = 50,ll_start = true)
+# println("###############################")
+# println("Specification 2")
+# ### Fully Specified Switching Costs, no Inertia
+# filename = "Spec2_$rundate"
+# mx_out_1 = MainSpec(df_LA,filename,
+#     haltonDim = mixed_draws,
+#     spec_per = spec_per,
+#     spec_prd = spec_prd,
+#     spec_ch = spec_ch,
+#     spec_ch_last = spec_ch_last,
+#     spec_prodchr = [:padj,:iplan,:inet],
+#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+#     spec_inertchr= Vector{Symbol}(undef,0),
+#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+#     spec_prodInt=[:padj,:iplan,:inet],
+#     spec_fixInt=Vector{Symbol}(undef,0),
+#     spec_fixEff=[:metal_gra,:iss_net_gra],
+#     spec_wgt= spec_wgt,
+#     method="ga",ga_itr = 50,ll_start = true)
 
 println("###############################")
 println("Specification 3")
@@ -114,10 +114,10 @@ mx_out_1 = MainSpec(df_LA,filename,
                         # Year Fixed Effects
                         :year_2016,:year_2017,:year_2018,
                         #Rating Area Fixed Effect
-                        :gra_1,:gra_2,:gra_3,:gra_4,:gra_5,
-                        :gra_6,:gra_7,:gra_8,:gra_9,:gra_10,
-                        :gra_11,:gra_12,:gra_13,:gra_14,:gra_15,
-                        :gra_16,:gra_17,:gra_18,:gra_19],
+                        :grafe_2,:grafe_3,:grafe_4,:grafe_5,
+                        :grafe_6,:grafe_7,:grafe_8,:grafe_9,:grafe_10,
+                        :grafe_11,:grafe_12,:grafe_13,:grafe_14,:grafe_15,
+                        :grafe_16,:grafe_17,:grafe_18,:grafe_19],
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
     spec_prodInt=[:padj,:iplan,:inet],
     spec_fixInt=Vector{Symbol}(undef,0),
