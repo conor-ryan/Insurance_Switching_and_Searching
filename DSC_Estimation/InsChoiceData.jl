@@ -393,52 +393,22 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasCon
         if (!((:constant in fe_list) | hasConstant)) & (fe==fe_list[1])
             st_ind = 1
         elseif (fe!=:metal) & (fe!=:netname) & (fe!=:iss_net_gra) & (fe!=:metal_gra)
-            println("Skip: $(factor_list[1])")
+            # println("Skip: $(factor_list[1])")
             st_ind = 2
         end
 
         for fac in factor_list[st_ind:length(factor_list)]
-            println("Factor $ind: $fac")
+            # println("Factor $ind: $fac")
 
             ## Leave-Out Factors
             if occursin("Bronze",fac) & !occursin("HDHP",fac)
-                println("Skip $fac")
+                # println("Skip $fac")
                 continue
             end
             if occursin("Kaiser HMO",fac)
-                println("Skip $fac")
+                # println("Skip $fac")
                 continue
             end
-            # if fac in ["United PPO1","Western HMO2","Western HMO3","Oscar EPO4"]
-            #     println("Skip $fac")
-            #     continue
-            # end
-
-            # if fac=="Kaiser HMO"
-            #     println("Skip $fac")
-            #     continue
-            # elseif fac=="Anthem HMO"
-            #     println("Skip $fac")
-            #     continue
-            # elseif fac=="Blue Shield PPO"
-            #     println("Skip $fac")
-            #     continue
-            # elseif fac=="HealthNet HMO"
-            #     println("Skip $fac")
-            #     continue
-            # elseif fac=="Kaiser HMO16"
-            #     println("Skip $fac")
-            #     continue
-            # elseif fac=="Anthem HMO16"
-            #     println("Skip $fac")
-            #     continue
-            # elseif fac=="Blue Shield PPO16"
-            #     println("Skip $fac")
-            #     continue
-            # elseif fac=="HealthNet HMO16"
-            #     println("Skip $fac")
-            #     continue
-            # end
 
             F[map(!,ismissing.(fac_variables)) .& (fac_variables.==fac),ind] .= 1
             ind+= 1
