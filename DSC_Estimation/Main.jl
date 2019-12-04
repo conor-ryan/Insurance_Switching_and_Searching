@@ -111,13 +111,13 @@ mx_out_1 = MainSpec(df_LA,filename,
                         # :def_issfe_6, :def_issfe_7, # Leave Out LA Care
                         # :def_netfe_4, :def_netfe_6, # Drop net02, net03
                         # :def_netfe_9, :def_netfe_12, # Drop net10, net08
-                        # Year Fixed Effects
-                        :year_2016,:year_2017,:year_2018,
                         #Rating Area Fixed Effect
-                        :grafe_2,:grafe_3,:grafe_4,:grafe_5,
-                        :grafe_6,:grafe_7,:grafe_8,:grafe_9,:grafe_10,
-                        :grafe_11,:grafe_12,:grafe_13,:grafe_14,:grafe_15,
-                        :grafe_16,:grafe_17,:grafe_18,:grafe_19],
+                        # :grafe_2,:grafe_3,:grafe_4,:grafe_5,
+                        # :grafe_6,:grafe_7,:grafe_8,:grafe_9,:grafe_10,
+                        # :grafe_11,:grafe_12,:grafe_13,:grafe_14,:grafe_15,
+                        # :grafe_16,:grafe_17,:grafe_18,:grafe_19,
+                        # Year Fixed Effects
+                        :year_2016,:year_2017,:year_2018],
     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
     spec_prodInt=[:padj,:iplan,:inet,:iiss],
     spec_fixInt=Vector{Symbol}(undef,0),
