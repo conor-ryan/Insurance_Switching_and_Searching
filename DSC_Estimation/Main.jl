@@ -99,7 +99,8 @@ mx_out_1 = MainSpec(df_LA,filename,
     spec_ch = spec_ch,
     spec_ch_last = spec_ch_last,
     spec_prodchr = [:padj,:iplan,:inet,:iiss],
-    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+    # spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,:autodp,
                         #Metal Fixed Effects
                         :def_mtl_cat,:def_mtl_gld, # Leave Out Bronze
