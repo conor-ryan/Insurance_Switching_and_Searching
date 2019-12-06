@@ -398,7 +398,6 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasCon
         end
 
         for fac in factor_list[st_ind:length(factor_list)]
-            # println("Factor $ind: $fac")
 
             ## Leave-Out Factors
             if occursin("Bronze",fac) & !occursin("HDHP",fac)
@@ -409,6 +408,7 @@ function build_FE(data_choice::DataFrame,fe_list::Vector{T};bigFirm=false,hasCon
                 # println("Skip $fac")
                 continue
             end
+            println("Factor $ind: $fac")
 
             F[map(!,ismissing.(fac_variables)) .& (fac_variables.==fac),ind] .= 1
             ind+= 1
