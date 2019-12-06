@@ -29,7 +29,7 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2019-12-02"
+rundate = "2019-12-04"
 spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
@@ -68,8 +68,8 @@ println("Number of Parameters: $numPar, Log-Likelihood: $ll, BIC: $BIC")
 
 
 
-ll = likelihood(m,p_est)
-println(ll)
+ll = log_likelihood(m,p_est)
+println(ll*Pop)
 
 # grad = Vector{Float64}(undef,length(p_est))
 
