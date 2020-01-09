@@ -30,7 +30,7 @@ println("Data Loaded")
 
 
 rundate = "2019-12-12"
-spec = "Spec2_"
+spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
