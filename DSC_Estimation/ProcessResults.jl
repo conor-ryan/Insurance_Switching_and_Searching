@@ -30,7 +30,7 @@ println("Data Loaded")
 
 
 rundate = "2019-12-12"
-spec = "Spec1_"
+spec = "Spec2_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -103,9 +103,9 @@ individual_shares(m,parBase)
 
 βMat = coeff_values(m,parBase)
 wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
-# wtp_inet = -100*(βMat[:,3]./βMat[:,1])
+wtp_inet = -100*(βMat[:,3]./βMat[:,1])
 # wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
-# wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
+wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
 
 
 # alpha_long = parBase.β_0[1] .+ parBase.β[1,:]'*demoRaw(m.data)
