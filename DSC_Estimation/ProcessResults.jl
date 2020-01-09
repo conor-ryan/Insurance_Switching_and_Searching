@@ -29,8 +29,8 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2019-12-06"
-spec = "Spec3_"
+rundate = "2019-12-11"
+spec = "Spec1_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -73,24 +73,24 @@ println(ll*Pop)
 
 # grad = Vector{Float64}(undef,length(p_est))
 
-
-ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict)
-println(ReturnPercObs)
-println(ReturnPercBase)
-ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true)
-println(ReturnFA)
-ReturnNoHass, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true)
-println(ReturnNoHass)
-ReturnNoCont, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noCont=true)
-println(ReturnNoCont)
-ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true)
-println(ReturnFA)
-ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true)
-println(ReturnFA)
-ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true)
-println(ReturnFA)
-ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true)
-println(ReturnNone)
+#
+# ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict)
+# println(ReturnPercObs)
+# println(ReturnPercBase)
+# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true)
+# println(ReturnFA)
+# ReturnNoHass, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true)
+# println(ReturnNoHass)
+# ReturnNoCont, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noCont=true)
+# println(ReturnNoCont)
+# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true)
+# println(ReturnFA)
+# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true)
+# println(ReturnFA)
+# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true)
+# println(ReturnFA)
+# ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true)
+# println(ReturnNone)
 
 #### Average Willingness to Pay ####
 parBase = parDict(m,p_est)
@@ -104,7 +104,7 @@ println(marginalEffects(m,parBase))
 βMat = coeff_values(m,parBase)
 wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
 wtp_inet = -100*(βMat[:,3]./βMat[:,1])
-wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
+# wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
 wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
 
 
@@ -129,8 +129,8 @@ println(mean(wtp_cont))
 println(std(wtp_cont))
 
 ##### Demographic Buckets #####
-β0 = parBase.β_0[1:4]
-β = parBase.β[1:4,:]
+β0 = parBase.β_0[1:3]
+β = parBase.β[1:3,:]
 Z =[0 0 0 1;
     1 0 0 1;
     0 1 0 1;

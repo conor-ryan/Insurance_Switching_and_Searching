@@ -347,9 +347,10 @@ function ind_wtp(app::ChoiceData,p::parDict{T}) where T
     demos = 0.0
 
     β_z = β*Z
-    β_i, γ_i = calc_indCoeffs(p,β_z,demos)
+    # β_i, γ_i = calc_indCoeffs(p,β_z)
 
-    β_mean = mean(β_i,dims=2) + β_0
+    # β_mean = mean(β_i,dims=2) + β_0
+    β_mean = β_z + β_0
     return β_mean, wgt
 end
 
