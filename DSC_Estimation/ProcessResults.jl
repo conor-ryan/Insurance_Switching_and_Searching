@@ -103,17 +103,17 @@ individual_shares(m,parBase)
 
 βMat = coeff_values(m,parBase)
 wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
-wtp_inet = -100*(βMat[:,3]./βMat[:,1])
+# wtp_inet = -100*(βMat[:,3]./βMat[:,1])
 # wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
-wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
+# wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
 
 
-alpha_long = parBase.β_0[1] .+ parBase.β[1,:]'*demoRaw(m.data)
-price_long = prodchars(m.data)[1,:]
-elas = Vector{Float64}(undef,length(alpha_long))
-for i in 1:length(elas)
-    elas[i] = alpha_long[i]*price_long[i]*(1 - parBase.s_hat[i])
-end
+# alpha_long = parBase.β_0[1] .+ parBase.β[1,:]'*demoRaw(m.data)
+# price_long = prodchars(m.data)[1,:]
+# elas = Vector{Float64}(undef,length(alpha_long))
+# for i in 1:length(elas)
+#     elas[i] = alpha_long[i]*price_long[i]*(1 - parBase.s_hat[i])
+# end
 
 println("Plan Level")
 println(mean(wtp_iplan))
