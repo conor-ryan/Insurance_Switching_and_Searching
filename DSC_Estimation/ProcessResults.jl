@@ -98,7 +98,7 @@ individual_values!(m,parBase)
 individual_shares(m,parBase)
 
 ## Marginal Effects
-println(marginalEffects(m,parBase))
+# println(marginalEffects(m,parBase))
 
 
 βMat = coeff_values(m,parBase)
