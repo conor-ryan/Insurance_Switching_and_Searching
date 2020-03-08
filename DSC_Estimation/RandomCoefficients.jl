@@ -40,7 +40,7 @@ mutable struct parDict{T}
     # d2Rdθ_j::Array{T,3}
 end
 
-function parDict(m::InsuranceLogit,x::Array{T}) where T
+function parDict(m::InsuranceLogit,x::Array{T};temp_search_flag=false) where T
     # Parameter Lengths from model
     #γlen = 1 + m.parLength[:γ]
     γlen = 0
@@ -93,11 +93,16 @@ function parDict(m::InsuranceLogit,x::Array{T}) where T
     calcRC!(randCoeffs,σ,m.draws)
 
     #Initialize (ij) pairs of deltas
+
     L, M = size(m.data.data)
-    if S>1
-        μ_ij = Matrix{T}(undef,S,M)
+    if !temp_search_flag
+        if S>1
+            μ_ij = Matrix{T}(undef,S,M)
+        else
+            μ_ij = Matrix{T}(undef,1,M)
+        end
     else
-        μ_ij = Matrix{T}(undef,1,M)
+        μ_ij = Matrix{T}(undef,1,1)
     end
     s_hat = Vector{T}(undef,M)
     s_hat_uncond = Vector{T}(undef,M)
@@ -149,6 +154,14 @@ function individual_values!(d::InsuranceLogit,p::parDict{T}) where T
     # Calculate μ_ij, which depends only on parameters
     for app in eachperson(d.data)
         util_value!(app,p)
+    end
+    return Nothing
+end
+
+function individual_search!(d::InsuranceLogit,p::parDict{T}) where T
+    # Calculate μ_ij, which depends only on parameters
+    for app in eachperson(d.data)
+        search_prob_only!(app,p)
     end
     return Nothing
 end
@@ -230,6 +243,32 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
         p.μ_ij[n,idxitr[k]] = u
     end
 
+    return Nothing
+end
+
+function search_prob_only!(app::ChoiceData,p::parDict{T}) where T
+    ι = p.I
+    ind = person(app)[1]
+    idxitr = app._personDict[ind]
+    X_last_all =inertchars(app)#[:,1]
+    elig = autoelig(app)
+
+    _yearDict = app._personYearDict[ind]
+    years = sort(Int.(keys(_yearDict)))
+    ret = zeros(length(years))
+    X_last = Matrix{Float64}(undef,length(years),size(X_last_all,1))
+    for (i,yr) in enumerate(years)
+        @inbounds ret[i] = maximum(elig[_yearDict[yr]])
+        @inbounds X_last[i,:] = X_last_all[:,_yearDict[yr][1]]
+    end
+
+    if length(ι)>0
+        search = exp.(X_last*ι)
+        s_prob = (1 .- ret) .+ ret.*(search./(1 .+ search))
+        p.ω_i[app._searchDict[ind]] = s_prob
+    else
+        p.ω_i[:].=1.0
+    end
     return Nothing
 end
 
@@ -367,9 +406,11 @@ function coeff_values(d::InsuranceLogit,p::parDict{T}) where T
     return coeff_mat
 end
 
-function marginalEffects(d::InsuranceLogit,p::parDict{T}) where T
+function marginalEffects(d::InsuranceLogit,p_vec::Vector{T}) where T
+    p = parDict(d,p_vec,temp_search_flag=true)
+    individual_search!(d,p)
     # Calculate μ_ij, which depends only on parameters
-    dω_i = Matrix{Float64}(undef,length(p.ω_i),d.parLength[:I])
+    dω_i = Matrix{T}(undef,length(p.ω_i),d.parLength[:I])
     returning = Vector{Float64}(undef,length(p.ω_i))
     for app in eachperson(d.data)
         indMargEffect(dω_i,returning,app,p)
@@ -377,10 +418,29 @@ function marginalEffects(d::InsuranceLogit,p::parDict{T}) where T
     dω_i[:,6] = 10*p.I[6].*p.ω_i.*(1 .- p.ω_i)
     dω_i = dω_i[findall(returning.==1),:]
     ### Manually do marginal effect for dprem
-    return round.(100 .*mean(dω_i,dims=1)[2:6],digits=2)
+    return mean(dω_i,dims=1)[2:6]
 end
 
-function indMargEffect(dω_i::Matrix{Float64},returning::Vector{Float64},app::ChoiceData,p::parDict{T}) where T
+function marginalEffects_deriv_function(x::Vector{T},d::InsuranceLogit,p_vec::Vector{S}) where {T,S}
+    full_param_vec = Vector{T}(undef,length(p_vec))
+
+    full_param_vec[:] = p_vec[:]
+    full_param_vec[1:length(x)] = x[:]
+    return marginalEffects(d,full_param_vec)
+end
+
+function meDeriv(d::InsuranceLogit,p_vec::Vector{Float64})
+    func_me(x) = marginalEffects_deriv_function(x,d,p_vec)
+    params = Vector{Float64}(undef,d.parLength[:I])
+    params[:] = p_vec[1:d.parLength[:I]]
+    me_grad = Matrix{Float64}(undef,5,d.parLength[:I])
+    ForwardDiff.jacobian!(me_grad,func_me,params)
+    ### Manually do marginal effect for dprem
+    return me_grad
+end
+
+
+function indMargEffect(dω_i::Matrix{T},returning::Vector{Float64},app::ChoiceData,p::parDict{T}) where T
     γ_0 = p.γ_0
     γ = p.γ
     ι = p.I

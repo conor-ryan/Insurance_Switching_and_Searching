@@ -98,8 +98,16 @@ individual_values!(m,parBase)
 individual_shares(m,parBase)
 
 ## Marginal Effects
-# println(marginalEffects(m,parBase))
+println("### COMPUTE MARGINAL EFFECTS ### ")
+println(round.(100 .*marginalEffects(m,p_est),digits=2))
 
+dME = 100 .*meDeriv(m,p_est)
+Var, se1, se2,t_stat, stars = res_process(m,p_est)
+Σ_coeff = Diagonal(se1[1:m.parLength[:I]])
+Σ_me = dME*Var[1:m.parLength[:I],1:m.parLength[:I]]*dME'
+σ_me = sqrt.(diag(Σ_me))
+println("### MARGINAL EFFECT STANDARD ERRORS ###")
+println(round.(σ_me,digits=2))
 
 βMat = coeff_values(m,parBase)
 wtp_iplan = -100*(βMat[:,2]./βMat[:,1])

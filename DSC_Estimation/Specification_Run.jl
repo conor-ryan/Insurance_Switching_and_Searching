@@ -128,10 +128,10 @@ function res_process(model::InsuranceLogit,p_est::Vector{Float64})
     Pop = length(model.data._personIDs)
 
     ## Create Param Dictionary
-    paramFinal = parDict(model,p_est)
-    println("Gradient-based Variance Estimate")
-    Var_2 = calc_Avar(model,paramFinal)
-    Var_2 = Var_2./Pop
+    # paramFinal = parDict(model,p_est)
+    # println("Gradient-based Variance Estimate")
+    # Var_2 = calc_Avar(model,paramFinal)
+    # Var_2 = Var_2./Pop
 
 
     println("Hessian-based Variance Estimate")
@@ -139,6 +139,7 @@ function res_process(model::InsuranceLogit,p_est::Vector{Float64})
     grad = Vector{Float64}(undef,length(p_est))
     res = log_likelihood!(hess,grad,model,p_est)
     Var_1 = -inv(hess)./Pop
+    Var_2 = Var_1
 
 
     if any(diag(Var_2.<0)) | any(diag(Var_1.<0))
