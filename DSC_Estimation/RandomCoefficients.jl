@@ -31,6 +31,9 @@ mutable struct parDict{T}
     # Total Likelihood
     L_i::Vector{T}
 
+    # Active Variable Flag
+    use_active_var::Bool
+
     # r_hat::Vector{T}
     # Share Parameter Derivatives for Products x Parameters
     # dSdθ_j::Matrix{T}
@@ -112,8 +115,14 @@ function parDict(m::InsuranceLogit,x::Array{T};temp_search_flag=false) where T
     max_srch = maximum(m.data._searchDict[max_per])
     ω_i = Vector{T}(undef,max_srch)
 
+    if m.use_active_var
+        ω_i[:] = m.data.active[:]
+    else
+        ω_i[:].= 1.0
+    end
 
-    return parDict{T}(γ_0,γ,I_vec,β_0,β,σ,FE,randCoeffs,μ_ij,s_hat,s_hat_uncond,ω_i,L_i)
+
+    return parDict{T}(γ_0,γ,I_vec,β_0,β,σ,FE,randCoeffs,μ_ij,s_hat,s_hat_uncond,ω_i,L_i,m.use_active_var)
 end
 
 function calcRC!(randCoeffs::Array{S,2},σ::Array{T,1},draws::Array{Float64,2}) where {T,S}
@@ -227,7 +236,7 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
     else
         chars_0 = zeros(length(idxitr))
     end
-
+    ### Need to edit if we want a one-way flexibility on the active variable
     if length(ι)>0
         search = exp.(X_last*ι)
         s_prob = (1 .- ret) .+ ret.*(search./(1 .+ search))

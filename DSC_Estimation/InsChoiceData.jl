@@ -22,6 +22,7 @@ struct ChoiceData <: ModelData
     choice      # Binary choice indicator
     demoRaw    # Household Demographics - raw
     wgt     # Number of People in each type
+    active::Vector{Float64} # Website Activity Variable
     # unins     # Outside Option Share
 
     # Precomputed Indices
@@ -59,6 +60,7 @@ function ChoiceData(data_choice::DataFrame;
         ch=[:choice],
         ch_last = [:iplan],
         auto = [:autoelig],
+        act_var = :active,
         demR=Vector{Symbol}(undef,0),
         prodInt=Vector{Symbol}(undef,0),
         # demoRaw=[:F0_Y0_LI1,
@@ -85,6 +87,7 @@ function ChoiceData(data_choice::DataFrame;
     a_elig = convert(Matrix{Float64},data_choice[auto])
     Z = convert(Matrix{Float64},data_choice[demR])
     w = convert(Matrix{Float64},data_choice[wgt])
+    web_activity = convert(Vector{Float64},data_choice[!,act_var])
 
 
     println("Create Fixed Effects")
@@ -306,6 +309,21 @@ function ChoiceData(data_choice::DataFrame;
         last_ind = copy(new_ind)
     end
 
+    ### Vector of Website Activity
+    println("Website Activity Vector")
+    max_srch = maximum(_searchDict[Int.(maximum(uniqids))])
+    activity_data  = zeros(max_srch)
+    last_ind = 1
+    for id in uniqids
+        per_idx = _personDict[id]
+        p_dict = _personYearDict[id]
+        years = sort(Int.(keys(p_dict)))
+        for y in years
+            idx = minimum(p_dict[y])
+            activity_data[last_ind] = web_activity[per_idx[idx]]
+            last_ind += 1
+        end
+    end
 
     #Create Product Dictionary
     println("Product Dictionary")
@@ -329,7 +347,7 @@ function ChoiceData(data_choice::DataFrame;
 
     # Make the data object
     m = ChoiceData(dmat, F, index,
-            prodchr,prodchr_0,ch, demR,wgt,
+            prodchr,prodchr_0,ch, demR,wgt,activity_data,
              _person,_panel,_product, _prodchars,_prodchars_0,_inertchars,
             _choice,_choice_last,_auto_elig, _demoRaw, _wgt,
              _randCoeffs,_prodInteract,
@@ -472,6 +490,7 @@ function subset(d::T, idx) where T<:ModelData
     d.choice,      # Binary choice indicator
     d.demoRaw,    # Household Demographics - raw
     d.wgt,     # Demographic Fixed Effects
+    d.active,
     # Precomputed Indices
     d._person,
     d._panel,
@@ -557,12 +576,15 @@ mutable struct InsuranceLogit <: LogitModel
 
     #Store Halton Draws
     draws::Array{Float64,2}
+
+    # Use Active Variable
+    use_active_var::Bool
 end
 
 
 # Construct the model instance
 function InsuranceLogit(c_data::ChoiceData,haltonDim::Int;
-    nested=false)
+    nested=false,use_active_var=false)
 
     # Get Parameter Lengths
     println(size(demoRaw(c_data)))
@@ -620,7 +642,8 @@ function InsuranceLogit(c_data::ChoiceData,haltonDim::Int;
     d = InsuranceLogit(parLength,
                         rel_par_Dict,
                         c_data,
-                        draws)
+                        draws,
+                        use_active_var)
     calc_relParDict!(d)
     return d
 end

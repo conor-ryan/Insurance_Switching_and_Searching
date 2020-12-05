@@ -46,14 +46,14 @@ c = ChoiceData(df_LA;
     ch_last = [:iplan],
     prodchr =  [:padj,:iplan],
     prodchr_0= [:issfe_1, :issfe_2, :issfe_3, :issfe_4],
-    inertchr=[:constant,:autodp],
+    # inertchr=[:constant,:autodp],
     demR =Vector{Symbol}(undef,0),
     prodInt=Vector{Symbol}(undef,0),
     fixEff=Vector{Symbol}(undef,0),
     wgt=[:constant])
 
 # Fit into model
-m = InsuranceLogit(c,50)
+m = InsuranceLogit(c,10,use_active_var=false)
 println("Data Loaded")
 
 #γ0start = rand(1)-.5
@@ -67,9 +67,9 @@ FEstart = rand(m.parLength[:FE])/100 .-.005
 
 p0 = vcat(Istart,βstart,γstart,σstart,FEstart)
 
-# par = parDict(m,p0)
-# individual_values!(m,par)
-# individual_shares(m,par)
+par = parDict(m,p0)
+individual_values!(m,par)
+individual_shares(m,par)
 #
 # @time v = calc_Avar(m,par)
 
@@ -175,18 +175,16 @@ c = ChoiceData(df_LA;
     prd = [:product],
     ch = [:choice],
     ch_last = [:iplan],
-    prodchr = [:padj,:iplan,:inet,:iiss,
-    :issfe_1, :issfe_2, :issfe_5, :issfe_6,
-    :issfe_8, :issfe_9, # Leave Out LA Care
-    :netfe_2, :netfe_3, :netfe_4, :netfe_7,
-    :netfe_11, :netfe_12, :netfe_13, :netfe_15],
+    prodchr = [:padj,:iplan],
     prodchr_0=[:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-    inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:dprem,:def_padj,
-                    :def_mtl_brz,:def_mtl_cat,:def_mtl_gld,
-                    :def_mtl_hdp,:def_mtl_plt,:def_mtl_s73,
-                    :def_mtl_s87,:def_mtl_s94],
+    inertchr=[:constant,:agefe_1,:agefe_2,:fam,:hassub,:autodp,
+                        #Metal Fixed Effects
+                        :def_mtl_cat,:def_mtl_gld, # Leave Out Bronze
+                        :def_mtl_hdp,:def_mtl_plt,
+                        :def_mtl_slv,:def_mtl_s73,
+                        :def_mtl_s87,:def_mtl_s94],
     demR =[:agefe_1,:agefe_2,:fam,:hassub],
-    prodInt=[:padj,:iplan,:inet,:iiss],
+    prodInt=[:padj,:iplan],
     fixEff=[:metal],
     wgt=[:constant])
 

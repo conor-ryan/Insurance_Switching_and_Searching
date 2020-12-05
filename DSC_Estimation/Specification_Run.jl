@@ -16,7 +16,8 @@ function estimate_specification(df::DataFrame;
                             x_start::Union{Missing,Vector{Float64}} = missing,
                             method="nr",
                             ga_itr=200,
-                            ll_start = false)
+                            ll_start = false,
+                            use_active_var=false)
 
     ## Build Model
     c_data = ChoiceData(df;
@@ -52,7 +53,7 @@ function estimate_specification(df::DataFrame;
     "wgt"=>spec_wgt,
     "haltonDim"=>haltonDim)
 
-    m = InsuranceLogit(c_data,haltonDim,nested=nested)
+    m = InsuranceLogit(c_data,haltonDim,nested=nested,use_active_var=use_active_var)
     println("Data Loaded")
 
     spec_labels = unpack_labels(m,spec_Dict)
@@ -78,7 +79,7 @@ function estimate_specification(df::DataFrame;
                                 spec_fixInt=spec_fixInt,
                                 spec_fixEff=spec_fixEff,
                                 spec_wgt=spec_wgt,
-                                method = "ga",ga_itr = ll_ga)
+                                method = "ga",ga_itr = ll_ga,use_active_var=use_active_var)
         x_est = ll_res[2]
         ind1 = 1:(length(p0) - m.parLength[:FE] - m.parLength[:σ])
         ind2 = (length(p0) - m.parLength[:FE] + 1):m.parLength[:All]
@@ -186,7 +187,8 @@ function MainSpec(df::DataFrame,filename::String;
                             x_start::Union{Missing,Vector{Float64}} = missing,
                             method="nr",
                             ga_itr = 200,
-                            ll_start = false)
+                            ll_start = false,
+                            use_active_var=false)
 
     println("Estimate Specification")
     spec = estimate_specification(df,
@@ -206,7 +208,8 @@ function MainSpec(df::DataFrame,filename::String;
                             x_start = x_start,
                             method = method,
                             ga_itr = ga_itr,
-                            ll_start = ll_start)
+                            ll_start = ll_start,
+                            use_active_var=use_active_var)
 
     println("Save Results")
     # Unpack
