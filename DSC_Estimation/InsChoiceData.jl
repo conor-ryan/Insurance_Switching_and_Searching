@@ -87,7 +87,7 @@ function ChoiceData(data_choice::DataFrame;
     a_elig = convert(Matrix{Float64},data_choice[auto])
     Z = convert(Matrix{Float64},data_choice[demR])
     w = convert(Matrix{Float64},data_choice[wgt])
-    web_activity = convert(Vector{Float64},data_choice[!,act_var])
+    web_activity = convert(Vector{Float64},data_choice[act_var])
 
 
     println("Create Fixed Effects")
