@@ -24,13 +24,14 @@ println("Code Loaded")
 # Load the Data
 include("load.jl")
 df_LA = df
+df_LA_active = df_active
  # df_LA = df[df[:gra].==16,:]
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
 
 
-rundate = "2019-12-12"
-spec = "Spec3_"
+rundate = "2020-12-07"
+spec = "Spec4_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -38,7 +39,7 @@ file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$
 
 # ## Full Model
 # Structure the data
-c = ChoiceData(df_LA;
+c = ChoiceData(df_LA_active;
     # per = [:hh_id],
     per = spec_Dict["per"],
     prd = spec_Dict["prd"],
@@ -71,26 +72,26 @@ println("Number of Parameters: $numPar, Log-Likelihood: $ll, BIC: $BIC")
 ll = log_likelihood(m,p_est)
 println(ll*Pop)
 
-# grad = Vector{Float64}(undef,length(p_est))
+grad = Vector{Float64}(undef,length(p_est))
 
-#
-# ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict)
-# println(ReturnPercObs)
-# println(ReturnPercBase)
-# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true)
-# println(ReturnFA)
-# ReturnNoHass, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true)
-# println(ReturnNoHass)
-# ReturnNoCont, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noCont=true)
-# println(ReturnNoCont)
-# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true)
-# println(ReturnFA)
-# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true)
-# println(ReturnFA)
-# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true)
-# println(ReturnFA)
-# ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true)
-# println(ReturnNone)
+
+ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict)
+println(ReturnPercObs)
+println(ReturnPercBase)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true)
+println(ReturnFA)
+ReturnNoHass, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true)
+println(ReturnNoHass)
+ReturnNoCont, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noCont=true)
+println(ReturnNoCont)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true)
+println(ReturnFA)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true)
+println(ReturnFA)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true)
+println(ReturnFA)
+ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true)
+println(ReturnNone)
 
 #### Average Willingness to Pay ####
 parBase = parDict(m,p_est)
