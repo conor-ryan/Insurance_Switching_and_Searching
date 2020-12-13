@@ -145,7 +145,7 @@ parBase = parDict(m,p_est)
 β = parBase.β[1:3,:]
 Z = demoRaw(c)
 α = (β0 .+ β*Z)[1,:]
-
+println("Median alpha is $(median(α))")
 #### Switching Cost Neutral WTP ####
 ret_index = returning_index(m,parBase)
 parBase = nothing
@@ -156,11 +156,18 @@ parNeutral = remove_switching_pars(m,p_est,spec_Dict,noHass=true)
 WTP_insurance = similar(μ_ij)
 
 for i in 1:size(μ_ij,1), j in 1:size(μ_ij,2)
-    WTP_insurance[i,j] = μ_ij[i,j]/α[j]
+    WTP_insurance[i,j] = -μ_ij[i,j]/α[j]
 end
 parNeutral = nothing
 
 WTP_insurance = WTP_insurance[ret_index,:]
+
+
+#### Test Highest and Lowest WTP ####
+wtp_max = maximum(WTP_insurance,dims=2)
+wtp_min = minimum(WTP_insurance,dims=2)
+at_stake = wtp_max - wtp_min
+println("Average at stake WTP: $(mean(at_stake))")
 
 #### Choice Probabilities #####
 function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{String,Any},ret_index::Vector{Int},WTP::Matrix{Float64};
@@ -175,7 +182,7 @@ function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{Stri
     shares = transpose(shares)
     shares = shares[ret_index,:]
     println("Compute Mean")
-    avg_wtp = sum(shares.*WTP)
+    avg_wtp = mean(shares.*WTP)
     return avg_wtp
 end
 
