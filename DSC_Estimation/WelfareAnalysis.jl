@@ -176,7 +176,7 @@ function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{Stri
     shares = shares[ret_index,:]
     println("Compute Mean")
     avg_wtp = sum(shares.*WTP)
-    return shares
+    return avg_wtp
 end
 
 
