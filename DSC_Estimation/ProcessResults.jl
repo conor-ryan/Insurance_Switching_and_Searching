@@ -23,15 +23,15 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
-df_LA = df
-df_LA_active = df_active
- # df_LA = df[df[:gra].==16,:]
+# df_LA = df
+# df_LA_active = df_active
+ df_LA = df[df[:gra].==16,:]
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
 
 
 rundate = "2020-12-07"
-spec = "Spec4_"
+spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 

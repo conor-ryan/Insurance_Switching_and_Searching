@@ -338,6 +338,30 @@ function count_switchers(m::InsuranceLogit,par::parDict{Float64})
     return pred, data
 end
 
+function returning_index(m::InsuranceLogit,par::parDict{Float64})
+    # inertPlan = choice_last(m.data)
+    # obsPlan = choice(m.data)
+
+    ret_idx = Vector{Int}(undef,0)
+    for app in eachperson(m.data)
+        i = person(app)[1]
+        # println(i)
+        idx = m.data._personDict[i]
+        stay_prob,inertPlan,obsPlan = calc_switch_prob(app,m,par)
+        for (yr,per_idx_yr) in app._personYearDict[i]
+            # idx_yr = idx[per_idx_yr]
+            returning = sum(inertPlan[per_idx_yr])
+            if returning==0.0
+                continue
+            end
+            ret_idx = vcat(ret_idx,idx[per_idx_yr])
+        end
+    end
+    return ret_idx
+end
+
+
+
 
 function activePredict(m::InsuranceLogit,par::parDict{Float64},df::DataFrame,spec,rundate)
     inertPlan = choice_last(m.data)
