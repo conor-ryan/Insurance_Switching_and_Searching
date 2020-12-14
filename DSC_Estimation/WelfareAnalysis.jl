@@ -60,14 +60,6 @@ c = ChoiceData(df_LA;
 # Fit into model
 m = InsuranceLogit(c,spec_Dict["haltonDim"])
 
-Istart = rand(m.parLength[:I])/10 .-.05
-βstart = rand(m.parLength[:β])/10 .-.05
-γstart = rand(m.parLength[:γ]*length(m.data._prodInteract))/10 .-.05
-σstart = rand(m.parLength[:σ])/10 .- .05
-FEstart = rand(m.parLength[:FE])/100 .-.005
-
-p_est = vcat(Istart,βstart,γstart,σstart,FEstart)
-
 numPar = length(p_est)
 par = parDict(m,p_est)
 Pop = length(par.ω_i)
