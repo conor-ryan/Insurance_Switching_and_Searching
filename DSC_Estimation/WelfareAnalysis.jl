@@ -4,6 +4,7 @@ using Random
 using Dates
 using LinearAlgebra
 using Statistics
+using Distributions
 
 # Data Structure
 include("InsChoiceData.jl")
@@ -21,13 +22,109 @@ include("utility.jl")
 include("Specification_Run.jl")
 println("Code Loaded")
 
+function draw_shares(d::InsuranceLogit,p::parDict{T},
+    eps_draws::Matrix{Float64},search_draws::Vector{Float64}) where T
+    # Store Parameters
+    μ_ij_large = p.μ_ij
+    s_ij = similar(μ_ij_large)
+    ω_large = p.ω_i
+    # println("Mean Atten: $(mean(ω_large))")
+    iplan_large = choice_last(d.data)[:]
+    y_large = choice(d.data)[:]
+
+    for (ind,idxitr) in d.data._personDict
+        # println(ind)
+        u = μ_ij_large[:,idxitr] + eps_draws[:,idxitr]
+        ω = ω_large[d.data._searchDict[ind]]
+        ω_draws = search_draws[d.data._searchDict[ind]]
+        iplan = iplan_large[idxitr]
+        dict = d.data._personYearDict[ind]
+        yr_next = findYearInd(d.data._personYearDict[ind])
+        y = y_large[idxitr]
+        y = findall(y.==1)
+        years = sort(Int.(keys(d.data._personYearDict[ind])))
+        yr_ind = 0
+        for year in years
+            idx_year = d.data._personYearDict[ind][year]
+            yr_ind+=1
+            ω_year = ω[yr_ind]
+            util = u[:,idx_year]
+            max_util = maximum(util,dims=2)
+            share_cond = zeros(size(util))
+            for n in 1:size(share_cond,1)
+                share_cond[n,:] = Float64.(util[n,:].==max_util[n])
+            end
+
+            ω_year_draw = ω_draws[yr_ind]
+            if ω_year_draw<ω_year
+                s_ij[:,idxitr[idx_year]] = share_cond
+            else
+                for n in 1:size(s_ij,1)
+                    s_ij[n,idxitr[idx_year]] = iplan[idx_year]
+                end
+            end
+        end
+    end
+    return s_ij
+end
+
+function remove_switching_pars(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{String,Any};
+    fullAtt::Bool=false,
+    noCont::Bool=false,
+    noHass::Bool=false)
+
+    p_est = copy(p_vec)
+
+    Ilength = m.parLength[:I]
+
+    par = parDict(m,p_est)
+
+    if noCont
+        β_ind = inlist(spec["prodchr"],[:inet,:iiss])
+        par.β[β_ind,:].=0.0
+        par.β_0[β_ind].= 0.0
+    end
+    if noHass
+        β_ind = findall(spec["prodchr"].==:iplan)
+        par.β[β_ind,:].=0.0
+        par.β_0[β_ind].= 0.0
+    end
+
+    individual_values!(m,par)
+
+    if fullAtt
+        par.ω_i[:] .= 1.0
+    end
+
+    individual_shares(m,par)
+
+    return par
+end
+
+function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{String,Any},
+    ret_index::Vector{Int},WTP::Matrix{Float64},eps_draws::Matrix{Float64},search_draws::Vector{Float64};
+    fullAtt::Bool=false,
+    noCont::Bool=false,
+    noHass::Bool=false)
+    println("Set Parameters")
+    par = remove_switching_pars(m,p_est,spec_Dict,fullAtt=fullAtt,noCont=noCont,noHass=noHass)
+    # individual_values!(m,par)
+    # individual_shares(m,par)
+    shares = draw_shares(m,par,eps_draws,search_draws)
+    shares = shares[:,ret_index]
+    println("Compute Mean")
+    avg_wtp = mean(shares.*WTP)
+    return avg_wtp
+end
+
+
 # Load the Data
 include("load.jl")
-df_LA = df
+# df_LA = df
 
-#  df_LA = df[df[:gra].==16,:]
-# df_active = 0.0
-# df = 0.0
+ df_LA = df[df[:gra].==10,:]
+df_active = 0.0
+df = 0.0
 
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
@@ -74,63 +171,6 @@ println(ll*Pop)
 
 grad = Vector{Float64}(undef,length(p_est))
 
-
-function all_shares(d::InsuranceLogit,p::parDict{T}) where T
-    # Store Parameters
-    μ_ij_large = p.μ_ij
-    s_ij = similar(μ_ij_large)
-    ω_large = p.ω_i
-    iplan_large = choice_last(d.data)[:]
-    y_large = choice(d.data)[:]
-
-    for (ind,idxitr) in d.data._personDict
-        # println(ind)
-        u = μ_ij_large[:,idxitr]
-        ω = ω_large[d.data._searchDict[ind]]
-        iplan = iplan_large[idxitr]
-        dict = d.data._personYearDict[ind]
-        yr_next = findYearInd(d.data._personYearDict[ind])
-        y = y_large[idxitr]
-        y = findall(y.==1)
-        s_hat,s_cond,ll,expsum =calc_shares_mat(u,ω,iplan,y,yr_next)
-        s_ij[:,idxitr] = transpose(s_hat)
-    end
-    return s_ij
-end
-
-function remove_switching_pars(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{String,Any};
-    fullAtt::Bool=false,
-    noCont::Bool=false,
-    noHass::Bool=false)
-
-    p_est = copy(p_vec)
-
-    Ilength = m.parLength[:I]
-
-    parBase = parDict(m,p_est)
-
-    if noCont
-        β_ind = inlist(spec["prodchr"],[:inet,:iiss])
-        parBase.β[β_ind,:].=0.0
-        parBase.β_0[β_ind].= 0.0
-    end
-    if noHass
-        β_ind = findall(spec["prodchr"].==:iplan)
-        parBase.β[β_ind,:].=0.0
-        parBase.β_0[β_ind].= 0.0
-    end
-
-    individual_values!(m,parBase)
-
-    if fullAtt
-        parBase.ω_i[:] .= 1.0
-    end
-
-    individual_shares(m,parBase)
-
-    return parBase
-end
-
 #### Consumer Alpha ####
 parBase = parDict(m,p_est)
 β0 = parBase.β_0[1:3]
@@ -138,12 +178,20 @@ parBase = parDict(m,p_est)
 Z = demoRaw(c)
 α = (β0 .+ β*Z)[1,:]
 println("Median alpha is $(median(α))")
+
+#### Epsilon Draws ####
+t1ev = Gumbel(0,1)
+eps_draws = rand(t1ev,size(p.μ_ij))
+search_draws = rand(length(p.ω_i))
+
 #### Switching Cost Neutral WTP ####
 ret_index = returning_index(m,parBase)
 parBase = nothing
 
 parNeutral = remove_switching_pars(m,p_est,spec_Dict,noHass=true)
-μ_ij = transpose(parNeutral.μ_ij)
+
+
+μ_ij = parNeutral.μ_ij
 
 WTP_insurance = similar(μ_ij)
 
@@ -152,45 +200,27 @@ for i in 1:size(μ_ij,1), j in 1:size(μ_ij,2)
 end
 parNeutral = nothing
 
-WTP_insurance = WTP_insurance[ret_index,:]
+WTP_insurance = WTP_insurance[:,ret_index]
 
 
 #### Test Highest and Lowest WTP ####
-wtp_max = maximum(WTP_insurance,dims=2)
-wtp_min = minimum(WTP_insurance,dims=2)
+wtp_max = maximum(WTP_insurance,dims=1)
+wtp_min = minimum(WTP_insurance,dims=1)
 at_stake = wtp_max - wtp_min
 println("Average at stake WTP: $(mean(at_stake))")
 
 #### Choice Probabilities #####
-function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{String,Any},ret_index::Vector{Int},WTP::Matrix{Float64};
-    fullAtt::Bool=false,
-    noCont::Bool=false,
-    noHass::Bool=false)
-    println("Set Parameters")
-    par = remove_switching_pars(m,p_est,spec_Dict,fullAtt=fullAtt,noCont=noCont,noHass=noHass)
-    # individual_values!(m,par)
-    # individual_shares(m,par)
-    shares = all_shares(m,par)
-    shares = transpose(shares)
-    shares = shares[ret_index,:]
-    println("Compute Mean")
-    avg_wtp = mean(shares.*WTP)
-    return avg_wtp
-end
-
-
-
-wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance)
+wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws)
 println("Base WTP: $wtp_base")
-wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,noHass=true)
+wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true)
 println("WTP, no Hass: $wtp_noHass")
-wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,noCont=true)
+wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true)
 println("WTP, no Continuity: $wtp_noCont")
-wtp_fullAtten = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,fullAtt=true)
+wtp_fullAtten = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,fullAtt=true)
 println("WTP, full attention: $wtp_fullAtten")
-wtp_fullAtten_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,noHass=true,fullAtt=true)
+wtp_fullAtten_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,fullAtt=true)
 println("WTP, full attention & no hassle costs: $wtp_fullAtten_noHass")
-wtp_fullAtten_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,noCont=true,fullAtt=true)
+wtp_fullAtten_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,fullAtt=true)
 println("WTP, full attention & no continuity: $wtp_fullAtten_noCont")
-wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,noCont=true,noHass=true)
+wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true)
 println("WTP, no hassle & continuity: $wtp_noHass_noCont")
