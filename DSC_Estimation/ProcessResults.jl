@@ -23,9 +23,9 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
-# df_LA = df
+df_LA = df
 df_LA_active = df_active
- df_LA = df[df[:gra].==16,:]
+ # df_LA = df[df[:gra].==16,:]
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
 
