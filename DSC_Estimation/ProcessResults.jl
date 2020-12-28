@@ -30,7 +30,7 @@ include("load.jl")
 println("Data Loaded")
 
 
-rundate = "2020-12-07"
+rundate = "2020-12-14"
 spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
@@ -75,23 +75,23 @@ println(ll*Pop)
 grad = Vector{Float64}(undef,length(p_est))
 
 
-# ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict)
-# println(ReturnPercObs)
-# println(ReturnPercBase)
-# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true)
-# println(ReturnFA)
-# ReturnNoHass, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true)
-# println(ReturnNoHass)
-# ReturnNoCont, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noCont=true)
-# println(ReturnNoCont)
-# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true)
-# println(ReturnFA)
-# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true)
-# println(ReturnFA)
-# ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true)
-# println(ReturnFA)
-# ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true)
-# println(ReturnNone)
+ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict)
+println(ReturnPercObs)
+println(ReturnPercBase)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true)
+println(ReturnFA)
+ReturnNoHass, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true)
+println(ReturnNoHass)
+ReturnNoCont, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noCont=true)
+println(ReturnNoCont)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true)
+println(ReturnFA)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true)
+println(ReturnFA)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true)
+println(ReturnFA)
+ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true)
+println(ReturnNone)
 
 #### Average Willingness to Pay ####
 parBase = parDict(m,p_est)
