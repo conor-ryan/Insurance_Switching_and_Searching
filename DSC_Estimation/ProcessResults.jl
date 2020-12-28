@@ -24,7 +24,7 @@ println("Code Loaded")
 # Load the Data
 include("load.jl")
 # df_LA = df
-# df_LA_active = df_active
+df_LA_active = df_active
  df_LA = df[df[:gra].==16,:]
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
@@ -39,7 +39,7 @@ file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$
 
 # ## Full Model
 # Structure the data
-c = ChoiceData(df_LA_active;
+c = ChoiceData(df_LA;
     # per = [:hh_id],
     per = spec_Dict["per"],
     prd = spec_Dict["prd"],
