@@ -181,8 +181,8 @@ println("Median alpha is $(median(α))")
 
 #### Epsilon Draws ####
 t1ev = Gumbel(0,1)
-eps_draws = rand(t1ev,size(p.μ_ij))
-search_draws = rand(length(p.ω_i))
+eps_draws = rand(t1ev,size(parBase.μ_ij))
+search_draws = rand(length(parBase.ω_i))
 
 #### Switching Cost Neutral WTP ####
 ret_index = returning_index(m,parBase)
