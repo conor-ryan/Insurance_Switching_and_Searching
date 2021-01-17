@@ -73,13 +73,17 @@ end
 function remove_switching_pars(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{String,Any};
     fullAtt::Bool=false,
     noCont::Bool=false,
-    noHass::Bool=false)
+    noHass::Bool=false,
+    useActiveVar::Bool=false)
 
     p_est = copy(p_vec)
 
     Ilength = m.parLength[:I]
 
     par = parDict(m,p_est)
+    if useActiveVar
+        par.ω_i[:] = m.data.active[:]
+    end
 
     if noCont
         β_ind = inlist(spec["prodchr"],[:inet,:iiss])
@@ -107,9 +111,11 @@ function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{Stri
     ret_index::Vector{Int},WTP::Matrix{Float64},eps_draws::Matrix{Float64},search_draws::Vector{Float64};
     fullAtt::Bool=false,
     noCont::Bool=false,
-    noHass::Bool=false)
+    noHass::Bool=false,
+    useActiveVar::Bool=false)
     println("Set Parameters")
-    par = remove_switching_pars(m,p_est,spec_Dict,fullAtt=fullAtt,noCont=noCont,noHass=noHass)
+    par = remove_switching_pars(m,p_est,spec_Dict,fullAtt=fullAtt,noCont=noCont,noHass=noHass,
+    useActiveVar=useActiveVar)
     # individual_values!(m,par)
     # individual_shares(m,par)
     shares = draw_shares(m,par,eps_draws,search_draws)
@@ -133,11 +139,14 @@ println("Data Loaded")
 
 
 rundate = "2020-12-14"
-spec = "Spec3_"
+spec = "Spec4_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
-
+useActiveVar=false
+if spec=="Spec4_"
+    useActiveVar=true
+end
 
 # ## Full Model
 # Structure the data
@@ -212,19 +221,19 @@ at_stake = wtp_max - wtp_min
 println("Average at stake WTP: $(mean(at_stake))")
 
 #### Choice Probabilities #####
-wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws)
+wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar)
 println("Base WTP: $wtp_base")
-wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true)
+wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,useActiveVar=useActiveVar)
 println("WTP, no Hass: $wtp_noHass")
-wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true)
+wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,useActiveVar=useActiveVar)
 println("WTP, no Continuity: $wtp_noCont")
-wtp_fullAtten = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,fullAtt=true)
+wtp_fullAtten = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,fullAtt=true,useActiveVar=useActiveVar)
 println("WTP, full attention: $wtp_fullAtten")
-wtp_fullAtten_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,fullAtt=true)
+wtp_fullAtten_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
 println("WTP, full attention & no hassle costs: $wtp_fullAtten_noHass")
-wtp_fullAtten_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,fullAtt=true)
+wtp_fullAtten_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,fullAtt=true,useActiveVar=useActiveVar)
 println("WTP, full attention & no continuity: $wtp_fullAtten_noCont")
-wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true)
+wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,useActiveVar=useActiveVar)
 println("WTP, no hassle & continuity: $wtp_noHass_noCont")
-wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true)
+wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
 println("WTP, no switching costs: $wtp_noCosts")
