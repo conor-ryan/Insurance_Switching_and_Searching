@@ -143,6 +143,8 @@ spec = "Spec4_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
+println("Running Spec: $spec$rundate")
+
 useActiveVar=false
 if spec=="Spec4_"
     useActiveVar=true
