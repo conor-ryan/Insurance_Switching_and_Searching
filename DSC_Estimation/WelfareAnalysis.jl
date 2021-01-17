@@ -84,6 +84,8 @@ function remove_switching_pars(m::InsuranceLogit,p_vec::Vector{Float64},spec::Di
     if useActiveVar
         par.ω_i[:] = m.data.active[:]
     end
+    test = mean(par.ω_i)
+    println("Test Inattention 1: $test")
 
     if noCont
         β_ind = inlist(spec["prodchr"],[:inet,:iiss])
@@ -101,6 +103,9 @@ function remove_switching_pars(m::InsuranceLogit,p_vec::Vector{Float64},spec::Di
     if fullAtt
         par.ω_i[:] .= 1.0
     end
+
+    test = mean(par.ω_i)
+    println("Test Inattention 2: $test")
 
     individual_shares(m,par)
 

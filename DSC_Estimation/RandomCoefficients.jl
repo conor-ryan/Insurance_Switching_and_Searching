@@ -241,8 +241,8 @@ function util_value!(app::ChoiceData,p::parDict{T}) where T
         search = exp.(X_last*ι)
         s_prob = (1 .- ret) .+ ret.*(search./(1 .+ search))
         p.ω_i[app._searchDict[ind]] = s_prob
-    else
-        p.ω_i[:].=1.0
+    # else
+    #     p.ω_i[:].=1.0
     end
 
     K = length(idxitr)
