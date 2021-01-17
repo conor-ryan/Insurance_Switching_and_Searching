@@ -224,3 +224,5 @@ wtp_fullAtten_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,
 println("WTP, full attention & no continuity: $wtp_fullAtten_noCont")
 wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true)
 println("WTP, no hassle & continuity: $wtp_noHass_noCont")
+wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true)
+println("WTP, no switching costs: $wtp_noCosts")
