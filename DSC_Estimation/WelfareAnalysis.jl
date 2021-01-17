@@ -6,6 +6,8 @@ using LinearAlgebra
 using Statistics
 using Distributions
 
+Random.seed!(123)
+
 # Data Structure
 include("InsChoiceData.jl")
 
