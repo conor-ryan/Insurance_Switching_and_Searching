@@ -9,7 +9,7 @@ loadfonts(device = "win")
 setwd("C:/Users/Conor/Documents/Research/CovCAInertia/")
 
 #### Data ####
-rundate = "2019-12-11"
+rundate = "2020-12-14"
 spec = "Spec3_"
 df_full = as.data.table(read.csv(paste("Output/Estimation_Results/active_",spec,rundate,".csv",sep="")))
 df_full = df_full[returning==1,]
@@ -40,7 +40,7 @@ ggplot(df) + aes(x=active_pred_bucket) +
   geom_line(size=1,aes(y=stay_max),linetype=2) + 
   geom_line(size=1,aes(y=stay_min),linetype=2) + 
   # geom_errorbar(width=0.05,aes(ymax=stay_max,ymin=stay_min)) + 
-  geom_point(size=3,aes(y=active_obs,shape="Active on Website")) + 
+  geom_point(size=3,aes(y=active_obs,shape="Active Selection")) + 
   geom_line(size=1,aes(y=active_obs)) + 
   geom_line(size=1,aes(y=active_max),linetype=2) + 
   geom_line(size=1,aes(y=active_min),linetype=2) + 

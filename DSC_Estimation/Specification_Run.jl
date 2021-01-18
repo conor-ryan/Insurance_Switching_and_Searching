@@ -268,13 +268,17 @@ end
 function predict_switching(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{String,Any};
     fullAtt::Bool=false,
     noCont::Bool=false,
-    noHass::Bool=false)
+    noHass::Bool=false,
+    useActiveVar::Bool=false)
 
     p_est = copy(p_vec)
 
     Ilength = m.parLength[:I]
 
     parBase = parDict(m,p_est)
+    if useActiveVar
+        par.ω_i[:] = m.data.active[:]
+    end
 
     # cont_pars = vcat(Ilength .+ (2:4),(Ilength.+ m.parLength[:β]).+ vcat((2:4), 4 .+ (2:4),8 .+ (2:4),12 .+ (2:4)))
     # cont_pars = vcat(Ilength .+ (3:4),(Ilength.+ m.parLength[:β]).+ vcat((3:4), 4 .+ (3:4),8 .+ (3:4),12 .+ (3:4)))

@@ -23,19 +23,25 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
-df_LA = df
-df_LA_active = df_active
+# df_LA = df
+# df_LA_active = df_active
+ df_LA = df[df[:gra].==10,:]
  # df_LA = df[df[:gra].==16,:]
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
 
 
 rundate = "2020-12-14"
-spec = "Spec3_"
+spec = "Spec4_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
+println("Running Spec: $spec$rundate")
 
+useActiveVar=false
+if spec=="Spec4_"
+    useActiveVar=true
+end
 
 # ## Full Model
 # Structure the data
@@ -75,22 +81,22 @@ println(ll*Pop)
 grad = Vector{Float64}(undef,length(p_est))
 
 
-ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict)
+ReturnPercBase, ReturnPercObs = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
 println(ReturnPercObs)
 println(ReturnPercBase)
-ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,useActiveVar=useActiveVar)
 println(ReturnFA)
-ReturnNoHass, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true)
+ReturnNoHass, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,useActiveVar=useActiveVar)
 println(ReturnNoHass)
-ReturnNoCont, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noCont=true)
+ReturnNoCont, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noCont=true,useActiveVar=useActiveVar)
 println(ReturnNoCont)
-ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,useActiveVar=useActiveVar)
 println(ReturnFA)
-ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true,useActiveVar=useActiveVar)
 println(ReturnFA)
-ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true)
+ReturnFA, ReturnPercObs = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true,useActiveVar=useActiveVar)
 println(ReturnFA)
-ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true)
+ReturnNone, ReturnPercObs = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true,useActiveVar=useActiveVar)
 println(ReturnNone)
 
 #### Average Willingness to Pay ####
