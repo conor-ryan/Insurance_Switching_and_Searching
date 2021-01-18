@@ -324,6 +324,11 @@ function count_switchers(m::InsuranceLogit,par::parDict{Float64})
         # println(i)
         idx = m.data._personDict[i]
         stay_prob,inertPlan,obsPlan = calc_switch_prob(app,m,par)
+        # for (yr, val) in stay_prob
+        #     if isnan(val)
+        #         println("Found Nan")
+        #     end
+        # end
         # years = sort(Int.(keys(app._personYearDict[ind])))
         for (yr,per_idx_yr) in app._personYearDict[i]
             # idx_yr = idx[per_idx_yr]
@@ -454,7 +459,12 @@ function calc_switch_prob(app::ChoiceData,d::InsuranceLogit,p::parDict{T}) where
             ret_choice = idx_yr[findall(y_last[idx_yr].>0)]
             if (yr-1) in years
                 choice_seq = vcat(last_choice,ret_choice)
-                stay_prob[yr] = mean(prod(s_hat[choice_seq,:],dims=1))/mean(prod(s_hat[last_choice,:],dims=1))
+                denom = mean(prod(s_hat[last_choice,:],dims=1))
+                if denom==0
+                    stay_prob[yr] = 0
+                else
+                    stay_prob[yr] = mean(prod(s_hat[choice_seq,:],dims=1))/denom
+                end
                 last_choice = vcat(last_choice,choice_ind[i])
             else
                 last_choice = Vector{Int64}(undef,0)
