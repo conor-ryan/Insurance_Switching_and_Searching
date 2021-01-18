@@ -62,9 +62,9 @@ c = ChoiceData(df_LA;
 
 # Fit into model
 m = InsuranceLogit(c,spec_Dict["haltonDim"])
-if m.parLength[:All]!=length(p_est)
-    error("WARNING: Specification Error!")
-end
+# if m.parLength[:All]!=length(p_est)
+#     error("WARNING: Specification Error!")
+# end
 
 numPar = length(p_est)
 par = parDict(m,p_est)
