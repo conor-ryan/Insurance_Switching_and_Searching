@@ -359,11 +359,13 @@ function returning_index(m::InsuranceLogit,par::parDict{Float64})
     # obsPlan = choice(m.data)
 
     ret_idx = Vector{Int}(undef,0)
+    ylast_large = choice_last(m.data)[:]
     for app in eachperson(m.data)
         i = person(app)[1]
         # println(i)
         idx = m.data._personDict[i]
-        stay_prob,inertPlan,obsPlan = calc_switch_prob(app,m,par)
+        # stay_prob,inertPlan,obsPlan = calc_switch_prob(app,m,par)
+        inertPlan = ylast_large[idx]
         for (yr,per_idx_yr) in app._personYearDict[i]
             # idx_yr = idx[per_idx_yr]
             returning = sum(inertPlan[per_idx_yr])
@@ -376,6 +378,34 @@ function returning_index(m::InsuranceLogit,par::parDict{Float64})
     return ret_idx
 end
 
+function returning_peryear_index(m::InsuranceLogit,par::parDict{Float64})
+    # inertPlan = choice_last(m.data)
+    # obsPlan = choice(m.data)
+
+    ret_idx = Vector{Int}(undef,0)
+    ylast_large = choice_last(m.data)[:]
+    for app in eachperson(m.data)
+        i = person(app)[1]
+        # println(i)
+        idx = m.data._personDict[i]
+        # stay_prob,inertPlan,obsPlan = calc_switch_prob(app,m,par)
+        inertPlan = ylast_large[idx]
+        years = sort(Int.(keys(m.data._personYearDict[i])))
+        yr_ind = 0
+        ω_index = m.data._searchDict[i]
+        for year in years
+            per_idx_yr = m.data._personYearDict[i][year]
+            yr_ind+=1
+            # idx_yr = idx[per_idx_yr]
+            returning = sum(inertPlan[per_idx_yr])
+            if returning==0.0
+                continue
+            end
+            ret_idx = vcat(ret_idx,ω_index[yr_ind])
+        end
+    end
+    return ret_idx
+end
 
 
 

@@ -24,12 +24,12 @@ include("utility.jl")
 include("Specification_Run.jl")
 println("Code Loaded")
 
-function draw_shares(d::InsuranceLogit,p::parDict{T},
-    eps_draws::Matrix{Float64},search_draws::Vector{Float64}) where T
+function draw_WTP(d::InsuranceLogit,p::parDict{T},
+    eps_draws::Matrix{Float64},search_draws::Vector{Float64},WTP::Matrix{Float64}) where T
     # Store Parameters
     μ_ij_large = p.μ_ij
-    s_ij = similar(μ_ij_large)
     ω_large = p.ω_i
+    WTP_byperson = Vector{Float64}(undef,length(p.ω_i))
     # println("Mean Atten: $(mean(ω_large))")
     iplan_large = choice_last(d.data)[:]
     y_large = choice(d.data)[:]
@@ -37,11 +37,12 @@ function draw_shares(d::InsuranceLogit,p::parDict{T},
     for (ind,idxitr) in d.data._personDict
         # println(ind)
         u = μ_ij_large[:,idxitr] + eps_draws[:,idxitr]
-        ω = ω_large[d.data._searchDict[ind]]
-        ω_draws = search_draws[d.data._searchDict[ind]]
+        WTP_per = WTP[:,idxitr]
+        ω_index = d.data._searchDict[ind]
+        ω = ω_large[ω_index]
+        ω_draws = search_draws[ω_index]
         iplan = iplan_large[idxitr]
         dict = d.data._personYearDict[ind]
-        yr_next = findYearInd(d.data._personYearDict[ind])
         y = y_large[idxitr]
         y = findall(y.==1)
         years = sort(Int.(keys(d.data._personYearDict[ind])))
@@ -53,21 +54,23 @@ function draw_shares(d::InsuranceLogit,p::parDict{T},
             util = u[:,idx_year]
             max_util = maximum(util,dims=2)
             share_cond = zeros(size(util))
-            for n in 1:size(share_cond,1)
-                share_cond[n,:] = Float64.(util[n,:].==max_util[n])
-            end
+
 
             ω_year_draw = ω_draws[yr_ind]
             if ω_year_draw<ω_year
-                s_ij[:,idxitr[idx_year]] = share_cond
+                for n in 1:size(share_cond,1)
+                    share_cond[n,:] = Float64.(util[n,:].==max_util[n])
+                end
             else
-                for n in 1:size(s_ij,1)
-                    s_ij[n,idxitr[idx_year]] = iplan[idx_year]
+                for n in 1:size(share_cond,1)
+                    share_cond[n,:] = iplan[idx_year]
                 end
             end
+            mean_WTP = mean(sum(WTP_per[:,idx_year].*share_cond,dims=2))
+            WTP_byperson[ω_index[yr_ind]] = mean_WTP
         end
     end
-    return s_ij
+    return WTP_byperson
 end
 
 function remove_switching_pars(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{String,Any};
@@ -123,19 +126,17 @@ function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{Stri
     useActiveVar=useActiveVar)
     # individual_values!(m,par)
     # individual_shares(m,par)
-    shares = draw_shares(m,par,eps_draws,search_draws)
-    shares = shares[:,ret_index]
-    println("Compute Mean")
-    avg_wtp = mean(shares.*WTP)
+    wtp = draw_WTP(m,par,eps_draws,search_draws,WTP)
+    avg_wtp = mean(wtp[ret_index])
     return avg_wtp
 end
 
 
 # Load the Data
 include("load.jl")
-# df_LA = df
+df_LA = df
 
- df_LA = df[df[:gra].==10,:]
+# df_LA = df[df[:gra].==10,:]
 df_active = 0.0
 df = 0.0
 
@@ -203,7 +204,7 @@ eps_draws = rand(t1ev,size(parBase.μ_ij))
 search_draws = rand(length(parBase.ω_i))
 
 #### Switching Cost Neutral WTP ####
-ret_index = returning_index(m,parBase)
+ret_index = returning_peryear_index(m,parBase)
 parBase = nothing
 
 parNeutral = remove_switching_pars(m,p_est,spec_Dict,noHass=true)
@@ -218,8 +219,6 @@ for i in 1:size(μ_ij,1), j in 1:size(μ_ij,2)
     WTP_insurance[i,j] = -μ_ij[i,j]/α[j]
 end
 parNeutral = nothing
-
-WTP_insurance = WTP_insurance[:,ret_index]
 
 
 #### Test Highest and Lowest WTP ####
