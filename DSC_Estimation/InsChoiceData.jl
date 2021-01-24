@@ -289,7 +289,7 @@ function ChoiceData(data_choice::DataFrame;
     allids = dmat[_person,:][1,:]
     allyears = dmat[_panel,:][1,:]
     uniqids = sort(unique(allids))
-    last_ind = 1
+    last_ind = 0
 
     for id in uniqids
         idx1 = searchsortedfirst(allids,id)

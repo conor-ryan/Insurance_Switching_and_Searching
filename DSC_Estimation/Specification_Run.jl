@@ -336,6 +336,10 @@ function count_switchers(m::InsuranceLogit,par::parDict{Float64})
             if returning==0.0
                 continue
             end
+            if (isnan(stay_prob[yr]))
+                println("NaN Value for person $i in year $yr")
+                return "Break"
+            end
             All_Return +=  1.0
             All_Stay += stay_prob[yr]
             retplan = findall(inertPlan[per_idx_yr].>0)
@@ -460,11 +464,7 @@ function calc_switch_prob(app::ChoiceData,d::InsuranceLogit,p::parDict{T}) where
             if (yr-1) in years
                 choice_seq = vcat(last_choice,ret_choice)
                 denom = mean(prod(s_hat[last_choice,:],dims=1))
-                if denom==0
-                    stay_prob[yr] = 0
-                else
-                    stay_prob[yr] = mean(prod(s_hat[choice_seq,:],dims=1))/denom
-                end
+                stay_prob[yr] = mean(prod(s_hat[choice_seq,:],dims=1))/denom
                 last_choice = vcat(last_choice,choice_ind[i])
             else
                 last_choice = Vector{Int64}(undef,0)
