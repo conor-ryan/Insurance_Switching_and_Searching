@@ -424,10 +424,10 @@ function marginalEffects(d::InsuranceLogit,p_vec::Vector{T}) where T
     for app in eachperson(d.data)
         indMargEffect(dω_i,returning,app,p)
     end
-    dω_i[:,6] = 10*p.I[6].*p.ω_i.*(1 .- p.ω_i)
+    # dω_i[:,6] = 10*p.I[6].*p.ω_i.*(1 .- p.ω_i)
     dω_i = dω_i[findall(returning.==1),:]
     ### Manually do marginal effect for dprem
-    return mean(dω_i,dims=1)[2:6]
+    return mean(dω_i,dims=1)
 end
 
 function marginalEffects_deriv_function(x::Vector{T},d::InsuranceLogit,p_vec::Vector{S}) where {T,S}
