@@ -427,7 +427,7 @@ function marginalEffects(d::InsuranceLogit,p_vec::Vector{T}) where T
     # dω_i[:,6] = 10*p.I[6].*p.ω_i.*(1 .- p.ω_i)
     dω_i = dω_i[findall(returning.==1),:]
     ### Manually do marginal effect for dprem
-    return mean(dω_i,dims=1)
+    return mean(dω_i,dims=1)#[2:6]
 end
 
 function marginalEffects_deriv_function(x::Vector{T},d::InsuranceLogit,p_vec::Vector{S}) where {T,S}
@@ -442,7 +442,7 @@ function meDeriv(d::InsuranceLogit,p_vec::Vector{Float64})
     func_me(x) = marginalEffects_deriv_function(x,d,p_vec)
     params = Vector{Float64}(undef,d.parLength[:I])
     params[:] = p_vec[1:d.parLength[:I]]
-    me_grad = Matrix{Float64}(undef,5,d.parLength[:I])
+    me_grad = Matrix{Float64}(undef,d.parLength[:I],d.parLength[:I])
     ForwardDiff.jacobian!(me_grad,func_me,params)
     ### Manually do marginal effect for dprem
     return me_grad
