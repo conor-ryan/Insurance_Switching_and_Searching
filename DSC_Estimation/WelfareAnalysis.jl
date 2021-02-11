@@ -143,7 +143,7 @@ df = 0.0
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
 
-
+# rundate = "2020-12-14"
 rundate = "2021-01-31"
 spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
@@ -198,40 +198,46 @@ Z = demoRaw(c)
 α = (β0 .+ β*Z)[1,:]
 println("Median alpha is $(median(α))")
 
-#### Epsilon Draws ####
-t1ev = Gumbel(0,1)
-eps_draws = rand(t1ev,size(parBase.μ_ij))
-search_draws = rand(length(parBase.ω_i))
-
-#### Switching Cost Neutral WTP ####
-ret_index = returning_peryear_index(m,parBase)
-parBase = nothing
-
-parNeutral = remove_switching_pars(m,p_est,spec_Dict,noHass=true)
-
-
-μ_ij = parNeutral.μ_ij
+μ_ij = parBase.μ_ij
 println("Mean of all utility values: $(mean(μ_ij))")
+println("Median of all utility values: $(median(μ_ij))")
+println("Maximum of all utility values: $(maximum(μ_ij))")
+println("Minimum of all utility values: $(minimum(μ_ij))")
 
-WTP_insurance = similar(μ_ij)
-
-for i in 1:size(μ_ij,1), j in 1:size(μ_ij,2)
-    WTP_insurance[i,j] = -μ_ij[i,j]/α[j]
-end
-parNeutral = nothing
-
-
-#### Test Highest and Lowest WTP ####
-wtp_max = maximum(WTP_insurance,dims=1)
-wtp_min = minimum(WTP_insurance,dims=1)
-at_stake = wtp_max - wtp_min
-println("Average at stake WTP: $(mean(at_stake))")
+# #### Epsilon Draws ####
+# t1ev = Gumbel(0,1)
+# eps_draws = rand(t1ev,size(parBase.μ_ij))
+# search_draws = rand(length(parBase.ω_i))
+#
+# #### Switching Cost Neutral WTP ####
+# ret_index = returning_peryear_index(m,parBase)
+# parBase = nothing
+#
+# parNeutral = remove_switching_pars(m,p_est,spec_Dict,noHass=true)
+#
+#
+# μ_ij = parNeutral.μ_ij
+# println("Mean of all utility values: $(mean(μ_ij))")
+#
+# WTP_insurance = similar(μ_ij)
+#
+# for i in 1:size(μ_ij,1), j in 1:size(μ_ij,2)
+#     WTP_insurance[i,j] = -μ_ij[i,j]/α[j]
+# end
+# parNeutral = nothing
+#
+#
+# #### Test Highest and Lowest WTP ####
+# wtp_max = maximum(WTP_insurance,dims=1)
+# wtp_min = minimum(WTP_insurance,dims=1)
+# at_stake = wtp_max - wtp_min
+# println("Average at stake WTP: $(mean(at_stake))")
 
 #### Choice Probabilities #####
-wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar)
-println("Base WTP: $wtp_base")
-wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,useActiveVar=useActiveVar)
-println("WTP, no Hass: $wtp_noHass")
+# wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar)
+# println("Base WTP: $wtp_base")
+# wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,useActiveVar=useActiveVar)
+# println("WTP, no Hass: $wtp_noHass")
 # wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,useActiveVar=useActiveVar)
 # println("WTP, no Continuity: $wtp_noCont")
 # wtp_fullAtten = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,fullAtt=true,useActiveVar=useActiveVar)
