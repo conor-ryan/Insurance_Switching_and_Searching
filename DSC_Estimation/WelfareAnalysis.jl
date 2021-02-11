@@ -144,8 +144,8 @@ df = 0.0
 println("Data Loaded")
 
 
-rundate = "2020-12-14"
-spec = "Spec4_"
+rundate = "2021-01-31"
+spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -232,15 +232,15 @@ wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,se
 println("Base WTP: $wtp_base")
 wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,useActiveVar=useActiveVar)
 println("WTP, no Hass: $wtp_noHass")
-wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,useActiveVar=useActiveVar)
-println("WTP, no Continuity: $wtp_noCont")
-wtp_fullAtten = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,fullAtt=true,useActiveVar=useActiveVar)
-println("WTP, full attention: $wtp_fullAtten")
-wtp_fullAtten_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
-println("WTP, full attention & no hassle costs: $wtp_fullAtten_noHass")
-wtp_fullAtten_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,fullAtt=true,useActiveVar=useActiveVar)
-println("WTP, full attention & no continuity: $wtp_fullAtten_noCont")
-wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,useActiveVar=useActiveVar)
-println("WTP, no hassle & continuity: $wtp_noHass_noCont")
-wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
-println("WTP, no switching costs: $wtp_noCosts")
+# wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,useActiveVar=useActiveVar)
+# println("WTP, no Continuity: $wtp_noCont")
+# wtp_fullAtten = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,fullAtt=true,useActiveVar=useActiveVar)
+# println("WTP, full attention: $wtp_fullAtten")
+# wtp_fullAtten_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
+# println("WTP, full attention & no hassle costs: $wtp_fullAtten_noHass")
+# wtp_fullAtten_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,fullAtt=true,useActiveVar=useActiveVar)
+# println("WTP, full attention & no continuity: $wtp_fullAtten_noCont")
+# wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,useActiveVar=useActiveVar)
+# println("WTP, no hassle & continuity: $wtp_noHass_noCont")
+# wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
+# println("WTP, no switching costs: $wtp_noCosts")

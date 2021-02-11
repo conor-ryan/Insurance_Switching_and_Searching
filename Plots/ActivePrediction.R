@@ -9,7 +9,7 @@ loadfonts(device = "win")
 setwd("C:/Users/Conor/Documents/Research/CovCAInertia/")
 
 #### Data ####
-rundate = "2020-12-14"
+rundate = "2021-01-31"
 spec = "Spec3_"
 df_full = as.data.table(read.csv(paste("Output/Estimation_Results/active_",spec,rundate,".csv",sep="")))
 df_full = df_full[returning==1,]
