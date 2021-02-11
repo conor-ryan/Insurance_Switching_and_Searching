@@ -198,60 +198,60 @@ Z = demoRaw(c)
 α = (β0 .+ β*Z)[1,:]
 println("Median alpha is $(median(α))")
 
-individual_values!(m,parBase)
-μ_ij = log.(parBase.μ_ij)
-println("Mean of all utility values: $(mean(μ_ij))")
-println("Median of all utility values: $(median(μ_ij))")
-println("Maximum of all utility values: $(maximum(μ_ij))")
-println("Minimum of all utility values: $(minimum(μ_ij))")
-
-individual_shares(m,parBase)
-weighted_utility = parBase.s_hat.*μ_ij
-println("Mean of weighted utility?: $(mean(weighted_utility))")
-
-# #### Epsilon Draws ####
-# t1ev = Gumbel(0,1)
-# eps_draws = rand(t1ev,size(parBase.μ_ij))
-# search_draws = rand(length(parBase.ω_i))
-#
-# #### Switching Cost Neutral WTP ####
-# ret_index = returning_peryear_index(m,parBase)
-# parBase = nothing
-#
-# parNeutral = remove_switching_pars(m,p_est,spec_Dict,noHass=true)
-#
-#
-# μ_ij = parNeutral.μ_ij
+# individual_values!(m,parBase)
+# μ_ij = log.(parBase.μ_ij)
 # println("Mean of all utility values: $(mean(μ_ij))")
+# println("Median of all utility values: $(median(μ_ij))")
+# println("Maximum of all utility values: $(maximum(μ_ij))")
+# println("Minimum of all utility values: $(minimum(μ_ij))")
 #
-# WTP_insurance = similar(μ_ij)
-#
-# for i in 1:size(μ_ij,1), j in 1:size(μ_ij,2)
-#     WTP_insurance[i,j] = -μ_ij[i,j]/α[j]
-# end
-# parNeutral = nothing
-#
-#
-# #### Test Highest and Lowest WTP ####
-# wtp_max = maximum(WTP_insurance,dims=1)
-# wtp_min = minimum(WTP_insurance,dims=1)
-# at_stake = wtp_max - wtp_min
-# println("Average at stake WTP: $(mean(at_stake))")
+# individual_shares(m,parBase)
+# weighted_utility = parBase.s_hat.*μ_ij
+# println("Mean of weighted utility?: $(mean(weighted_utility))")
 
-#### Choice Probabilities #####
-# wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar)
-# println("Base WTP: $wtp_base")
-# wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,useActiveVar=useActiveVar)
-# println("WTP, no Hass: $wtp_noHass")
-# wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,useActiveVar=useActiveVar)
-# println("WTP, no Continuity: $wtp_noCont")
-# wtp_fullAtten = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,fullAtt=true,useActiveVar=useActiveVar)
-# println("WTP, full attention: $wtp_fullAtten")
-# wtp_fullAtten_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
-# println("WTP, full attention & no hassle costs: $wtp_fullAtten_noHass")
-# wtp_fullAtten_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,fullAtt=true,useActiveVar=useActiveVar)
-# println("WTP, full attention & no continuity: $wtp_fullAtten_noCont")
-# wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,useActiveVar=useActiveVar)
-# println("WTP, no hassle & continuity: $wtp_noHass_noCont")
-# wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
-# println("WTP, no switching costs: $wtp_noCosts")
+#### Epsilon Draws ####
+t1ev = Gumbel(0,1)
+eps_draws = rand(t1ev,size(parBase.μ_ij))
+search_draws = rand(length(parBase.ω_i))
+
+#### Switching Cost Neutral WTP ####
+ret_index = returning_peryear_index(m,parBase)
+parBase = nothing
+
+parNeutral = remove_switching_pars(m,p_est,spec_Dict,noHass=true)
+
+
+μ_ij = log.(parNeutral.μ_ij)
+println("Mean of all utility values: $(mean(μ_ij))")
+
+WTP_insurance = similar(μ_ij)
+
+for i in 1:size(μ_ij,1), j in 1:size(μ_ij,2)
+    WTP_insurance[i,j] = -μ_ij[i,j]/α[j]
+end
+parNeutral = nothing
+
+
+#### Test Highest and Lowest WTP ####
+wtp_max = maximum(WTP_insurance,dims=1)
+wtp_min = minimum(WTP_insurance,dims=1)
+at_stake = wtp_max - wtp_min
+println("Average at stake WTP: $(mean(at_stake))")
+
+### Choice Probabilities #####
+wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar)
+println("Base WTP: $wtp_base")
+wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,useActiveVar=useActiveVar)
+println("WTP, no Hass: $wtp_noHass")
+wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,useActiveVar=useActiveVar)
+println("WTP, no Continuity: $wtp_noCont")
+wtp_fullAtten = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,fullAtt=true,useActiveVar=useActiveVar)
+println("WTP, full attention: $wtp_fullAtten")
+wtp_fullAtten_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
+println("WTP, full attention & no hassle costs: $wtp_fullAtten_noHass")
+wtp_fullAtten_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,fullAtt=true,useActiveVar=useActiveVar)
+println("WTP, full attention & no continuity: $wtp_fullAtten_noCont")
+wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,useActiveVar=useActiveVar)
+println("WTP, no hassle & continuity: $wtp_noHass_noCont")
+wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
+println("WTP, no switching costs: $wtp_noCosts")
