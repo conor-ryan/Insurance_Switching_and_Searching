@@ -199,7 +199,7 @@ Z = demoRaw(c)
 println("Median alpha is $(median(α))")
 
 individual_values!(m,parBase)
-μ_ij = parBase.μ_ij
+μ_ij = log.(parBase.μ_ij)
 println("Mean of all utility values: $(mean(μ_ij))")
 println("Median of all utility values: $(median(μ_ij))")
 println("Maximum of all utility values: $(maximum(μ_ij))")
