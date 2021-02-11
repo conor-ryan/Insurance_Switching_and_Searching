@@ -198,11 +198,16 @@ Z = demoRaw(c)
 α = (β0 .+ β*Z)[1,:]
 println("Median alpha is $(median(α))")
 
+individual_values!(m,parBase)
 μ_ij = parBase.μ_ij
 println("Mean of all utility values: $(mean(μ_ij))")
 println("Median of all utility values: $(median(μ_ij))")
 println("Maximum of all utility values: $(maximum(μ_ij))")
 println("Minimum of all utility values: $(minimum(μ_ij))")
+
+individual_shares(m,parBase)
+weighted_utility = parBase.s_hat.*μ_ij
+println("Mean of weighted utility?: $(mean(weighted_utility))")
 
 # #### Epsilon Draws ####
 # t1ev = Gumbel(0,1)
