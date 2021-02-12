@@ -27,7 +27,7 @@ println("Code Loaded")
 function draw_WTP(d::InsuranceLogit,p::parDict{T},
     eps_draws::Matrix{Float64},search_draws::Vector{Float64},WTP::Matrix{Float64}) where T
     # Store Parameters
-    μ_ij_large = log.(p.μ_ij)
+    μ_ij_large = p.μ_ij
     ω_large = p.ω_i
     WTP_byperson = Vector{Float64}(undef,length(p.ω_i))
     # println("Mean Atten: $(mean(ω_large))")
@@ -36,7 +36,7 @@ function draw_WTP(d::InsuranceLogit,p::parDict{T},
 
     for (ind,idxitr) in d.data._personDict
         # println(ind)
-        u = μ_ij_large[:,idxitr] + eps_draws[:,idxitr]
+        u = log.(μ_ij_large[:,idxitr]) + eps_draws[:,idxitr]
         WTP_per = WTP[:,idxitr]
         ω_index = d.data._searchDict[ind]
         ω = ω_large[ω_index]
