@@ -61,6 +61,10 @@ function draw_WTP(d::InsuranceLogit,p::parDict{T},
                 for n in 1:size(share_cond,1)
                     share_cond[n,:] = Float64.(util[n,:].==max_util[n])
                 end
+                test = sum(share_cond)
+                if test>size(share_cond,1)
+                    println("Warning, total choices = $test")
+                end
             else
                 for n in 1:size(share_cond,1)
                     share_cond[n,:] = iplan[idx_year]
@@ -79,11 +83,9 @@ function remove_switching_pars(m::InsuranceLogit,p_vec::Vector{Float64},spec::Di
     noHass::Bool=false,
     useActiveVar::Bool=false)
 
-    p_est = copy(p_vec)
-
     Ilength = m.parLength[:I]
 
-    par = parDict(m,p_est)
+    par = parDict(m,p_vec)
     if useActiveVar
         par.ω_i[:] = m.data.active[:]
     end
@@ -122,7 +124,7 @@ function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{Stri
     noHass::Bool=false,
     useActiveVar::Bool=false)
     println("Set Parameters")
-    par = remove_switching_pars(m,p_est,spec_Dict,fullAtt=fullAtt,noCont=noCont,noHass=noHass,
+    par = remove_switching_pars(m,p_vec,spec,fullAtt=fullAtt,noCont=noCont,noHass=noHass,
     useActiveVar=useActiveVar)
     # individual_values!(m,par)
     # individual_shares(m,par)
@@ -132,13 +134,16 @@ function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{Stri
 end
 
 
-# Load the Data
 include("load.jl")
-df_LA = df
 
-# df_LA = df[df[:gra].==10,:]
+for gra_test in 1:14
+# Load the Data
+# df_LA = df
+
+#8,9,10
+df_LA = df[df[:gra].==gra_test,:]
 df_active = 0.0
-df = 0.0
+# df = 0.0
 
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
@@ -239,6 +244,7 @@ at_stake = wtp_max - wtp_min
 println("Average at stake WTP: $(mean(at_stake))")
 
 ### Choice Probabilities #####
+println("Results for GRA $gra_test")
 wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar)
 println("Base WTP: $wtp_base")
 wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,useActiveVar=useActiveVar)
@@ -255,3 +261,4 @@ wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps
 println("WTP, no hassle & continuity: $wtp_noHass_noCont")
 wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
 println("WTP, no switching costs: $wtp_noCosts")
+end
