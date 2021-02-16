@@ -136,7 +136,7 @@ end
 
 include("load.jl")
 
-for gra_test in 1:14
+for gra_test in 1:19
 # Load the Data
 # df_LA = df
 
@@ -232,7 +232,7 @@ println("Mean of all utility values: $(mean(μ_ij))")
 WTP_insurance = similar(μ_ij)
 
 for i in 1:size(μ_ij,1), j in 1:size(μ_ij,2)
-    WTP_insurance[i,j] = -μ_ij[i,j]/α[j]
+    WTP_insurance[i,j] = -(μ_ij[i,j] + eps_draws[i,j])/α[j]
 end
 parNeutral = nothing
 
