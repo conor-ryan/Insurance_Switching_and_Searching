@@ -136,14 +136,14 @@ end
 
 include("load.jl")
 
-for gra_test in 1:19
-# Load the Data
-# df_LA = df
+# for gra_test in 1:19
+Load the Data
+df_LA = df
 
 #8,9,10
-df_LA = df[df[:gra].==gra_test,:]
+# df_LA = df[df[:gra].==gra_test,:]
 df_active = 0.0
-# df = 0.0
+df = 0.0
 
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
 println("Data Loaded")
@@ -261,4 +261,4 @@ wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps
 println("WTP, no hassle & continuity: $wtp_noHass_noCont")
 wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
 println("WTP, no switching costs: $wtp_noCosts")
-end
+# end
