@@ -137,7 +137,7 @@ end
 include("load.jl")
 
 # for gra_test in 1:19
-Load the Data
+# Load the Data
 df_LA = df
 
 #8,9,10
@@ -197,10 +197,10 @@ grad = Vector{Float64}(undef,length(p_est))
 
 #### Consumer Alpha ####
 parBase = parDict(m,p_est)
-β0 = parBase.β_0[1:3]
-β = parBase.β[1:3,:]
+β0 = parBase.β_0[1]
+β = parBase.β[1,:]
 Z = demoRaw(c)
-α = (β0 .+ β*Z)[1,:]
+α = (β0 .+ β'*Z)[1,:]
 println("Median alpha is $(median(α))")
 
 # individual_values!(m,parBase)
@@ -244,7 +244,6 @@ at_stake = wtp_max - wtp_min
 println("Average at stake WTP: $(mean(at_stake))")
 
 ### Choice Probabilities #####
-println("Results for GRA $gra_test")
 wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar)
 println("Base WTP: $wtp_base")
 wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,useActiveVar=useActiveVar)

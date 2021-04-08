@@ -44,11 +44,12 @@ ggplot(df) + aes(x=active_pred_bucket) +
   geom_line(size=1,aes(y=active_obs)) + 
   geom_line(size=1,aes(y=active_max),linetype=2) + 
   geom_line(size=1,aes(y=active_min),linetype=2) + 
+  geom_abline(intercept=0,slope=1,linetype=3) + 
   # geom_errorbar(width=0.05,aes(ymax=active_max,ymin=active_min)) + 
   xlab("Predicted Attention Probability") + 
-  ylab("Observed Choices") + 
-  scale_y_continuous(labels=percent)+ 
-  scale_x_continuous(labels=percent)+ 
+  ylab("Observed Active Selection and Plan Switching") + 
+  scale_y_continuous(limits=c(0,0.9),expand=c(0.01,0),labels=percent)+ 
+  scale_x_continuous(limits=c(0,0.9),expand=c(0.01,0),labels=percent)+ 
   theme(#panel.background = element_rect(color=grey(.2),fill=grey(.9)),
     strip.background = element_blank(),
     text = element_text(family="Times New Roman"),
