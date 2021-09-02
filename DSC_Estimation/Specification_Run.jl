@@ -384,8 +384,8 @@ function count_switchers(m::InsuranceLogit,par::parDict{Float64})
     data_inactive = All_Stay_Inactive_Obs/All_Inactive
     pred_inactive = All_Stay_Inactive/All_Inactive
 
-    println("Data-- Returning: $(round(data_all,3)), Active: $(round(data_active,3)), Inactive: $(round(data_inactive,3))")
-    println("Pred-- Returning: $(round(pred_all,3)), Active: $(round(pred_active,3)), Inactive: $(round(pred_inactive,3))")
+    println("Data-- Returning: $(round(data_all,digits=3)), Active: $(round(data_active,digits=3)), Inactive: $(round(data_inactive,digits=3))")
+    println("Pred-- Returning: $(round(pred_all,digits=3)), Active: $(round(pred_active,digits=3)), Inactive: $(round(pred_inactive,digits=3))")
 
     return data_all, pred_all, data_active,pred_active,data_inactive,pred_inactive
 end
