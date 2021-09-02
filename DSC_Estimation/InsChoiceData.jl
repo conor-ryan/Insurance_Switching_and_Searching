@@ -80,7 +80,7 @@ function ChoiceData(data_choice::DataFrame;
     yr = convert(Matrix{Float64},data_choice[panel])
     j = convert(Matrix{Float64},data_choice[prd])
     X = convert(Matrix{Float64},data_choice[prodchr])
-    X_0 = convert(Array{Float64},data_choice[prodchr_0])
+    X_0 = convert(Matrix{Float64},data_choice[prodchr_0])
     In = convert(Matrix{Float64},data_choice[inertchr])
     y = convert(Matrix{Float64},data_choice[ch])
     y_last = convert(Matrix{Float64},data_choice[ch_last])

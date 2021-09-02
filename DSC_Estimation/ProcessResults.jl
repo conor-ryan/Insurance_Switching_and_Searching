@@ -31,7 +31,7 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2021-01-31"
+rundate = "2021-08-27"
 spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
@@ -62,9 +62,9 @@ c = ChoiceData(df_LA;
 
 # Fit into model
 m = InsuranceLogit(c,spec_Dict["haltonDim"])
-# if m.parLength[:All]!=length(p_est)
-#     error("WARNING: Specification Error!")
-# end
+if m.parLength[:All]!=length(p_est)
+    error("WARNING: Specification Error!")
+end
 
 numPar = length(p_est)
 par = parDict(m,p_est)
