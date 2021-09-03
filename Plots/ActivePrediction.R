@@ -6,7 +6,7 @@ library(grid)
 library(doBy)
 library(data.table)
 loadfonts(device = "win")
-setwd("C:/Users/Conor/Documents/Research/CovCAInertia/")
+setwd("G:/Shared drives/CovCAInertia")
 
 #### Data ####
 rundate = "2021-01-31"

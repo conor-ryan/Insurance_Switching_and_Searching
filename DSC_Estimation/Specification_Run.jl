@@ -359,6 +359,7 @@ function count_switchers(m::InsuranceLogit,par::parDict{Float64})
                 All_Stay_Obs += 1.0
             end
 
+            idx_yr = idx[per_idx_yr]
             active_obs = active_long[per_idx_yr[1]]
             if active_obs==1
                 All_Active +=  1.0
@@ -383,7 +384,8 @@ function count_switchers(m::InsuranceLogit,par::parDict{Float64})
 
     data_inactive = All_Stay_Inactive_Obs/All_Inactive
     pred_inactive = All_Stay_Inactive/All_Inactive
-
+    println("Active Number: $All_Active")
+    println("Inactive Number: $All_Inactive")
     println("Data-- Returning: $(round(data_all,digits=3)), Active: $(round(data_active,digits=3)), Inactive: $(round(data_inactive,digits=3))")
     println("Pred-- Returning: $(round(pred_all,digits=3)), Active: $(round(pred_active,digits=3)), Inactive: $(round(pred_inactive,digits=3))")
 
