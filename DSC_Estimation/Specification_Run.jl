@@ -360,7 +360,7 @@ function count_switchers(m::InsuranceLogit,par::parDict{Float64})
             end
 
             idx_yr = idx[per_idx_yr]
-            active_obs = active_long[per_idx_yr[1]]
+            active_obs = active_long[idx_yr[1]]
             if active_obs==1
                 All_Active +=  1.0
                 All_Stay_Active += stay_prob[yr]
