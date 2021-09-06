@@ -25,13 +25,19 @@ include("Specification_Run.jl")
 println("Code Loaded")
 
 function draw_WTP(d::InsuranceLogit,p::parDict{T},
-    eps_draws::Matrix{Float64},search_draws::Vector{Float64},WTP::Matrix{Float64}) where T
+    eps_draws::Matrix{Float64},search_draws::Vector{Float64},WTP::Matrix{Float64},
+    smart_default::Bool,
+    smart_long::Vector{Float64}) where T
     # Store Parameters
     μ_ij_large = p.μ_ij
     ω_large = p.ω_i
     WTP_byperson = Vector{Float64}(undef,length(p.ω_i))
     # println("Mean Atten: $(mean(ω_large))")
-    iplan_large = choice_last(d.data)[:]
+    if smart default
+        iplan_large = smart_long
+    else
+        iplan_large = choice_last(d.data)[:]
+    end
     y_large = choice(d.data)[:]
 
     for (ind,idxitr) in d.data._personDict
@@ -122,13 +128,15 @@ function return_choices(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{Stri
     fullAtt::Bool=false,
     noCont::Bool=false,
     noHass::Bool=false,
-    useActiveVar::Bool=false)
+    useActiveVar::Bool=false,
+    smart_default::Bool=false,
+    smart_long::Vector{Float64}=Vector{Float64}(undef,0))
     println("Set Parameters")
     par = remove_switching_pars(m,p_vec,spec,fullAtt=fullAtt,noCont=noCont,noHass=noHass,
     useActiveVar=useActiveVar)
     # individual_values!(m,par)
     # individual_shares(m,par)
-    wtp = draw_WTP(m,par,eps_draws,search_draws,WTP)
+    wtp = draw_WTP(m,par,eps_draws,search_draws,WTP,smart_default,smart_long)
     avg_wtp = mean(wtp[ret_index])
     return avg_wtp
 end
@@ -149,7 +157,7 @@ df = 0.0
 println("Data Loaded")
 
 # rundate = "2020-12-14"
-rundate = "2021-01-31"
+rundate = "2021-08-27"
 spec = "Spec3_"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
@@ -244,8 +252,12 @@ at_stake = wtp_max - wtp_min
 println("Average at stake WTP: $(mean(at_stake))")
 
 ### Choice Probabilities #####
+smart_large = df_LA[:smart_default]
+
 wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar)
 println("Base WTP: $wtp_base")
+wtp_smart = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar,smart_default=true,smart_long=smart_large)
+println("WTP, Smart Default: $wtp_noCosts")
 wtp_noHass = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noHass=true,useActiveVar=useActiveVar)
 println("WTP, no Hass: $wtp_noHass")
 wtp_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,useActiveVar=useActiveVar)
@@ -260,4 +272,6 @@ wtp_noHass_noCont = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps
 println("WTP, no hassle & continuity: $wtp_noHass_noCont")
 wtp_noCosts = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,noCont=true,noHass=true,fullAtt=true,useActiveVar=useActiveVar)
 println("WTP, no switching costs: $wtp_noCosts")
+
+
 # end
