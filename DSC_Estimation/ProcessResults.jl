@@ -98,80 +98,80 @@ resOnlyCont = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,useAc
 println("No Switching Costs")
 resNone = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true,useActiveVar=useActiveVar)
 
-# #### Average Willingness to Pay ####
-# parBase = parDict(m,p_est)
-# individual_values!(m,parBase)
-# individual_shares(m,parBase)
-#
-#
-# βMat = coeff_values(m,parBase)
-# wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
-# wtp_inet = -100*(βMat[:,3]./βMat[:,1])
-# # wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
-# wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
-#
-#
-# # alpha_long = parBase.β_0[1] .+ parBase.β[1,:]'*demoRaw(m.data)
-# # price_long = prodchars(m.data)[1,:]
-# # elas = Vector{Float64}(undef,length(alpha_long))
-# # for i in 1:length(elas)
-# #     elas[i] = alpha_long[i]*price_long[i]*(1 - parBase.s_hat[i])
-# # end
-#
-# println("Plan Level")
-# println(mean(wtp_iplan))
-# println(std(wtp_iplan))
-# println("Network Level")
-# println(mean(wtp_inet))
-# println(std(wtp_inet))
-# # println("Issuer Level")
-# # println(mean(wtp_iiss))
-# # println(std(wtp_iiss))
-# println("Total Continuity")
-# println(mean(wtp_cont))
-# println(std(wtp_cont))
-#
-# ## Marginal Effects
-# println("### COMPUTE MARGINAL EFFECTS ### ")
-# println(round.(100 .*marginalEffects(m,p_est),digits=2))
-#
-# dME = 100 .*meDeriv(m,p_est)
-# Var, se1, se2,t_stat, stars = res_process(m,p_est)
-# Σ_coeff = Diagonal(se1[1:m.parLength[:I]])
-# Σ_me = dME*Var[1:m.parLength[:I],1:m.parLength[:I]]*dME'
-# σ_me = sqrt.(diag(Σ_me))
-# println("### MARGINAL EFFECT STANDARD ERRORS ###")
-# println(round.(σ_me,digits=2))
-#
-# ##### Demographic Buckets #####
-# β0 = parBase.β_0[1:3]
-# β = parBase.β[1:3,:]
-# Z =[0 0 0 1;
-#     1 0 0 1;
-#     0 1 0 1;
-#     0 0 1 1;
-#     1 0 1 1;
-#     0 1 1 1;
-#     0 0 0 0;
-#     1 0 0 0;
-#     0 1 0 0;
-#     0 0 1 0;
-#     1 0 1 0;
-#     0 1 1 0;]
-#
-# βz = β0 .+ β*Z'
-# J,K = size(βz)
-# WTP = zeros(K,J-1)
-# for j in 1:(J-1), k in 1:K
-#     WTP[k,j] = -100*βz[1+j,k]/βz[1,k]
+#### Average Willingness to Pay ####
+parBase = parDict(m,p_est)
+individual_values!(m,parBase)
+individual_shares(m,parBase)
+
+
+βMat = coeff_values(m,parBase)
+wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
+wtp_inet = -100*(βMat[:,3]./βMat[:,1])
+# wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
+wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
+
+
+# alpha_long = parBase.β_0[1] .+ parBase.β[1,:]'*demoRaw(m.data)
+# price_long = prodchars(m.data)[1,:]
+# elas = Vector{Float64}(undef,length(alpha_long))
+# for i in 1:length(elas)
+#     elas[i] = alpha_long[i]*price_long[i]*(1 - parBase.s_hat[i])
 # end
-# out = DataFrame(WTP)
-#
-# file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/wtp_$spec$rundate.csv"
-# CSV.write(file1,out)
-#
-# ##### Check Active Relationship ####
-# par = parDict(m,p_est)
-# individual_values!(m,par)
-# individual_shares(m,par)
-# activePredict(m,par,df_LA,spec,rundate)
+
+println("Plan Level")
+println(mean(wtp_iplan))
+println(std(wtp_iplan))
+println("Network Level")
+println(mean(wtp_inet))
+println(std(wtp_inet))
+# println("Issuer Level")
+# println(mean(wtp_iiss))
+# println(std(wtp_iiss))
+println("Total Continuity")
+println(mean(wtp_cont))
+println(std(wtp_cont))
+
+## Marginal Effects
+println("### COMPUTE MARGINAL EFFECTS ### ")
+println(round.(100 .*marginalEffects(m,p_est),digits=2))
+
+dME = 100 .*meDeriv(m,p_est)
+Var, se1, se2,t_stat, stars = res_process(m,p_est)
+Σ_coeff = Diagonal(se1[1:m.parLength[:I]])
+Σ_me = dME*Var[1:m.parLength[:I],1:m.parLength[:I]]*dME'
+σ_me = sqrt.(diag(Σ_me))
+println("### MARGINAL EFFECT STANDARD ERRORS ###")
+println(round.(σ_me,digits=2))
+
+##### Demographic Buckets #####
+β0 = parBase.β_0[1:3]
+β = parBase.β[1:3,:]
+Z =[0 0 0 1;
+    1 0 0 1;
+    0 1 0 1;
+    0 0 1 1;
+    1 0 1 1;
+    0 1 1 1;
+    0 0 0 0;
+    1 0 0 0;
+    0 1 0 0;
+    0 0 1 0;
+    1 0 1 0;
+    0 1 1 0;]
+
+βz = β0 .+ β*Z'
+J,K = size(βz)
+WTP = zeros(K,J-1)
+for j in 1:(J-1), k in 1:K
+    WTP[k,j] = -100*βz[1+j,k]/βz[1,k]
+end
+out = DataFrame(WTP)
+
+file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/wtp_$spec$rundate.csv"
+CSV.write(file1,out)
+
+##### Check Active Relationship ####
+par = parDict(m,p_est)
+individual_values!(m,par)
+individual_shares(m,par)
+activePredict(m,par,df_LA,spec,rundate)
