@@ -33,7 +33,7 @@ function draw_WTP(d::InsuranceLogit,p::parDict{T},
     ω_large = p.ω_i
     WTP_byperson = Vector{Float64}(undef,length(p.ω_i))
     # println("Mean Atten: $(mean(ω_large))")
-    if smart default
+    if smart_default
         iplan_large = smart_long
     else
         iplan_large = choice_last(d.data)[:]
