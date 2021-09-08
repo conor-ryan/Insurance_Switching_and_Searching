@@ -24,6 +24,9 @@ include("utility.jl")
 include("Specification_Run.jl")
 println("Code Loaded")
 
+home = "$(homedir())/Documents/Research/CovCAInertia"
+# home = "G:/Shared drives/CovCAInertia"
+
 function draw_WTP(d::InsuranceLogit,p::parDict{T},
     eps_draws::Matrix{Float64},search_draws::Vector{Float64},WTP::Matrix{Float64},
     smart_default::Bool,
@@ -159,7 +162,7 @@ println("Data Loaded")
 # rundate = "2020-12-14"
 rundate = "2021-08-27"
 spec = "Spec3_"
-file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
+file = "$home/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
 println("Running Spec: $spec$rundate")
