@@ -83,12 +83,6 @@ println(ll*Pop)
 
 grad = Vector{Float64}(undef,length(p_est))
 
-par = parDict(m,p_est)
-individual_values!(m,par)
-individual_shares(m,par)
-
-println(mean(par.ω_i))
-
 # println("Base")
 # resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
 # println("Full Attention")
@@ -107,9 +101,9 @@ println(mean(par.ω_i))
 # resNone = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true,useActiveVar=useActiveVar)
 #
 # #### Average Willingness to Pay ####
-# parBase = parDict(m,p_est)
-# individual_values!(m,parBase)
-# individual_shares(m,parBase)
+parBase = parDict(m,p_est)
+individual_values!(m,parBase)
+individual_shares(m,parBase)
 #
 #
 βMat = coeff_values(m,parBase)
