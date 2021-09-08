@@ -280,7 +280,7 @@ function predict_switching(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{S
         parBase.ω_i[:] = m.data.active[:]
     end
     test = mean(parBase.ω_i)
-    println("Test Inattention 1 : $test")
+
 
     # cont_pars = vcat(Ilength .+ (2:4),(Ilength.+ m.parLength[:β]).+ vcat((2:4), 4 .+ (2:4),8 .+ (2:4),12 .+ (2:4)))
     # cont_pars = vcat(Ilength .+ (3:4),(Ilength.+ m.parLength[:β]).+ vcat((3:4), 4 .+ (3:4),8 .+ (3:4),12 .+ (3:4)))
@@ -299,6 +299,7 @@ function predict_switching(m::InsuranceLogit,p_vec::Vector{Float64},spec::Dict{S
 
 
     individual_values!(m,parBase)
+    println("Test Inattention 1 : $test")
 
     if fullAtt
         parBase.ω_i[:] .= 1.0
