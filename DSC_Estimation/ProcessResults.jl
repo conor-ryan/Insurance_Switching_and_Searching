@@ -21,8 +21,8 @@ include("utility.jl")
 include("Specification_Run.jl")
 println("Code Loaded")
 
-home = "$(homedir())/Documents/Research/CovCAInertia"
-# home = "G:/Shared drives/CovCAInertia"
+# home = "$(homedir())/Documents/Research/CovCAInertia"
+home = "G:/Shared drives/CovCAInertia"
 
 
 # Load the Data
@@ -35,8 +35,8 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2021-08-27"
-spec = "Spec3_"
+rundate = "2021-08-12"
+spec = "Spec1_"
 file = "$home/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -90,8 +90,8 @@ individual_shares(m,par)
 
 println(mean(par.ω_i))
 
-println("Base")
-resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
+# println("Base")
+# resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
 # println("Full Attention")
 # resFA = predict_switching(m,p_est,spec_Dict,fullAtt=true,useActiveVar=useActiveVar)
 # println("No Hassle Costs")
@@ -113,33 +113,33 @@ resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
 # individual_shares(m,parBase)
 #
 #
-# βMat = coeff_values(m,parBase)
-# wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
+βMat = coeff_values(m,parBase)
+wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
 # wtp_inet = -100*(βMat[:,3]./βMat[:,1])
-# # wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
+# wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
 # wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
-#
-#
-# # alpha_long = parBase.β_0[1] .+ parBase.β[1,:]'*demoRaw(m.data)
-# # price_long = prodchars(m.data)[1,:]
-# # elas = Vector{Float64}(undef,length(alpha_long))
-# # for i in 1:length(elas)
-# #     elas[i] = alpha_long[i]*price_long[i]*(1 - parBase.s_hat[i])
-# # end
-#
-# println("Plan Level")
-# println(mean(wtp_iplan))
-# println(std(wtp_iplan))
-# println("Network Level")
-# println(mean(wtp_inet))
-# println(std(wtp_inet))
-# # println("Issuer Level")
-# # println(mean(wtp_iiss))
-# # println(std(wtp_iiss))
-# println("Total Continuity")
-# println(mean(wtp_cont))
-# println(std(wtp_cont))
-#
+
+
+# alpha_long = parBase.β_0[1] .+ parBase.β[1,:]'*demoRaw(m.data)
+# price_long = prodchars(m.data)[1,:]
+# elas = Vector{Float64}(undef,length(alpha_long))
+# for i in 1:length(elas)
+#     elas[i] = alpha_long[i]*price_long[i]*(1 - parBase.s_hat[i])
+# end
+
+println("Plan Level")
+println(mean(wtp_iplan))
+println(std(wtp_iplan))
+println("Network Level")
+println(mean(wtp_inet))
+println(std(wtp_inet))
+# println("Issuer Level")
+# println(mean(wtp_iiss))
+# println(std(wtp_iiss))
+println("Total Continuity")
+println(mean(wtp_cont))
+println(std(wtp_cont))
+
 # ## Marginal Effects
 # println("### COMPUTE MARGINAL EFFECTS ### ")
 # println(round.(100 .*marginalEffects(m,p_est),digits=2))
