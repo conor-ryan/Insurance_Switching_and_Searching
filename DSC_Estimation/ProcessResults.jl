@@ -23,8 +23,8 @@ println("Code Loaded")
 
 # Load the Data
 include("load.jl")
-df_LA = df
-# df_LA_active = df_active
+# df_LA = df
+df_LA = df_active
  # df_LA = df[df[:gra].==8,:]
  # df_LA = df[df[:gra].==16,:]
 # df_LA[:issfe_1] = Int.(df_LA[:issuername].=="Anthem")
@@ -32,7 +32,7 @@ println("Data Loaded")
 
 
 rundate = "2021-08-27"
-spec = "Spec3_"
+spec = "Spec4_"
 # file = "G:/Shared drives/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 file = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
@@ -75,28 +75,28 @@ BIC = log(Pop)*(numPar+1) - 2*ll
 println("Number of Parameters: $numPar, Log-Likelihood: $ll, BIC: $BIC")
 
 
-
-ll = log_likelihood(m,p_est)
-println(ll*Pop)
-
-grad = Vector{Float64}(undef,length(p_est))
-
-println("Base")
-resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
-println("Full Attention")
-resFA = predict_switching(m,p_est,spec_Dict,fullAtt=true,useActiveVar=useActiveVar)
-println("No Hassle Costs")
-resNoHass = predict_switching(m,p_est,spec_Dict,noHass=true,useActiveVar=useActiveVar)
-println("No Taste for Continuity")
-resNoCont = predict_switching(m,p_est,spec_Dict,noCont=true,useActiveVar=useActiveVar)
-println("Only Inattention")
-resOnlyAtt = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true,useActiveVar=useActiveVar)
-println("Only Hassle Costs")
-resOnlyHass = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true,useActiveVar=useActiveVar)
-println("Only Tastes for Continuity")
-resOnlyCont = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,useActiveVar=useActiveVar)
-println("No Switching Costs")
-resNone = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true,useActiveVar=useActiveVar)
+#
+# ll = log_likelihood(m,p_est)
+# println(ll*Pop)
+#
+# grad = Vector{Float64}(undef,length(p_est))
+#
+# println("Base")
+# resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
+# println("Full Attention")
+# resFA = predict_switching(m,p_est,spec_Dict,fullAtt=true,useActiveVar=useActiveVar)
+# println("No Hassle Costs")
+# resNoHass = predict_switching(m,p_est,spec_Dict,noHass=true,useActiveVar=useActiveVar)
+# println("No Taste for Continuity")
+# resNoCont = predict_switching(m,p_est,spec_Dict,noCont=true,useActiveVar=useActiveVar)
+# println("Only Inattention")
+# resOnlyAtt = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true,useActiveVar=useActiveVar)
+# println("Only Hassle Costs")
+# resOnlyHass = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true,useActiveVar=useActiveVar)
+# println("Only Tastes for Continuity")
+# resOnlyCont = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,useActiveVar=useActiveVar)
+# println("No Switching Costs")
+# resNone = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true,useActiveVar=useActiveVar)
 
 #### Average Willingness to Pay ####
 parBase = parDict(m,p_est)
