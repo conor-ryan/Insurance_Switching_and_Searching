@@ -255,7 +255,7 @@ at_stake = wtp_max - wtp_min
 println("Average at stake WTP: $(mean(at_stake))")
 
 ### Choice Probabilities #####
-smart_large = df_LA[:smart_default]
+smart_large = convert(Vector{Float64},df_LA[:smart_default])
 
 wtp_base = return_choices(m,p_est,spec_Dict,ret_index,WTP_insurance,eps_draws,search_draws,useActiveVar=useActiveVar)
 println("Base WTP: $wtp_base")
