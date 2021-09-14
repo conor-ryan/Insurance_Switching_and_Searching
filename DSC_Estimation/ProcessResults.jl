@@ -34,8 +34,8 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2021-08-12"
-spec = "Spec1_"
+rundate = "2021-00-01"
+spec = "Spec3_kais"
 file = "$home/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -120,31 +120,31 @@ wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
 #     elas[i] = alpha_long[i]*price_long[i]*(1 - parBase.s_hat[i])
 # end
 
-println("Plan Level")
-println(mean(wtp_iplan))
-println(std(wtp_iplan))
-println("Network Level")
-println(mean(wtp_inet))
-println(std(wtp_inet))
+# println("Plan Level")
+# println(mean(wtp_iplan))
+# println(std(wtp_iplan))
+# println("Network Level")
+# println(mean(wtp_inet))
+# println(std(wtp_inet))
 # println("Issuer Level")
 # println(mean(wtp_iiss))
 # println(std(wtp_iiss))
-println("Total Continuity")
-println(mean(wtp_cont))
-println(std(wtp_cont))
+# println("Total Continuity")
+# println(mean(wtp_cont))
+# println(std(wtp_cont))
 
 # ## Marginal Effects
-# println("### COMPUTE MARGINAL EFFECTS ### ")
-# println(round.(100 .*marginalEffects(m,p_est),digits=2))
-#
-# dME = 100 .*meDeriv(m,p_est)
-# Var, se1, se2,t_stat, stars = res_process(m,p_est)
-# Σ_coeff = Diagonal(se1[1:m.parLength[:I]])
-# Σ_me = dME*Var[1:m.parLength[:I],1:m.parLength[:I]]*dME'
-# σ_me = sqrt.(diag(Σ_me))
-# println("### MARGINAL EFFECT STANDARD ERRORS ###")
-# println(round.(σ_me,digits=2))
-#
+println("### COMPUTE MARGINAL EFFECTS ### ")
+println(round.(100 .*marginalEffects(m,p_est),digits=2))
+
+dME = 100 .*meDeriv(m,p_est)
+Var, se1, se2,t_stat, stars = res_process(m,p_est)
+Σ_coeff = Diagonal(se1[1:m.parLength[:I]])
+Σ_me = dME*Var[1:m.parLength[:I],1:m.parLength[:I]]*dME'
+σ_me = sqrt.(diag(Σ_me))
+println("### MARGINAL EFFECT STANDARD ERRORS ###")
+println(round.(σ_me,digits=2))
+
 # ##### Demographic Buckets #####
 # β0 = parBase.β_0[1:3]
 # β = parBase.β[1:3,:]
