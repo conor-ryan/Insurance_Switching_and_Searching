@@ -108,7 +108,7 @@ individual_shares(m,parBase)
 #### Save predicted Choices #####
 s_ij = parBase.s_hat
 
-out = DataFrame(Person = df_LA[!,:hh_id], Product = df_LA[!,:product] Year = df_LA[!,:year],
+out = DataFrame(Person = df_LA[!,:hh_id], Product = df_LA[!,:product], Year = df_LA[!,:year],
                     Metal = df_LA[!,:metal], Issuer = df_LA[!,:issuername],
                     s_pred = parBase.s_hat)
 file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/predictedChoices_$spec$rundate.csv"
