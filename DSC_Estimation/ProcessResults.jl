@@ -21,8 +21,8 @@ include("utility.jl")
 include("Specification_Run.jl")
 println("Code Loaded")
 
-home = "$(homedir())/Documents/Research/CovCAInertia"
-# home = "G:/Shared drives/CovCAInertia"
+# home = "$(homedir())/Documents/Research/CovCAInertia"
+home = "G:/Shared drives/CovCAInertia"
 
 # Load the Data
 include("load.jl")
@@ -34,8 +34,8 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2021-09-01"
-spec = "Spec3_kais_"
+rundate = "2021-08-27"
+spec = "Spec3_"
 file = "$home/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -69,19 +69,19 @@ if m.parLength[:All]!=length(p_est)
     error("WARNING: Specification Error!")
 end
 
-numPar = length(p_est)
-par = parDict(m,p_est)
-Pop = length(par.ω_i)
-ll = fval*Pop
-BIC = log(Pop)*(numPar+1) - 2*ll
-println("Number of Parameters: $numPar, Log-Likelihood: $ll, BIC: $BIC")
-
-
-
-ll = log_likelihood(m,p_est)
-println(ll*Pop)
-
-grad = Vector{Float64}(undef,length(p_est))
+# numPar = length(p_est)
+# par = parDict(m,p_est)
+# Pop = length(par.ω_i)
+# ll = fval*Pop
+# BIC = log(Pop)*(numPar+1) - 2*ll
+# println("Number of Parameters: $numPar, Log-Likelihood: $ll, BIC: $BIC")
+#
+#
+#
+# ll = log_likelihood(m,p_est)
+# println(ll*Pop)
+#
+# grad = Vector{Float64}(undef,length(p_est))
 
 # println("Base")
 # resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
@@ -104,10 +104,22 @@ grad = Vector{Float64}(undef,length(p_est))
 parBase = parDict(m,p_est)
 individual_values!(m,parBase)
 individual_shares(m,parBase)
+
+#### Save predicted Choices #####
+s_ij = parBase.s_hat
+
+out = DataFrame(Person = df_LA[!,:hh_id], Product = df_LA[!,:product] Year = df_LA[!,:year],
+                    Metal = df_LA[!,:metal], Issuer = df_LA[!,:issuername],
+                    s_pred = parBase.s_hat)
+file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/predictedChoices_$spec$rundate.csv"
+CSV.write(file1,out)
+
+
+
 #
 #
-βMat = coeff_values(m,parBase)
-wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
+# βMat = coeff_values(m,parBase)
+# wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
 # wtp_inet = -100*(βMat[:,3]./βMat[:,1])
 # wtp_iiss = -100*(βMat[:,4]./βMat[:,1])
 # wtp_cont = -100*((βMat[:,2]+βMat[:,3])./βMat[:,1])
@@ -134,16 +146,16 @@ wtp_iplan = -100*(βMat[:,2]./βMat[:,1])
 # println(std(wtp_cont))
 
 # ## Marginal Effects
-println("### COMPUTE MARGINAL EFFECTS ### ")
-println(round.(100 .*marginalEffects(m,p_est),digits=2))
-
-dME = 100 .*meDeriv(m,p_est)
-Var, se1, se2,t_stat, stars = res_process(m,p_est)
-Σ_coeff = Diagonal(se1[1:m.parLength[:I]])
-Σ_me = dME*Var[1:m.parLength[:I],1:m.parLength[:I]]*dME'
-σ_me = sqrt.(diag(Σ_me))
-println("### MARGINAL EFFECT STANDARD ERRORS ###")
-println(round.(σ_me,digits=2))
+# println("### COMPUTE MARGINAL EFFECTS ### ")
+# println(round.(100 .*marginalEffects(m,p_est),digits=2))
+#
+# dME = 100 .*meDeriv(m,p_est)
+# Var, se1, se2,t_stat, stars = res_process(m,p_est)
+# Σ_coeff = Diagonal(se1[1:m.parLength[:I]])
+# Σ_me = dME*Var[1:m.parLength[:I],1:m.parLength[:I]]*dME'
+# σ_me = sqrt.(diag(Σ_me))
+# println("### MARGINAL EFFECT STANDARD ERRORS ###")
+# println(round.(σ_me,digits=2))
 
 # ##### Demographic Buckets #####
 # β0 = parBase.β_0[1:3]
