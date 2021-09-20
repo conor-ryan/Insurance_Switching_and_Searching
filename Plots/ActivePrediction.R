@@ -81,7 +81,7 @@ df[,min:=pmax(mean-1.00*stdev,0)]
 
 df[,active_lab:= factor(df$active_obs,levels=df$active_obs,labels=c("Active Consumers","Inactive Consumers"))]
 
-# png("Writing/ActivePrediction.png",width=2000,height=2000,res=275)
+png("Writing/ActivePrediction.png",width=2000,height=2000,res=275)
 ggplot(df) + aes(x=active_lab,y=mean,ymin=min,ymax=max) + 
   geom_point(size=2) + 
   geom_errorbar(width=0.2) + 
@@ -100,4 +100,4 @@ ggplot(df) + aes(x=active_lab,y=mean,ymin=min,ymax=max) +
     legend.position = "none",
     axis.title=element_text(size=12),
     axis.text = element_text(size=12))
-# dev.off()
+dev.off()
