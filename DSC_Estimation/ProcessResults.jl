@@ -34,8 +34,8 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2021-08-27"
-spec = "Spec3_"
+rundate = "2021-08-12"
+spec = "Spec1_"
 file = "$home/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -83,8 +83,8 @@ end
 #
 # grad = Vector{Float64}(undef,length(p_est))
 
-# println("Base")
-# resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
+println("Base")
+resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
 # println("Full Attention")
 # resFA = predict_switching(m,p_est,spec_Dict,fullAtt=true,useActiveVar=useActiveVar)
 # println("No Hassle Costs")
@@ -101,18 +101,18 @@ end
 # resNone = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true,useActiveVar=useActiveVar)
 #
 # #### Average Willingness to Pay ####
-parBase = parDict(m,p_est)
-individual_values!(m,parBase)
-individual_shares(m,parBase)
-
-#### Save predicted Choices #####
-s_ij = parBase.s_hat
-
-out = DataFrame(Person = df_LA[:hh_id], Product = df_LA[:product], Year = df_LA[:year],,choice=df_LA[:choice],iplan = df_LA[:iplan],default=df_LA[:autoplan],active=df_LA[:active],
-                    Metal = df_LA[:metal], Issuer = df_LA[:issuername],
-                    s_pred = parBase.s_hat)
-file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/predictedChoices_$spec$rundate.csv"
-CSV.write(file1,out)
+# parBase = parDict(m,p_est)
+# individual_values!(m,parBase)
+# individual_shares(m,parBase)
+#
+# #### Save predicted Choices #####
+# s_ij = parBase.s_hat
+#
+# out = DataFrame(Person = df_LA[:hh_id], Product = df_LA[:product], Year = df_LA[:year],,choice=df_LA[:choice],iplan = df_LA[:iplan],default=df_LA[:autoplan],active=df_LA[:active],
+#                     Metal = df_LA[:metal], Issuer = df_LA[:issuername],
+#                     s_pred = parBase.s_hat)
+# file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/predictedChoices_$spec$rundate.csv"
+# CSV.write(file1,out)
 
 
 
@@ -184,8 +184,11 @@ CSV.write(file1,out)
 # file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/wtp_$spec$rundate.csv"
 # CSV.write(file1,out)
 #
-# ##### Check Active Relationship ####
-# par = parDict(m,p_est)
-# individual_values!(m,par)
-# individual_shares(m,par)
-# activePredict(m,par,df_LA,spec,rundate)
+##### Check Active Relationship ####
+par = parDict(m,p_est)
+individual_values!(m,par)
+individual_shares(m,par)
+if useActiveVar
+    par.ω_i[:] = m.data.active[:]
+end
+activePredict(m,par,df_LA,spec,rundate)
