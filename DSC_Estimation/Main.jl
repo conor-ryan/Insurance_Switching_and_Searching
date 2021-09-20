@@ -21,6 +21,9 @@ include("utility.jl")
 include("Specification_Run.jl")
 println("Code Loaded")
 
+home = "$(homedir())/Documents/Research/CovCAInertia"
+# home = "G:/Shared drives/CovCAInertia"
+
 # Load the Data
 include("load.jl")
 # df_LA = df[df[:gra].==16,:]
