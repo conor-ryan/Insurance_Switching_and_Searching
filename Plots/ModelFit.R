@@ -41,7 +41,7 @@ for (i in 1:5){
   if (i==1){
     df_full[,s_pred:=as.numeric(choice)]
   }
-  df_full[,returning:=sum(iplan)>0,by=c("Person","Year")]
+  df_full[,returning:=sum(default)>0,by=c("Person","Year")]
   
   df_full[,catas:=0]
   df_full[Metal=="Catastrophic",catas:=s_pred]
@@ -81,3 +81,4 @@ for (i in 1:5){
   
   AllTable = rbind(AllTable,table_temp)
 }
+setkey(AllTable,category,spec)
