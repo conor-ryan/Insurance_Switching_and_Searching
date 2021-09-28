@@ -345,88 +345,88 @@ mx_out_1 = MainSpec(df_LA,filename,
 #     spec_wgt= spec_wgt,
 #     method="ga",ga_itr = 50,ll_start=true)
 
-# println("###############################")
-# println("Specification 3, with large threshold cross in attention equation")
-# ### Full Specification
-# filename = "Spec3_thresh95_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet],
-#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,
-#                         #Continuous Premium
-#                         # :autodp,
-#                         # Categorical Premium
-#                         :autodp_disc_1,:autodp_disc_2,:autodp_disc_4,:autodp_disc_5,:autodp_disc_6,
-#                         # Large change in the choice set
-#                         :choiceset_exceed_thresh_95,
-#                         #Metal Fixed Effects
-#                         :def_mtl_cat,:def_mtl_gld, # Leave Out Bronze
-#                         :def_mtl_hdp,:def_mtl_plt,
-#                         :def_mtl_slv,:def_mtl_s73,
-#                         :def_mtl_s87,:def_mtl_s94,
-#                         # Network Fixed Effects
-#                         # :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
-#                         # :def_issfe_6, :def_issfe_7, # Leave Out LA Care
-#                         # :def_netfe_4, :def_netfe_6, # Drop net02, net03
-#                         # :def_netfe_9, :def_netfe_12, # Drop net10, net08
-#                         #Rating Area Fixed Effect
-#                         :grafe_2,:grafe_3,:grafe_4,:grafe_5,
-#                         :grafe_6,:grafe_7,:grafe_8,:grafe_9,:grafe_10,
-#                         :grafe_11,:grafe_12,:grafe_13,:grafe_14,:grafe_15,
-#                         :grafe_16,:grafe_17,:grafe_18,:grafe_19,
-#                         # Year Fixed Effects
-#                         :year_2016,:year_2017,:year_2018],
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_prodInt=[:padj,:iplan,:inet],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal_gra,:iss_net_gra],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 50,ll_start=true)
-#
-# println("###############################")
-# println("Specification 3, with large threshold cross in attention equation")
-# ### Full Specification
-# filename = "Spec3_thresh98_$rundate"
-# mx_out_1 = MainSpec(df_LA,filename,
-#     haltonDim = mixed_draws,
-#     spec_per = spec_per,
-#     spec_prd = spec_prd,
-#     spec_ch = spec_ch,
-#     spec_ch_last = spec_ch_last,
-#     spec_prodchr = [:padj,:iplan,:inet],
-#     spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
-#     spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,
-#                         #Continuous Premium
-#                         # :autodp,
-#                         # Categorical Premium
-#                         :autodp_disc_1,:autodp_disc_2,:autodp_disc_4,:autodp_disc_5,:autodp_disc_6,
-#                         # Large change in the choice set
-#                         :choiceset_exceed_thresh_98,
-#                         #Metal Fixed Effects
-#                         :def_mtl_cat,:def_mtl_gld, # Leave Out Bronze
-#                         :def_mtl_hdp,:def_mtl_plt,
-#                         :def_mtl_slv,:def_mtl_s73,
-#                         :def_mtl_s87,:def_mtl_s94,
-#                         # Network Fixed Effects
-#                         # :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
-#                         # :def_issfe_6, :def_issfe_7, # Leave Out LA Care
-#                         # :def_netfe_4, :def_netfe_6, # Drop net02, net03
-#                         # :def_netfe_9, :def_netfe_12, # Drop net10, net08
-#                         #Rating Area Fixed Effect
-#                         :grafe_2,:grafe_3,:grafe_4,:grafe_5,
-#                         :grafe_6,:grafe_7,:grafe_8,:grafe_9,:grafe_10,
-#                         :grafe_11,:grafe_12,:grafe_13,:grafe_14,:grafe_15,
-#                         :grafe_16,:grafe_17,:grafe_18,:grafe_19,
-#                         # Year Fixed Effects
-#                         :year_2016,:year_2017,:year_2018],
-#     spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
-#     spec_prodInt=[:padj,:iplan,:inet],
-#     spec_fixInt=Vector{Symbol}(undef,0),
-#     spec_fixEff=[:metal_gra,:iss_net_gra],
-#     spec_wgt= spec_wgt,
-#     method="ga",ga_itr = 50,ll_start=true)
+println("###############################")
+println("Specification 3, with large threshold cross in attention equation")
+### Full Specification
+filename = "Spec3_thresh95_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,
+                        #Continuous Premium
+                        # :autodp,
+                        # Categorical Premium
+                        :autodp_disc_1,:autodp_disc_2,:autodp_disc_4,:autodp_disc_5,:autodp_disc_6,
+                        # Large change in the choice set
+                        :choiceset_exceed_thresh_95,:choiceset_below_05,
+                        #Metal Fixed Effects
+                        :def_mtl_cat,:def_mtl_gld, # Leave Out Bronze
+                        :def_mtl_hdp,:def_mtl_plt,
+                        :def_mtl_slv,:def_mtl_s73,
+                        :def_mtl_s87,:def_mtl_s94,
+                        # Network Fixed Effects
+                        # :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
+                        # :def_issfe_6, :def_issfe_7, # Leave Out LA Care
+                        # :def_netfe_4, :def_netfe_6, # Drop net02, net03
+                        # :def_netfe_9, :def_netfe_12, # Drop net10, net08
+                        #Rating Area Fixed Effect
+                        :grafe_2,:grafe_3,:grafe_4,:grafe_5,
+                        :grafe_6,:grafe_7,:grafe_8,:grafe_9,:grafe_10,
+                        :grafe_11,:grafe_12,:grafe_13,:grafe_14,:grafe_15,
+                        :grafe_16,:grafe_17,:grafe_18,:grafe_19,
+                        # Year Fixed Effects
+                        :year_2016,:year_2017,:year_2018],
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan,:inet],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal_gra,:iss_net_gra],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 50,ll_start=true)
+
+println("###############################")
+println("Specification 3, with large threshold cross in attention equation")
+### Full Specification
+filename = "Spec3_thresh98_$rundate"
+mx_out_1 = MainSpec(df_LA,filename,
+    haltonDim = mixed_draws,
+    spec_per = spec_per,
+    spec_prd = spec_prd,
+    spec_ch = spec_ch,
+    spec_ch_last = spec_ch_last,
+    spec_prodchr = [:padj,:iplan,:inet],
+    spec_prodchr_0= [:issfe_1, :issfe_2, :issfe_5, :issfe_6],
+    spec_inertchr= [:constant,:agefe_1,:agefe_2,:fam,:hassub,
+                        #Continuous Premium
+                        # :autodp,
+                        # Categorical Premium
+                        :autodp_disc_1,:autodp_disc_2,:autodp_disc_4,:autodp_disc_5,:autodp_disc_6,
+                        # Large change in the choice set
+                        :choiceset_exceed_thresh_98,:choiceset_below_02,
+                        #Metal Fixed Effects
+                        :def_mtl_cat,:def_mtl_gld, # Leave Out Bronze
+                        :def_mtl_hdp,:def_mtl_plt,
+                        :def_mtl_slv,:def_mtl_s73,
+                        :def_mtl_s87,:def_mtl_s94,
+                        # Network Fixed Effects
+                        # :def_issfe_1, :def_issfe_2, :def_issfe_3, :def_issfe_4,
+                        # :def_issfe_6, :def_issfe_7, # Leave Out LA Care
+                        # :def_netfe_4, :def_netfe_6, # Drop net02, net03
+                        # :def_netfe_9, :def_netfe_12, # Drop net10, net08
+                        #Rating Area Fixed Effect
+                        :grafe_2,:grafe_3,:grafe_4,:grafe_5,
+                        :grafe_6,:grafe_7,:grafe_8,:grafe_9,:grafe_10,
+                        :grafe_11,:grafe_12,:grafe_13,:grafe_14,:grafe_15,
+                        :grafe_16,:grafe_17,:grafe_18,:grafe_19,
+                        # Year Fixed Effects
+                        :year_2016,:year_2017,:year_2018],
+    spec_demR=[:agefe_1,:agefe_2,:fam,:hassub],
+    spec_prodInt=[:padj,:iplan,:inet],
+    spec_fixInt=Vector{Symbol}(undef,0),
+    spec_fixEff=[:metal_gra,:iss_net_gra],
+    spec_wgt= spec_wgt,
+    method="ga",ga_itr = 50,ll_start=true)

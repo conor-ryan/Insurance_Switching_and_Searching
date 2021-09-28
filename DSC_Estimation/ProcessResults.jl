@@ -34,8 +34,8 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2021-08-12"
-spec = "Spec1_"
+rundate = "2021-09-27"
+spec = "Spec3_demint_"
 file = "$home/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -84,7 +84,7 @@ end
 # grad = Vector{Float64}(undef,length(p_est))
 
 println("Base")
-resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
+# resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
 # println("Full Attention")
 # resFA = predict_switching(m,p_est,spec_Dict,fullAtt=true,useActiveVar=useActiveVar)
 # println("No Hassle Costs")
@@ -145,17 +145,6 @@ resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
 # println(mean(wtp_cont))
 # println(std(wtp_cont))
 
-# ## Marginal Effects
-# println("### COMPUTE MARGINAL EFFECTS ### ")
-# println(round.(100 .*marginalEffects(m,p_est),digits=2))
-#
-# dME = 100 .*meDeriv(m,p_est)
-# Var, se1, se2,t_stat, stars = res_process(m,p_est)
-# Σ_coeff = Diagonal(se1[1:m.parLength[:I]])
-# Σ_me = dME*Var[1:m.parLength[:I],1:m.parLength[:I]]*dME'
-# σ_me = sqrt.(diag(Σ_me))
-# println("### MARGINAL EFFECT STANDARD ERRORS ###")
-# println(round.(σ_me,digits=2))
 
 # ##### Demographic Buckets #####
 # β0 = parBase.β_0[1:3]
@@ -183,12 +172,26 @@ resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
 #
 # file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/wtp_$spec$rundate.csv"
 # CSV.write(file1,out)
-#
-##### Check Active Relationship ####
-par = parDict(m,p_est)
-individual_values!(m,par)
-individual_shares(m,par)
-if useActiveVar
-    par.ω_i[:] = m.data.active[:]
-end
-activePredict(m,par,df_LA,spec,rundate)
+
+## Marginal Effects
+println("### COMPUTE MARGINAL EFFECTS ### ")
+println(round.(100 .*marginalEffects(m,p_est),digits=2))
+
+dME = 100 .*meDeriv(m,p_est)
+Var, se1, se2,t_stat, stars = res_process(m,p_est)
+Σ_coeff = Diagonal(se1[1:m.parLength[:I]])
+Σ_me = dME*Var[1:m.parLength[:I],1:m.parLength[:I]]*dME'
+σ_me = sqrt.(diag(Σ_me))
+println("### MARGINAL EFFECT STANDARD ERRORS ###")
+println(round.(σ_me,digits=2))
+
+
+# #
+# ##### Check Active Relationship ####
+# par = parDict(m,p_est)
+# individual_values!(m,par)
+# individual_shares(m,par)
+# if useActiveVar
+#     par.ω_i[:] = m.data.active[:]
+# end
+# activePredict(m,par,df_LA,spec,rundate)

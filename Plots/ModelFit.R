@@ -42,6 +42,7 @@ for (i in 1:5){
     df_full[,s_pred:=as.numeric(choice)]
   }
   df_full[,returning:=sum(default)>0,by=c("Person","Year")]
+  df_full[,switch:=max(default!=choice&returning==1),by=c("Person","Year")]
   
   df_full[,catas:=0]
   df_full[Metal=="Catastrophic",catas:=s_pred]
@@ -58,7 +59,7 @@ for (i in 1:5){
   df_full[,platinum:=0]
   df_full[Metal=="Platinum",platinum:=s_pred]
   
-  byperson = df_full[,lapply(.SD,sum),.SDcols=c("catas","bronze","silver","gold","platinum"),by=c("Person","Year","returning","active")]
+  byperson = df_full[,lapply(.SD,sum),.SDcols=c("catas","bronze","silver","gold","platinum"),by=c("Person","Year","returning","active","switch")]
   
   if (i==1){
     byperson = merge(byperson,df_active[,c("Person","Year","stay_obs")],by=c("Person","Year"))
@@ -74,9 +75,10 @@ for (i in 1:5){
     byperson[returning==0,lapply(.SD,func),.SDcols=row_selection],
     byperson[returning==1,lapply(.SD,func),.SDcols=row_selection],
     byperson[returning==1&active==1,lapply(.SD,func),.SDcols=row_selection],
-    byperson[returning==1&active==0,lapply(.SD,func),.SDcols=row_selection]
+    byperson[returning==1&active==0,lapply(.SD,func),.SDcols=row_selection],
+    byperson[returning==1&switch==1,lapply(.SD,func),.SDcols=row_selection]
   )
-  table_temp[,category:=c("All","New","Returning-All","Returning-Active","Returning-Inactive")]
+  table_temp[,category:=c("All","New","Returning-All","Returning-Active","Returning-Inactive","Returning-Switch")]
   table_temp[,spec:=spec_label]
   
   AllTable = rbind(AllTable,table_temp)
