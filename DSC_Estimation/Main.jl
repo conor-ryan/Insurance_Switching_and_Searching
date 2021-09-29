@@ -363,7 +363,7 @@ mx_out_1 = MainSpec(df_LA,filename,
                         # Categorical Premium
                         :autodp_disc_1,:autodp_disc_2,:autodp_disc_4,:autodp_disc_5,:autodp_disc_6,
                         # Large change in the choice set
-                        :choiceset_exceed_thresh_95,:choiceset_below_05,
+                        :choiceset_exceed_thresh_95,:choiceset_below_thresh_05,
                         #Metal Fixed Effects
                         :def_mtl_cat,:def_mtl_gld, # Leave Out Bronze
                         :def_mtl_hdp,:def_mtl_plt,
@@ -406,7 +406,7 @@ mx_out_1 = MainSpec(df_LA,filename,
                         # Categorical Premium
                         :autodp_disc_1,:autodp_disc_2,:autodp_disc_4,:autodp_disc_5,:autodp_disc_6,
                         # Large change in the choice set
-                        :choiceset_exceed_thresh_98,:choiceset_below_02,
+                        :choiceset_exceed_thresh_98,:choiceset_below_thresh_02,
                         #Metal Fixed Effects
                         :def_mtl_cat,:def_mtl_gld, # Leave Out Bronze
                         :def_mtl_hdp,:def_mtl_plt,
