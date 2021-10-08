@@ -42,7 +42,7 @@ spec_prd = [:product]
 spec_ch = [:choice]
 spec_ch_last = [:autoplan]
 spec_wgt=[:constant]
-mixed_draws = 5000
+mixed_draws = 2000
 
 ### interact default plans and "active" choice with preference parameters
 
