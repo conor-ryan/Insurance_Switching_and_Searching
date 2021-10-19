@@ -34,8 +34,8 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2021-10-08"
-spec = "Spec4_"
+rundate = "2021-10-11"
+spec = "Spec3_"
 file = "$home/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
@@ -83,22 +83,22 @@ println(ll*Pop)
 
 grad = Vector{Float64}(undef,length(p_est))
 
-println("Base")
-resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
-println("Full Attention")
-resFA = predict_switching(m,p_est,spec_Dict,fullAtt=true,useActiveVar=useActiveVar)
-println("No Hassle Costs")
-resNoHass = predict_switching(m,p_est,spec_Dict,noHass=true,useActiveVar=useActiveVar)
-println("No Taste for Continuity")
-resNoCont = predict_switching(m,p_est,spec_Dict,noCont=true,useActiveVar=useActiveVar)
-println("Only Inattention")
-resOnlyAtt = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true,useActiveVar=useActiveVar)
-println("Only Hassle Costs")
-resOnlyHass = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true,useActiveVar=useActiveVar)
-println("Only Tastes for Continuity")
-resOnlyCont = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,useActiveVar=useActiveVar)
-println("No Switching Costs")
-resNone = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true,useActiveVar=useActiveVar)
+# println("Base")
+# resBase = predict_switching(m,p_est,spec_Dict,useActiveVar=useActiveVar)
+# println("Full Attention")
+# resFA = predict_switching(m,p_est,spec_Dict,fullAtt=true,useActiveVar=useActiveVar)
+# println("No Hassle Costs")
+# resNoHass = predict_switching(m,p_est,spec_Dict,noHass=true,useActiveVar=useActiveVar)
+# println("No Taste for Continuity")
+# resNoCont = predict_switching(m,p_est,spec_Dict,noCont=true,useActiveVar=useActiveVar)
+# println("Only Inattention")
+# resOnlyAtt = predict_switching(m,p_est,spec_Dict,noHass=true,noCont=true,useActiveVar=useActiveVar)
+# println("Only Hassle Costs")
+# resOnlyHass = predict_switching(m,p_est,spec_Dict,fullAtt=true,noCont=true,useActiveVar=useActiveVar)
+# println("Only Tastes for Continuity")
+# resOnlyCont = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,useActiveVar=useActiveVar)
+# println("No Switching Costs")
+# resNone = predict_switching(m,p_est,spec_Dict,fullAtt=true,noHass=true,noCont=true,useActiveVar=useActiveVar)
 
 #### Average Willingness to Pay ####
 parBase = parDict(m,p_est)
@@ -108,7 +108,7 @@ individual_shares(m,parBase)
 #### Save predicted Choices #####
 s_ij = parBase.s_hat
 
-out = DataFrame(Person = df_LA[:hh_id], Product = df_LA[:product], Year = df_LA[:year],,choice=df_LA[:choice],iplan = df_LA[:iplan],default=df_LA[:autoplan],active=df_LA[:active],
+out = DataFrame(Person = df_LA[:hh_id], Product = df_LA[:product], Year = df_LA[:year],choice=df_LA[:choice],iplan = df_LA[:iplan],default=df_LA[:autoplan],active=df_LA[:active],
                     Metal = df_LA[:metal], Issuer = df_LA[:issuername],
                     s_pred = parBase.s_hat)
 file1 = "$(homedir())/Documents/Research/CovCAInertia/Output/Estimation_Results/predictedChoices_$spec$rundate.csv"
