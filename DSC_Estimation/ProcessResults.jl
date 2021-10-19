@@ -34,8 +34,8 @@ df_LA = df
 println("Data Loaded")
 
 
-rundate = "2021-10-11"
-spec = "Spec3_"
+rundate = "2021-10-08"
+spec = "Spec4_"
 file = "$home/Output/Estimation_Results/$spec$rundate.jld2"
 @load file p_est spec_Dict fval
 
